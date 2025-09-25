@@ -27,6 +27,8 @@
     "@nestjs/platform-express": "^10.0.0",
     "bullmq": "^4.0.0",
     "chokidar": "^3.5.3",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
     "lodash-es": "^4.17.21",
     "nestjs-pino": "^4.4.1",
     "pino": "^8.15.0",
@@ -79,6 +81,8 @@
     "transformIgnorePatterns": [
       "node_modules/(?!(lodash-es)/)"
     ],
-    "setupFilesAfterEnv": ["<rootDir>/../jest.setup.js"]
+    "setupFilesAfterEnv": [
+      "<rootDir>/../jest.setup.js"
+    ]
   }
 }

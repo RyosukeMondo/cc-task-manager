@@ -106,9 +106,13 @@ class ClaudeCodeWrapper:
             # Prepare environment
             env = os.environ.copy()
             
-            # Execute Claude Code command
+            # Execute Claude command
+            # Always use 'claude --print' for non-interactive execution with the command as prompt
+            # Use --dangerously-skip-permissions to bypass permission checks for automated execution
+            cmd_args = ['claude', '--print', '--dangerously-skip-permissions', command]
+
             self.current_process = subprocess.Popen(
-                ['claude', 'code'] + command.split()[2:] if command.startswith('claude code') else command.split(),
+                cmd_args,
                 cwd=working_directory,
                 env=env,
                 stdout=subprocess.PIPE,
@@ -167,7 +171,7 @@ class ClaudeCodeWrapper:
             return {
                 "status": "error",
                 "timestamp": datetime.utcnow().isoformat(),
-                "error": "Claude Code CLI not found in PATH"
+                "error": "Claude CLI not found in PATH"
             }
         except Exception as e:
             logger.error(f"Unexpected error executing Claude Code: {e}")
@@ -253,8 +257,14 @@ class ClaudeCodeWrapper:
 
 def main():
     """Main entry point."""
-    wrapper = ClaudeCodeWrapper()
-    wrapper.run()
+    try:
+        wrapper = ClaudeCodeWrapper()
+        wrapper.run()
+        # Explicitly exit with success code
+        sys.exit(0)
+    except Exception as e:
+        logger.error(f"Fatal error in wrapper: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
