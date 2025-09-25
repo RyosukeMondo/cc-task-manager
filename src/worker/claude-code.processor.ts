@@ -20,7 +20,7 @@ export interface ClaudeCodeJobData {
 }
 
 @Injectable()
-@Processor('claude-code-tasks')
+@Processor('claude-code-queue')
 export class ClaudeCodeProcessor extends WorkerHost {
   private readonly logger = new Logger(ClaudeCodeProcessor.name);
   private readonly workerConfig: WorkerConfig;

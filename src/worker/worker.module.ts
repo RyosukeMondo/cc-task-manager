@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import workerConfig from '../config/worker.config';
@@ -19,13 +19,14 @@ import { ClaudeCodeProcessor } from './claude-code.processor';
     
     // BullMQ configuration for queue processing
     BullModule.forRootAsync({
-      useFactory: async (configService) => {
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
         const config = configService.get('worker');
         return {
           connection: {
-            host: config.redisHost,
-            port: config.redisPort,
-            password: config.redisPassword,
+            host: config?.redisHost || 'localhost',
+            port: config?.redisPort || 6379,
+            password: config?.redisPassword,
           },
           defaultJobOptions: {
             removeOnComplete: 50, // Keep last 50 completed jobs for monitoring
@@ -38,12 +39,12 @@ import { ClaudeCodeProcessor } from './claude-code.processor';
           },
         };
       },
-      inject: ['ConfigService'],
+      inject: [ConfigService],
     }),
     
-    // Register the claude-code-tasks queue
+    // Register the claude-code-queue queue
     BullModule.registerQueue({
-      name: 'claude-code-tasks',
+      name: 'claude-code-queue',
     }),
   ],
   providers: [

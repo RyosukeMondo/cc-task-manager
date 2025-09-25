@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 import workerConfig from './config/worker.config';
 import { WorkerModule } from './worker/worker.module';
@@ -15,13 +15,14 @@ import { WorkerModule } from './worker/worker.module';
     
     // Global logging module using Pino
     LoggerModule.forRootAsync({
-      useFactory: async (configService) => {
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
         const config = configService.get('worker');
         return {
           pinoHttp: {
-            level: config.logLevel,
-            transport: 
-              process.env.NODE_ENV !== 'production' 
+            level: config?.logLevel || 'info',
+            transport:
+              process.env.NODE_ENV !== 'production'
                 ? {
                     target: 'pino-pretty',
                     options: {
@@ -35,11 +36,11 @@ import { WorkerModule } from './worker/worker.module';
               req: (req) => ({
                 method: req.method,
                 url: req.url,
-                headers: config.enableDetailedLogs ? req.headers : undefined,
+                headers: config?.enableDetailedLogs ? req.headers : undefined,
               }),
               res: (res) => ({
                 statusCode: res.statusCode,
-                headers: config.enableDetailedLogs ? res.headers : undefined,
+                headers: config?.enableDetailedLogs ? res.headers : undefined,
               }),
             },
             redact: {
@@ -55,7 +56,7 @@ import { WorkerModule } from './worker/worker.module';
           },
         };
       },
-      inject: ['ConfigService'],
+      inject: [ConfigService],
     }),
     
     // Worker module with all Claude Code task processing logic
