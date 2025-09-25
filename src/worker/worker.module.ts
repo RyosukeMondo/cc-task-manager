@@ -1,0 +1,71 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import workerConfig from '../config/worker.config';
+import { ProcessManagerService } from './process-manager.service';
+import { StateMonitorService } from './state-monitor.service';
+import { ClaudeCodeClientService } from './claude-code-client.service';
+import { WorkerService } from './worker.service';
+import { ClaudeCodeProcessor } from './claude-code.processor';
+
+@Module({
+  imports: [
+    // Configuration module to load worker config
+    ConfigModule.forFeature(workerConfig),
+    
+    // Event emitter for cross-service coordination
+    EventEmitterModule.forRoot(),
+    
+    // BullMQ configuration for queue processing
+    BullModule.forRootAsync({
+      useFactory: async (configService) => {
+        const config = configService.get('worker');
+        return {
+          connection: {
+            host: config.redisHost,
+            port: config.redisPort,
+            password: config.redisPassword,
+          },
+          defaultJobOptions: {
+            removeOnComplete: 50, // Keep last 50 completed jobs for monitoring
+            removeOnFail: 100,    // Keep last 100 failed jobs for debugging
+            attempts: 3,          // Retry failed jobs up to 3 times
+            backoff: {
+              type: 'exponential',
+              delay: 5000,        // Start with 5 second delay
+            },
+          },
+        };
+      },
+      inject: ['ConfigService'],
+    }),
+    
+    // Register the claude-code-tasks queue
+    BullModule.registerQueue({
+      name: 'claude-code-tasks',
+    }),
+  ],
+  providers: [
+    // Core worker services
+    ProcessManagerService,
+    StateMonitorService,
+    ClaudeCodeClientService,
+    WorkerService,
+    
+    // BullMQ processor
+    ClaudeCodeProcessor,
+  ],
+  exports: [
+    // Export services that might be used by other modules
+    WorkerService,
+    ProcessManagerService,
+    StateMonitorService,
+    ClaudeCodeClientService,
+    ClaudeCodeProcessor,
+    
+    // Export BullModule for potential use in other modules
+    BullModule,
+  ],
+})
+export class WorkerModule {}

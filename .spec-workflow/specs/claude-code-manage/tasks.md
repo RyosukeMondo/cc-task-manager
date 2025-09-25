@@ -63,7 +63,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
   - _Prompt: Implement the task for spec claude-code-manage, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Queue System Developer with expertise in BullMQ and job processing | Task: Create BullMQ processor that integrates WorkerService for scalable task processing with progress reporting and retry logic following all requirements | Restrictions: Must handle job lifecycle properly, report progress accurately, implement proper retry strategies, maintain job state consistency | _Leverage: @nestjs/bullmq decorators, WorkerService orchestration, existing queue configuration | _Requirements: All requirements 1.1-1.4 | Success: Processor handles jobs reliably, reports progress in real-time, implements retry logic, integrates with existing queue system | Instructions: First set this task to in-progress [-] in tasks.md, then mark complete [x] when finished_
 
-- [ ] 8. Add worker module integration to NestJS application
+- [x] 8. Add worker module integration to NestJS application
   - File: src/worker/worker.module.ts, src/app.module.ts
   - Create WorkerModule with all services and BullMQ processor registration
   - Integrate module into main application with proper dependency injection

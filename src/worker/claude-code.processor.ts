@@ -20,9 +20,7 @@ export interface ClaudeCodeJobData {
 }
 
 @Injectable()
-@Processor('claude-code-tasks', {
-  concurrency: 5, // Default concurrency, can be overridden by config
-})
+@Processor('claude-code-tasks')
 export class ClaudeCodeProcessor extends WorkerHost {
   private readonly logger = new Logger(ClaudeCodeProcessor.name);
   private readonly workerConfig: WorkerConfig;
@@ -34,8 +32,7 @@ export class ClaudeCodeProcessor extends WorkerHost {
     super();
     this.workerConfig = this.configService.get<WorkerConfig>('worker')!;
     
-    // Update concurrency based on configuration
-    this.concurrency = this.workerConfig.maxConcurrentTasks;
+    // Concurrency is configured in the @Processor decorator
     
     this.logger.log('ClaudeCodeProcessor initialized', {
       queueName: this.workerConfig.queueName,

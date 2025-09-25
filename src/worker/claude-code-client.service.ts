@@ -91,7 +91,7 @@ export class ClaudeCodeClientService {
       // Create input data for Python wrapper
       const inputData: ClaudeCodeInput = {
         command: `${command} "${prompt.replace(/"/g, '\\"')}"`,
-        working_directory: process.cwd || process.cwd(),
+        working_directory: globalThis.process.cwd(),
         timeout: options.timeout || 300,
       };
 
