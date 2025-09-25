@@ -81,7 +81,7 @@
   - _Requirements: All requirements for quality assurance_
   - _Prompt: Implement the task for spec claude-code-manage, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with expertise in unit testing and Jest framework | Task: Create comprehensive unit tests for all worker services with proper mocking and edge case coverage ensuring quality for all requirements | Restrictions: Must mock all external dependencies, test both success and failure scenarios, maintain test isolation and reliability | _Leverage: Jest patterns, NestJS testing module, existing test utilities | _Requirements: Validate all requirements through comprehensive testing | Success: All services have high test coverage, edge cases are tested, tests run reliably and independently | Instructions: First set this task to in-progress [-] in tasks.md, then mark complete [x] when finished_
 
-- [ ] 10. Create integration test for complete worker workflow
+- [x] 10. Create integration test for complete worker workflow
   - File: tests/integration/claude-code-worker.integration.spec.ts
   - Test full task execution workflow from BullMQ job to completion
   - Include Python wrapper integration and real Claude Code SDK interaction

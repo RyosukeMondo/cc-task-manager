@@ -1,9 +1,9 @@
 // Jest setup file
-import { jest } from '@jest/globals';
 
 // Mock crypto module to fix NestJS testing issue
+const actualCrypto = jest.requireActual('crypto');
 jest.mock('crypto', () => ({
-  ...jest.requireActual('crypto'),
+  ...actualCrypto,
   randomUUID: jest.fn(() => 'test-correlation-id'),
   createHash: jest.fn(() => ({
     update: jest.fn().mockReturnThis(),
