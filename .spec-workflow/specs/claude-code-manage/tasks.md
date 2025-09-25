@@ -9,7 +9,7 @@
   - _Requirements: 1.1, 1.2_
   - _Prompt: Implement the task for spec claude-code-manage, first run spec-workflow-guide to get the workflow guide then implement the task: Role: DevOps Engineer specializing in Node.js project setup and dependency management | Task: Install and configure all required dependencies for the claude-code-manage worker system following requirements 1.1 and 1.2, including @nestjs/bullmq, bullmq, zod, pino, chokidar, and lodash-es with proper version specifications | Restrictions: Use exact versions from design document, ensure compatibility with existing NestJS setup, do not modify existing core dependencies | _Leverage: existing package.json and @nestjs/config patterns | _Requirements: 1.1 (Claude Code Process Invocation), 1.2 (Real-time Process Monitoring) | Success: All dependencies installed correctly, Zod configuration schema validates worker settings, compatible with existing project structure | Instructions: First set this task to in-progress [-] in tasks.md, then mark complete [x] when finished_
 
-- [ ] 2. Create Python wrapper script for Claude Code SDK integration
+- [x] 2. Create Python wrapper script for Claude Code SDK integration
   - File: scripts/claude_wrapper.py
   - Implement Python script with Claude Code SDK integration and structured JSON output
   - Add signal handling for graceful shutdown (SIGTERM/SIGKILL)
