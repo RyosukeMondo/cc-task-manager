@@ -1,6 +1,6 @@
 # Tasks Document
 
-- [ ] 1. Setup project dependencies and configuration
+- [x] 1. Setup project dependencies and configuration
   - File: package.json, src/config/worker.config.ts
   - Install required libraries: @nestjs/bullmq, bullmq, zod, pino, chokidar, lodash-es
   - Create worker configuration schema with Zod validation
