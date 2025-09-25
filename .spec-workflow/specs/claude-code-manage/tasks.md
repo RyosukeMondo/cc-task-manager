@@ -27,7 +27,7 @@
   - _Requirements: 1.1, 1.3_
   - _Prompt: Implement the task for spec claude-code-manage, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Developer specializing in Node.js process management and NestJS services | Task: Implement ProcessManager service using child_process.spawn for secure Claude Code process spawning, PID tracking, and lifecycle management following requirements 1.1 and 1.3 | Restrictions: Must use spawn() not exec() for security, implement proper signal handling, log all process events with correlation IDs | _Leverage: NestJS @Injectable() patterns, existing Pino logger configuration, Zod validation | _Requirements: 1.1 (Claude Code Process Invocation), 1.3 (Process Lifecycle Management) | Success: Service spawns processes securely, tracks PIDs accurately, terminates processes gracefully with SIGTERM/SIGKILL escalation | Instructions: First set this task to in-progress [-] in tasks.md, then mark complete [x] when finished_
 
-- [ ] 4. Implement StateMonitor service for real-time process monitoring
+- [x] 4. Implement StateMonitor service for real-time process monitoring
   - File: src/worker/state-monitor.service.ts
   - Use chokidar to monitor Claude Code session files for activity detection
   - Implement PID monitoring and state transition logic with lodash utilities
