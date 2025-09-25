@@ -74,6 +74,10 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(lodash-es)/)"
+    ],
+    "setupFilesAfterEnv": ["<rootDir>/../jest.setup.js"]
   }
 }

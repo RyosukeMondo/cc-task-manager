@@ -72,7 +72,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
   - _Prompt: Implement the task for spec claude-code-manage, first run spec-workflow-guide to get the workflow guide then implement the task: Role: NestJS Developer with expertise in module architecture and dependency injection | Task: Create WorkerModule that exports all worker services and integrates with main application following NestJS best practices for all requirements | Restrictions: Must follow existing module patterns, configure dependency injection properly, do not break existing application structure | _Leverage: Existing NestJS module patterns, app.module.ts structure, dependency injection configuration | _Requirements: All requirements 1.1-1.4 | Success: WorkerModule is properly configured, all services are injectable, integration with main app works seamlessly | Instructions: First set this task to in-progress [-] in tasks.md, then mark complete [x] when finished_
 
-- [ ] 9. Create comprehensive unit tests for all worker services
+- [x] 9. Create comprehensive unit tests for all worker services
   - File: tests/worker/process-manager.service.spec.ts, tests/worker/state-monitor.service.spec.ts, tests/worker/claude-code-client.service.spec.ts, tests/worker/worker.service.spec.ts
   - Write unit tests with mocked dependencies for all services
   - Test error scenarios, edge cases, and process lifecycle events
