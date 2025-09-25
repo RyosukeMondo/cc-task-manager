@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/steering/product.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-25T13:02:34.681Z",
+      "trigger": "initial",
+      "approvalId": "approval_1758805354671_2ix1pypbo",
+      "approvalTitle": "Product Overview - Claude Code Task Manager"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-25T13:05:13.286Z",
+      "trigger": "approved",
+      "approvalId": "approval_1758805354671_2ix1pypbo",
+      "approvalTitle": "Product Overview - Claude Code Task Manager"
+    }
+  ]
+}
