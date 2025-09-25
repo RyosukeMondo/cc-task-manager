@@ -36,7 +36,7 @@
   - _Requirements: 1.2, 1.4_
   - _Prompt: Implement the task for spec claude-code-manage, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Systems Engineer with expertise in file system monitoring and real-time state management | Task: Implement StateMonitor service using chokidar for file system monitoring, PID health checks, and state transitions following requirements 1.2 and 1.4 | Restrictions: Must handle file system events reliably, implement proper timeout detection, use awaitWriteFinish for complete file updates | _Leverage: chokidar patterns, lodash-es for data manipulation, BullMQ job progress updates | _Requirements: 1.2 (Real-time Process Monitoring), 1.4 (Basic State Detection) | Success: Service detects file changes accurately, monitors PID health, transitions states correctly (running/active/idle/completed/failed) | Instructions: First set this task to in-progress [-] in tasks.md, then mark complete [x] when finished_
 
-- [ ] 5. Create ClaudeCodeClient service for SDK communication abstraction
+- [x] 5. Create ClaudeCodeClient service for SDK communication abstraction
   - File: src/worker/claude-code-client.service.ts
   - Implement abstraction layer for Python wrapper communication with Zod validation
   - Add structured JSON parsing and error handling for Claude Code responses
