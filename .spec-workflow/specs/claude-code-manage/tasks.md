@@ -18,7 +18,7 @@
   - _Requirements: 1.1, 1.3_
   - _Prompt: Implement the task for spec claude-code-manage, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Python Developer with expertise in Claude Code SDK and inter-process communication | Task: Create Python wrapper script that interfaces with Claude Code SDK, processes stdin prompts, outputs structured JSON to stdout, and handles SIGTERM signals gracefully following requirements 1.1 and 1.3 | Restrictions: Must use structured JSON output only, handle signals properly for graceful shutdown, never log sensitive prompt data | _Leverage: Claude Code SDK best practices from tech research documents | _Requirements: 1.1 (Claude Code Process Invocation), 1.3 (Process Lifecycle Management) | Success: Script successfully invokes Claude Code SDK, outputs valid JSON progress updates, handles shutdown signals gracefully | Instructions: First set this task to in-progress [-] in tasks.md, then mark complete [x] when finished_
 
-- [ ] 3. Implement ProcessManager service for process spawning and lifecycle
+- [x] 3. Implement ProcessManager service for process spawning and lifecycle
   - File: src/worker/process-manager.service.ts
   - Create NestJS service using child_process.spawn for secure process creation
   - Add PID tracking, process termination, and health checking methods
