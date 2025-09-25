@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/claude-code-manage/tasks.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-25T14:00:05.748Z",
+      "trigger": "initial",
+      "approvalId": "approval_1758808805738_a5s3grqjj",
+      "approvalTitle": "Tasks for Claude Code Manage - Implementation Breakdown"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-25T14:03:23.362Z",
+      "trigger": "approved",
+      "approvalId": "approval_1758808805738_a5s3grqjj",
+      "approvalTitle": "Tasks for Claude Code Manage - Implementation Breakdown"
+    }
+  ]
+}

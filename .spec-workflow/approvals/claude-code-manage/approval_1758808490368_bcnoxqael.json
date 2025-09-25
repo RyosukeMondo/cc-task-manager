@@ -1,0 +1,21 @@
+{
+  "id": "approval_1758808490368_bcnoxqael",
+  "title": "Design for Claude Code Manage - Worker System Architecture",
+  "filePath": ".spec-workflow/specs/claude-code-manage/design.md",
+  "type": "document",
+  "status": "needs-revision",
+  "createdAt": "2025-09-25T13:54:50.368Z",
+  "category": "spec",
+  "categoryName": "claude-code-manage",
+  "response": "Feedback Summary (1 comments):\n\nGeneral Comments:\n1. have you checked request_and_lib_selection_without_gui.md, describe selected library clearly will help implementation as expected\n\n",
+  "annotations": "{\n  \"decision\": \"needs-revision\",\n  \"comments\": [\n    {\n      \"type\": \"general\",\n      \"comment\": \"have you checked request_and_lib_selection_without_gui.md, describe selected library clearly will help implementation as expected\",\n      \"timestamp\": \"2025-09-25T13:57:01.533Z\",\n      \"id\": \"comment_1758808621533_40reqfbqi\"\n    }\n  ],\n  \"summary\": \"Feedback Summary (1 comments):\\n\\nGeneral Comments:\\n1. have you checked request_and_lib_selection_without_gui.md, describe selected library clearly will help implementation as expected\\n\\n\",\n  \"timestamp\": \"2025-09-25T13:57:03.241Z\"\n}",
+  "respondedAt": "2025-09-25T13:57:03.251Z",
+  "comments": [
+    {
+      "type": "general",
+      "comment": "have you checked request_and_lib_selection_without_gui.md, describe selected library clearly will help implementation as expected",
+      "timestamp": "2025-09-25T13:57:01.533Z",
+      "id": "comment_1758808621533_40reqfbqi"
+    }
+  ]
+}
