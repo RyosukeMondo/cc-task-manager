@@ -45,7 +45,7 @@
   - _Requirements: 1.1, 1.4_
   - _Prompt: Implement the task for spec claude-code-manage, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Integration Developer with expertise in external service integration and data validation | Task: Create ClaudeCodeClient service that abstracts Python wrapper communication with Zod validation and structured error handling following requirements 1.1 and 1.4 | Restrictions: Must validate all external data with Zod, never expose sensitive prompt information in logs, handle all error scenarios gracefully | _Leverage: Zod validation schemas, @nestjs/config for SDK settings, existing error patterns | _Requirements: 1.1 (Claude Code Process Invocation), 1.4 (Basic State Detection) | Success: Service validates Claude Code configurations, parses responses correctly, provides clean error handling and logging | Instructions: First set this task to in-progress [-] in tasks.md, then mark complete [x] when finished_
 
-- [ ] 6. Implement WorkerService orchestration layer
+- [x] 6. Implement WorkerService orchestration layer
   - File: src/worker/worker.service.ts
   - Create main service that coordinates ProcessManager, StateMonitor, and ClaudeCodeClient
   - Implement task execution workflow with BullMQ integration
