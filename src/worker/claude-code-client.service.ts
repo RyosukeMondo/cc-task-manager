@@ -292,15 +292,19 @@ export class ClaudeCodeClientService {
           ? validatedData.returnCode
           : undefined);
 
-      const enrichedData: ClaudeCodeEvent & {
+      const { status: rawStatus, ...restData } = validatedData;
+
+      const enrichedData: Omit<ClaudeCodeEvent, 'status'> & {
         status?: LegacyStatus;
         return_code?: number;
       } = {
-        ...validatedData,
+        ...restData,
       };
 
       if (normalizedStatus) {
         enrichedData.status = normalizedStatus;
+      } else if (isLegacyStatus(rawStatus)) {
+        enrichedData.status = rawStatus;
       }
 
       if (normalizedReturnCode !== undefined) {

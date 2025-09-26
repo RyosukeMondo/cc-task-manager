@@ -200,6 +200,7 @@ class ClaudeCodeWrapper:
 
         run_id = payload.get("run_id") or str(uuid.uuid4())
         options_dict = payload.get("options") or {}
+        exit_on_complete = bool(options_dict.get("exit_on_complete"))
 
         try:
             options = self.build_options(options_dict)
@@ -221,12 +222,14 @@ class ClaudeCodeWrapper:
             "options": options_dict,
             "started_at": datetime.utcnow().isoformat(),
             "state": "executing",
+            "exit_on_complete": exit_on_complete,
         }
 
         self.current_run_done_event = anyio.Event()
         self.current_run = run_context
         self.state = "executing"
 
+        logger.info("run_started id=%s options=%s", run_id, options_dict)
         self.output_json(
             {
                 "event": "run_started",
@@ -376,6 +379,7 @@ class ClaudeCodeWrapper:
                 }
             )
         else:
+            logger.info("run_completed id=%s", run_context["id"])
             self.output_json(
                 {
                     "event": "run_completed",
@@ -383,7 +387,29 @@ class ClaudeCodeWrapper:
                     "run_id": run_context["id"],
                 }
             )
+            # If requested, gracefully shut down the wrapper immediately after completion
+            if run_context.get("exit_on_complete"):
+                self.output_json(
+                    {
+                        "event": "auto_shutdown",
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "reason": "exit_on_complete",
+                        "run_id": run_context["id"],
+                    }
+                )
+                logger.info("exit_on_complete=true; initiating graceful shutdown")
+                # Request shutdown and cancel the main task group so run() can unwind cleanly
+                self.shutdown_requested = True
+                try:
+                    if self.task_group is not None and hasattr(self.task_group, "cancel_scope"):
+                        self.task_group.cancel_scope.cancel()
+                        logger.info("cancelled task_group via cancel_scope")
+                except Exception:
+                    logger.exception("failed to cancel task_group during exit_on_complete")
+                # Allow finally: to run and run() to emit shutdown
+                return
         finally:
+            logger.info("finalising run id=%s; cancelling scope and resetting state", run_context.get("id"))
             if cancel_scope is not None:
                 cancel_scope.cancel()  # ensure scope exits cleanly if still active
 
