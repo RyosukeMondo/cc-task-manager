@@ -1,33 +1,33 @@
 #!/bin/bash
 
-echo "🚀 Claude Code Worker - Quick Test Commands"
+set -euo pipefail
+
+echo "🚀 Claude Code Worker - Single Reliable Test"
 echo "==========================================="
-
-echo ""
-echo "1️⃣  Test Direct Python Wrapper (Simplest)"
-echo "   Command: node test-worker.js"
+echo "This script aligns with test-worker.js and runs it directly."
 echo ""
 
-echo "2️⃣  Test Queue System (Full System)"
-echo "   Command: node simple-test.js"
-echo "   Note: Requires Redis running"
-echo ""
+# Prerequisite checks
+if ! command -v node >/dev/null 2>&1; then
+  echo "❌ Node.js is not installed or not on PATH. Please install Node.js and try again."
+  exit 1
+fi
 
-echo "3️⃣  Start Full NestJS Application"
-echo "   Command: npm run start:dev"
-echo "   URL: http://localhost:3000"
-echo ""
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "❌ python3 is not installed or not on PATH. Please install Python 3 and try again."
+  exit 1
+fi
 
-echo "4️⃣  Check Claude Code Status"
-echo "   Commands:"
-echo "   - claude --version"
-echo "   - claude auth status"
-echo ""
+# Ensure Python wrapper exists (used by test-worker.js)
+if [ ! -f scripts/claude_wrapper.py ]; then
+  echo "❌ Missing required file: scripts/claude_wrapper.py"
+  exit 1
+fi
 
-echo "5️⃣  Manual Python Wrapper Test"
-echo "   Command: python3 scripts/claude_wrapper.py"
-echo "   Input: {\"action\": \"prompt\", \"prompt\": \"echo hello\", \"options\": {\"cwd\": \".\", \"permission_mode\": \"bypassPermissions\"}}"
-echo "   (Legacy format with {\"command\": ...} still works, but new schema is preferred)"
-echo ""
+# Ensure the working directory used by test-worker.js exists
+mkdir -p ./test-workspace
 
-echo "Choose your test (1-5):"
+echo "⚡ Running: node test-worker.js"
+echo ""
+node test-worker.js
+exit $?
