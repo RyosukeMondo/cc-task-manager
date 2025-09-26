@@ -4,43 +4,166 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
 import { ChildProcess } from 'child_process';
 import { z } from 'zod';
-import { 
-  WorkerConfig, 
-  ClaudeCodeOptionsSchema, 
-  TaskExecutionRequestSchema 
-} from '../config/worker.config';
+import { WorkerConfig, ClaudeCodeOptionsSchema } from '../config/worker.config';
 
-// Zod schemas for Claude Code response validation
+const PromptOptionsSchema = z
+  .object({
+    cwd: z.string().optional(),
+    permission_mode: z
+      .enum(['bypassPermissions', 'default', 'plan', 'acceptEdits'])
+      .optional(),
+    timeout: z.number().positive().optional(),
+  })
+  .catchall(z.unknown());
 
-export const ClaudeCodeResponseSchema = z.object({
-  status: z.enum(['ready', 'started', 'running', 'completed', 'failed', 'timeout', 'error', 'shutdown']),
-  timestamp: z.string(),
-  message: z.string().optional(),
-  pid: z.number().optional(),
-  return_code: z.number().optional(),
-  stdout_length: z.number().optional(),
-  stderr_length: z.number().optional(),
-  error_output: z.string().optional(),
-  error: z.string().optional(),
+export const ClaudeCodePromptPayloadSchema = z.object({
+  action: z.literal('prompt'),
+  prompt: z.string().min(1, 'Prompt is required'),
+  options: PromptOptionsSchema.optional(),
+  run_id: z.string().optional(),
 });
 
-export const ClaudeCodeInputSchema = z.object({
-  command: z.string().min(1, 'Command is required'),
-  working_directory: z.string().min(1, 'Working directory is required'),
-  timeout: z.number().positive().optional().default(300),
-});
+export const ClaudeCodeEventSchema = z
+  .object({
+    event: z.string(),
+    timestamp: z.string().optional(),
+    run_id: z.string().optional(),
+    state: z.string().optional(),
+    status: z.string().optional(),
+    message: z.string().optional(),
+    reason: z.string().optional(),
+    error: z.string().optional(),
+    error_output: z.string().optional(),
+    payload: z.unknown().optional(),
+    return_code: z.number().optional(),
+    returnCode: z.number().optional(),
+    pid: z.number().optional(),
+    stdout_length: z.number().optional(),
+    stderr_length: z.number().optional(),
+    details: z.unknown().optional(),
+  })
+  .catchall(z.unknown());
 
-// Type definitions
-export type ClaudeCodeResponse = z.infer<typeof ClaudeCodeResponseSchema>;
-export type ClaudeCodeInput = z.infer<typeof ClaudeCodeInputSchema>;
+export type ClaudeCodePromptPayload = z.infer<typeof ClaudeCodePromptPayloadSchema>;
+export type ClaudeCodeEvent = z.infer<typeof ClaudeCodeEventSchema>;
 export type ClaudeCodeOptions = z.infer<typeof ClaudeCodeOptionsSchema>;
+
+export type LegacyStatus =
+  | 'ready'
+  | 'started'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'timeout'
+  | 'error'
+  | 'shutdown';
+
+const LEGACY_STATUS_VALUES: readonly LegacyStatus[] = [
+  'ready',
+  'started',
+  'running',
+  'completed',
+  'failed',
+  'timeout',
+  'error',
+  'shutdown',
+];
+
+const EVENT_STATUS_MAP: Record<string, { status: LegacyStatus; returnCode?: number }> = {
+  ready: { status: 'ready' },
+  run_started: { status: 'started' },
+  stream: { status: 'running' },
+  run_completed: { status: 'completed', returnCode: 0 },
+  run_failed: { status: 'failed', returnCode: 1 },
+  run_cancelled: { status: 'failed', returnCode: 1 },
+  run_terminated: { status: 'error' },
+  cancel_requested: { status: 'running' },
+  cancel_ignored: { status: 'error' },
+  signal: { status: 'error' },
+  error: { status: 'error' },
+  fatal: { status: 'error', returnCode: 1 },
+  timeout: { status: 'timeout', returnCode: 1 },
+  run_timeout: { status: 'timeout', returnCode: 1 },
+  state: { status: 'running' },
+  shutdown: { status: 'shutdown' },
+};
+
+const isLegacyStatus = (value: unknown): value is LegacyStatus =>
+  typeof value === 'string' && (LEGACY_STATUS_VALUES as readonly string[]).includes(value);
+
+const deriveStatus = (
+  event: string,
+  data: ClaudeCodeEvent
+): { status: LegacyStatus | null; returnCode?: number } => {
+  const mapping = EVENT_STATUS_MAP[event];
+  if (mapping) {
+    if (mapping.status === 'failed' && data.reason === 'timeout') {
+      return { status: 'timeout', returnCode: mapping.returnCode ?? 1 };
+    }
+    return mapping;
+  }
+
+  if (typeof data.state === 'string') {
+    const normalizedState = data.state.trim().toLowerCase();
+    switch (normalizedState) {
+      case 'idle':
+        return { status: 'running' };
+      case 'completed':
+        return { status: 'completed', returnCode: 0 };
+      case 'failed':
+        return { status: 'failed', returnCode: 1 };
+      case 'timeout':
+        return { status: 'timeout', returnCode: 1 };
+      case 'shutdown':
+        return { status: 'shutdown' };
+      default:
+        return { status: 'running' };
+    }
+  }
+
+  if (isLegacyStatus(data.status)) {
+    const inferredReturnCode =
+      data.status === 'completed'
+        ? 0
+        : ['failed', 'timeout', 'error'].includes(data.status)
+        ? 1
+        : undefined;
+    return { status: data.status, returnCode: inferredReturnCode };
+  }
+
+  if (data.payload && typeof data.payload === 'object') {
+    const payloadRecord = data.payload as Record<string, unknown>;
+    const payloadStatus = payloadRecord.status;
+    if (isLegacyStatus(payloadStatus)) {
+      const inferredReturnCode =
+        payloadStatus === 'completed'
+          ? 0
+          : ['failed', 'timeout', 'error'].includes(payloadStatus)
+          ? 1
+          : undefined;
+      return { status: payloadStatus, returnCode: inferredReturnCode };
+    }
+  }
+
+  if (data.reason === 'timeout') {
+    return { status: 'timeout', returnCode: 1 };
+  }
+
+  return { status: null };
+};
 
 export interface ParsedResponse {
   success: boolean;
-  status: ClaudeCodeResponse['status'];
-  data?: ClaudeCodeResponse;
+  event: string | null;
+  data?: ClaudeCodeEvent & {
+    status?: LegacyStatus;
+    return_code?: number;
+  };
   error?: string;
   correlationId: string;
+  runId?: string | null;
+  status?: LegacyStatus | null;
+  returnCode?: number | null;
 }
 
 export interface StructuredError {
@@ -63,60 +186,55 @@ export class ClaudeCodeClientService {
     this.workerConfig = this.configService.get<WorkerConfig>('worker')!;
   }
 
-  /**
-   * Send prompt to Claude Code via Python wrapper process
-   * @param process The spawned Python wrapper process
-   * @param prompt The prompt to send to Claude Code
-   * @param options Claude Code execution options
-   * @param correlationId Correlation ID for request tracking
-   */
   async sendPrompt(
     process: ChildProcess,
     prompt: string,
     options: ClaudeCodeOptions,
-    correlationId: string = randomUUID()
+    correlationId: string = randomUUID(),
+    workingDirectory?: string,
+    runId?: string
   ): Promise<void> {
     try {
       if (!process.stdin || !process.stdin.writable) {
         throw new Error('Process stdin is not available or writable');
       }
 
-      // Build Claude Code command based on options
-      let command = 'claude code';
-      
-      if (options.model) {
-        command += ` --model ${options.model}`;
-      }
-      
-      // Create input data for Python wrapper
-      const inputData: ClaudeCodeInput = {
-        command: `${command} "${prompt.replace(/"/g, '\\"')}"`,
-        working_directory: globalThis.process.cwd(),
-        timeout: options.timeout || 300,
+      const optionsPayload = {
+        ...(options || {}),
+        timeout: options?.timeout ?? Math.floor(this.workerConfig.processTimeoutMs / 1000) ?? 300,
+        cwd:
+          workingDirectory ??
+          this.workerConfig.wrapperWorkingDir ??
+          globalThis.process.cwd(),
+        permission_mode: options?.permission_mode ?? 'bypassPermissions',
       };
 
-      // Validate input before sending
-      const validatedInput = ClaudeCodeInputSchema.parse(inputData);
+      const payload: ClaudeCodePromptPayload = ClaudeCodePromptPayloadSchema.parse({
+        action: 'prompt',
+        prompt,
+        options: optionsPayload,
+        run_id: runId,
+      });
 
       this.logger.log('Sending prompt to Claude Code process', {
         correlationId,
         pid: process.pid,
-        commandLength: validatedInput.command.length,
-        workingDirectory: validatedInput.working_directory,
-        timeout: validatedInput.timeout,
-        // Never log the actual prompt content for security
+        runId: payload.run_id,
+        promptLength: payload.prompt.length,
+        workingDirectory: optionsPayload.cwd,
+        permissionMode: optionsPayload.permission_mode,
+        timeout: optionsPayload.timeout,
       });
 
-      // Send JSON input to Python wrapper
-      const jsonInput = JSON.stringify(validatedInput);
+      const jsonInput = JSON.stringify(payload);
       process.stdin.write(jsonInput + '\n');
 
       this.eventEmitter.emit('claude.prompt.sent', {
         correlationId,
         pid: process.pid,
+        runId: payload.run_id,
         timestamp: new Date(),
       });
-
     } catch (error) {
       const structuredError = this.handleError({
         type: 'process',
@@ -136,76 +254,104 @@ export class ClaudeCodeClientService {
     }
   }
 
-  /**
-   * Parse JSON response from Claude Code Python wrapper
-   * @param jsonOutput Raw JSON string from Python wrapper stdout
-   * @param correlationId Correlation ID for request tracking
-   * @returns Parsed and validated response
-   */
   parseResponse(jsonOutput: string, correlationId: string = randomUUID()): ParsedResponse {
     try {
       if (!jsonOutput || jsonOutput.trim() === '') {
         return {
           success: false,
-          status: 'error',
+          event: null,
           error: 'Empty response received',
           correlationId,
+          runId: null,
+          status: 'error',
+          returnCode: null,
         };
       }
 
-      // Parse JSON
       const rawData = JSON.parse(jsonOutput.trim());
-      
-      // Validate against schema
-      const validatedData = ClaudeCodeResponseSchema.parse(rawData);
+
+      if (typeof rawData.event !== 'string') {
+        throw new Error('Missing event field in response');
+      }
+
+      const validatedData = ClaudeCodeEventSchema.parse(rawData);
+
+      const { status: derivedStatus, returnCode: derivedReturnCode } = deriveStatus(
+        validatedData.event,
+        validatedData
+      );
+
+      const normalizedStatus =
+        derivedStatus ?? (isLegacyStatus(validatedData.status) ? validatedData.status : null);
+
+      const normalizedReturnCode =
+        derivedReturnCode ??
+        (typeof validatedData.return_code === 'number'
+          ? validatedData.return_code
+          : typeof validatedData.returnCode === 'number'
+          ? validatedData.returnCode
+          : undefined);
+
+      const enrichedData: ClaudeCodeEvent & {
+        status?: LegacyStatus;
+        return_code?: number;
+      } = {
+        ...validatedData,
+      };
+
+      if (normalizedStatus) {
+        enrichedData.status = normalizedStatus;
+      }
+
+      if (normalizedReturnCode !== undefined) {
+        enrichedData.return_code = normalizedReturnCode;
+      }
 
       this.logger.debug('Parsed Claude Code response', {
         correlationId,
-        status: validatedData.status,
-        pid: validatedData.pid,
-        hasError: !!validatedData.error,
-        hasErrorOutput: !!validatedData.error_output,
+        event: validatedData.event,
+        runId: validatedData.run_id,
+        status: normalizedStatus,
       });
 
-      // Emit status change event
       this.eventEmitter.emit('claude.response.received', {
         correlationId,
-        status: validatedData.status,
-        pid: validatedData.pid,
+        event: validatedData.event,
+        runId: validatedData.run_id,
+        status: normalizedStatus ?? null,
         timestamp: new Date(),
       });
 
       return {
         success: true,
-        status: validatedData.status,
-        data: validatedData,
+        event: validatedData.event,
+        data: enrichedData,
         correlationId,
+        runId: validatedData.run_id ?? null,
+        status: normalizedStatus ?? null,
+        returnCode: normalizedReturnCode ?? null,
       };
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown parsing error';
-      
+
       this.logger.warn('Failed to parse Claude Code response', {
         correlationId,
         error: errorMessage,
         jsonLength: jsonOutput.length,
-        // Don't log the actual JSON content to avoid sensitive data exposure
       });
 
       return {
         success: false,
-        status: 'error',
+        event: null,
         error: `JSON parsing failed: ${errorMessage}`,
         correlationId,
+        runId: null,
+        status: 'error',
+        returnCode: null,
       };
     }
   }
 
-  /**
-   * Handle and structure errors from Claude Code operations
-   * @param errorData Raw error information
-   * @returns Structured error object
-   */
   handleError(errorData: {
     type?: string;
     message: string;
@@ -214,10 +360,9 @@ export class ClaudeCodeClientService {
     timestamp?: Date;
   }): StructuredError {
     const correlationId = errorData.correlationId || randomUUID();
-    
-    // Categorize error type
+
     let errorType: StructuredError['type'] = 'unknown';
-    
+
     if (errorData.type) {
       switch (errorData.type) {
         case 'validation':
@@ -230,9 +375,8 @@ export class ClaudeCodeClientService {
           errorType = 'unknown';
       }
     } else {
-      // Try to infer error type from message
       const message = errorData.message.toLowerCase();
-      
+
       if (message.includes('validation') || message.includes('schema') || message.includes('invalid')) {
         errorType = 'validation';
       } else if (message.includes('timeout') || message.includes('timed out')) {
@@ -252,16 +396,13 @@ export class ClaudeCodeClientService {
       timestamp: errorData.timestamp || new Date(),
     };
 
-    // Log structured error (without sensitive details)
     this.logger.error('Claude Code client error', {
       correlationId,
       type: structuredError.type,
       message: structuredError.message,
       timestamp: structuredError.timestamp,
-      // Don't log details to avoid exposing sensitive information
     });
 
-    // Emit error event for monitoring
     this.eventEmitter.emit('claude.client.error', {
       correlationId,
       type: structuredError.type,
@@ -272,19 +413,16 @@ export class ClaudeCodeClientService {
     return structuredError;
   }
 
-  /**
-   * Validate Claude Code configuration before execution
-   * @param options Claude Code options to validate
-   * @param correlationId Correlation ID for request tracking
-   * @returns Validation result
-   */
-  validateConfiguration(options: ClaudeCodeOptions, correlationId: string = randomUUID()): {
+  validateConfiguration(
+    options: ClaudeCodeOptions,
+    correlationId: string = randomUUID()
+  ): {
     valid: boolean;
     errors?: string[];
   } {
     try {
       ClaudeCodeOptionsSchema.parse(options);
-      
+
       this.logger.debug('Claude Code configuration validation passed', {
         correlationId,
         model: options.model,
@@ -293,12 +431,12 @@ export class ClaudeCodeClientService {
       });
 
       return { valid: true };
-      
     } catch (error) {
-      const errors = error instanceof z.ZodError 
-        ? error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
-        : ['Unknown validation error'];
-      
+      const errors =
+        error instanceof z.ZodError
+          ? error.errors.map((e) => `${e.path.join('.')}: ${e.message}`)
+          : ['Unknown validation error'];
+
       this.logger.warn('Claude Code configuration validation failed', {
         correlationId,
         errors,
@@ -311,60 +449,100 @@ export class ClaudeCodeClientService {
     }
   }
 
-  /**
-   * Check if Claude Code response indicates success
-   * @param response Parsed Claude Code response
-   * @returns True if response indicates successful completion
-   */
   isSuccessResponse(response: ParsedResponse): boolean {
-    if (!response.success || !response.data) {
+    if (!response.success) {
       return false;
     }
 
-    return response.data.status === 'completed' && 
-           (response.data.return_code === undefined || response.data.return_code === 0);
+    if ((response.status ?? response.data?.status) !== 'completed') {
+      return false;
+    }
+
+    const returnCode =
+      response.returnCode ??
+      response.data?.return_code ??
+      (typeof response.data?.returnCode === 'number' ? response.data.returnCode : undefined);
+
+    return returnCode === undefined || returnCode === 0;
   }
 
-  /**
-   * Check if Claude Code response indicates failure
-   * @param response Parsed Claude Code response
-   * @returns True if response indicates failure
-   */
   isFailureResponse(response: ParsedResponse): boolean {
     if (!response.success) {
       return true;
     }
 
-    if (!response.data) {
+    const status = response.status ?? response.data?.status ?? null;
+
+    if (!status) {
       return false;
     }
 
-    return response.data.status === 'failed' || 
-           response.data.status === 'error' || 
-           response.data.status === 'timeout' ||
-           (response.data.return_code !== undefined && response.data.return_code !== 0);
+    if (['failed', 'error', 'timeout'].includes(status)) {
+      return true;
+    }
+
+    const returnCode =
+      response.returnCode ??
+      response.data?.return_code ??
+      (typeof (response.data as Record<string, unknown> | undefined)?.returnCode === 'number'
+        ? ((response.data as Record<string, unknown>).returnCode as number)
+        : undefined);
+
+    return returnCode !== undefined && returnCode !== 0;
   }
 
-  /**
-   * Extract error message from Claude Code response
-   * @param response Parsed Claude Code response
-   * @returns Error message if available
-   */
   extractErrorMessage(response: ParsedResponse): string | undefined {
     if (!response.success) {
       return response.error;
     }
 
-    if (response.data?.error) {
-      return response.data.error;
+    const data = response.data;
+    if (!data) {
+      return undefined;
     }
 
-    if (response.data?.error_output) {
-      return response.data.error_output;
+    const directError = [data.error, data.error_output, data.message, data.reason].find(
+      (value) => typeof value === 'string' && value.trim().length > 0
+    );
+    if (directError) {
+      return directError;
     }
 
-    if (response.data?.status === 'failed' && response.data.message) {
-      return response.data.message;
+    if (data.payload && typeof data.payload === 'object') {
+      const payloadRecord = data.payload as Record<string, unknown>;
+
+      const payloadErrorCandidates = [
+        payloadRecord.error,
+        payloadRecord.message,
+        payloadRecord.description,
+      ];
+
+      const payloadError = payloadErrorCandidates.find(
+        (value) => typeof value === 'string' && value.trim().length > 0
+      );
+
+      if (payloadError && typeof payloadError === 'string') {
+        return payloadError;
+      }
+
+      const payloadContent = payloadRecord.content;
+      if (Array.isArray(payloadContent)) {
+        const text = payloadContent
+          .map((item) => {
+            if (!item || typeof item !== 'object') {
+              return '';
+            }
+            const entry = item as Record<string, unknown>;
+            const textValue = entry.text;
+            return typeof textValue === 'string' ? textValue : '';
+          })
+          .join('')
+          .trim();
+
+        if (text) {
+          return text;
+        }
+      }
     }
 
     return undefined;

@@ -8,6 +8,7 @@ import { ProcessManagerService } from '../process-manager.service';
 import { StateMonitorService, ProcessStateTransition, FileSystemActivity } from '../state-monitor.service';
 import { ClaudeCodeClientService, ParsedResponse } from '../claude-code-client.service';
 import { WorkerConfig, TaskExecutionRequest, TaskState } from '../../config/worker.config';
+import { EventEmitter } from 'events';
 
 
 describe('WorkerService', () => {
@@ -113,6 +114,167 @@ describe('WorkerService', () => {
 
     // Clear all mocks
     jest.clearAllMocks();
+  });
+
+  describe('handleProcessExecution consumer logic', () => {
+    const createProcess = () => {
+      const stdout = new EventEmitter();
+      const stderr = new EventEmitter();
+      const processEmitter = new EventEmitter() as unknown as ChildProcess;
+
+      Object.assign(processEmitter, {
+        stdout: stdout as unknown,
+        stderr: stderr as unknown,
+        pid: 4242,
+      });
+
+      return { processEmitter, stdout, stderr };
+    };
+
+    const createContext = (overrides: Partial<TaskExecutionContext> = {}): TaskExecutionContext => ({
+      taskId: 'test-task-123',
+      correlationId: 'test-correlation-id',
+      startTime: new Date('2025-01-01T00:00:00Z'),
+      pid: 4242,
+      ...overrides,
+    });
+
+    const buildParsedResponse = (response: Partial<ParsedResponse> & { success: boolean }): ParsedResponse => ({
+      success: response.success,
+      event: response.event ?? 'run_completed',
+      correlationId: response.correlationId ?? 'test-correlation-id',
+      status: response.status,
+      returnCode: response.returnCode,
+      runId: response.runId ?? 'run-123',
+      data: response.data,
+      error: response.error,
+    });
+
+    it('should resolve completed tasks using top-level status', async () => {
+      const { processEmitter, stdout } = createProcess();
+      const context = createContext({
+        process: processEmitter,
+      });
+
+      const parsedResponse = buildParsedResponse({
+        success: true,
+        status: 'completed',
+        returnCode: 0,
+        data: {
+          message: 'Task completed successfully',
+        } as any,
+      });
+
+      jest.mocked(claudeCodeClient.parseResponse).mockReturnValue(parsedResponse);
+      jest.mocked(claudeCodeClient.isSuccessResponse).mockReturnValue(true);
+
+      const executionPromise = service['handleProcessExecution'](context, {} as any);
+
+      stdout.emit('data', '{"mock":"value"}\n');
+
+      const result = await executionPromise;
+
+      expect(result.success).toBe(true);
+      expect(result.state).toBe(TaskState.COMPLETED);
+      expect(result.output).toBe('Task completed successfully');
+    });
+
+    it('should fail task when top-level status indicates failure', async () => {
+      const { processEmitter, stdout } = createProcess();
+      const context = createContext({
+        process: processEmitter,
+      });
+
+      const parsedResponse = buildParsedResponse({
+        success: true,
+        status: 'failed',
+        data: {
+          message: 'Execution failed',
+        } as any,
+      });
+
+      jest.mocked(claudeCodeClient.parseResponse).mockReturnValue(parsedResponse);
+      jest.mocked(claudeCodeClient.extractErrorMessage).mockReturnValue('Structured failure message');
+
+      const executionPromise = service['handleProcessExecution'](context, {} as any);
+
+      stdout.emit('data', '{"mock":"value"}\n');
+
+      const result = await executionPromise;
+
+      expect(result.success).toBe(false);
+      expect(result.state).toBe(TaskState.FAILED);
+      expect(result.error).toBe('Structured failure message');
+    });
+
+    it('should propagate failures from unsuccessful parsed responses', async () => {
+      const { processEmitter, stdout } = createProcess();
+      const context = createContext({
+        process: processEmitter,
+      });
+
+      const parsedResponse = buildParsedResponse({
+        success: false,
+        status: 'error',
+        error: 'Parsing failed',
+      });
+
+      jest.mocked(claudeCodeClient.parseResponse).mockReturnValue(parsedResponse);
+      jest.mocked(claudeCodeClient.extractErrorMessage).mockReturnValue('Parsing failed');
+
+      const executionPromise = service['handleProcessExecution'](context, {} as any);
+
+      stdout.emit('data', '{"mock":"value"}\n');
+
+      const result = await executionPromise;
+
+      expect(result.success).toBe(false);
+      expect(result.state).toBe(TaskState.FAILED);
+      expect(result.error).toBe('Parsing failed');
+    });
+
+    it('should forward progress updates when status indicates running', async () => {
+      const { processEmitter, stdout } = createProcess();
+      const progressCallback = jest.fn();
+      const context = createContext({
+        process: processEmitter,
+        onProgressCallback: progressCallback,
+      });
+
+      const runningResponse = buildParsedResponse({
+        success: true,
+        status: 'running',
+        data: {
+          message: 'Intermediate progress',
+        } as any,
+      });
+
+      const completedResponse = buildParsedResponse({
+        success: true,
+        status: 'completed',
+        returnCode: 0,
+        data: {
+          message: 'Done',
+        } as any,
+      });
+
+      jest
+        .mocked(claudeCodeClient.parseResponse)
+        .mockReturnValueOnce(runningResponse)
+        .mockReturnValueOnce(completedResponse);
+      jest.mocked(claudeCodeClient.isSuccessResponse).mockReturnValue(true);
+
+      const executionPromise = service['handleProcessExecution'](context, {} as any);
+
+      stdout.emit('data', '{"progress":"update"}\n');
+      stdout.emit('data', '{"complete":"update"}\n');
+
+      const result = await executionPromise;
+
+      expect(progressCallback).toHaveBeenCalledWith('Intermediate progress');
+      expect(result.success).toBe(true);
+      expect(result.state).toBe(TaskState.COMPLETED);
+    });
   });
 
   afterEach(() => {

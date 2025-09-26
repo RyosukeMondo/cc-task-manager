@@ -375,62 +375,106 @@ export class WorkerService implements OnModuleInit {
         outputBuffer = lines.pop() || ''; // Keep incomplete line
 
         for (const line of lines) {
-          if (line.trim()) {
-            const parsed = this.claudeCodeClient.parseResponse(line.trim(), correlationId);
-            
-            if (parsed.success && parsed.data) {
-              // Handle different status updates
-              switch (parsed.data.status) {
-                case 'completed':
-                  if (this.claudeCodeClient.isSuccessResponse(parsed)) {
-                    resolveOnce({
-                      taskId,
-                      success: true,
-                      state: TaskState.COMPLETED,
-                      output: parsed.data.message,
-                      correlationId,
-                      startTime: context.startTime,
-                      endTime: new Date(),
-                      pid,
-                    });
-                  } else {
-                    resolveOnce({
-                      taskId,
-                      success: false,
-                      state: TaskState.FAILED,
-                      error: this.claudeCodeClient.extractErrorMessage(parsed),
-                      correlationId,
-                      startTime: context.startTime,
-                      endTime: new Date(),
-                      pid,
-                    });
-                  }
-                  break;
-                  
-                case 'failed':
-                case 'error':
-                case 'timeout':
-                  resolveOnce({
-                    taskId,
-                    success: false,
-                    state: TaskState.FAILED,
-                    error: this.claudeCodeClient.extractErrorMessage(parsed),
-                    correlationId,
-                    startTime: context.startTime,
-                    endTime: new Date(),
-                    pid,
-                  });
-                  break;
-                  
-                case 'running':
-                case 'started':
-                  // Progress updates - call callback if provided
-                  if (context.onProgressCallback && parsed.data.message) {
-                    context.onProgressCallback(parsed.data.message);
-                  }
-                  break;
+          const trimmedLine = line.trim();
+          if (!trimmedLine) {
+            continue;
+          }
+
+          const parsed = this.claudeCodeClient.parseResponse(trimmedLine, correlationId);
+          const status = parsed.status ?? parsed.data?.status ?? null;
+          const returnCode =
+            parsed.returnCode ??
+            parsed.data?.return_code ??
+            (typeof (parsed.data as Record<string, unknown> | undefined)?.returnCode === 'number'
+              ? ((parsed.data as Record<string, unknown>).returnCode as number)
+              : undefined);
+
+          if (!parsed.success) {
+            resolveOnce({
+              taskId,
+              success: false,
+              state: TaskState.FAILED,
+              error: this.claudeCodeClient.extractErrorMessage(parsed),
+              correlationId,
+              startTime: context.startTime,
+              endTime: new Date(),
+              pid,
+            });
+            continue;
+          }
+
+          if (!status) {
+            continue;
+          }
+
+          switch (status) {
+            case 'completed':
+              if (this.claudeCodeClient.isSuccessResponse(parsed)) {
+                resolveOnce({
+                  taskId,
+                  success: true,
+                  state: TaskState.COMPLETED,
+                  output: parsed.data?.message,
+                  correlationId,
+                  startTime: context.startTime,
+                  endTime: new Date(),
+                  pid,
+                });
+              } else {
+                resolveOnce({
+                  taskId,
+                  success: false,
+                  state: TaskState.FAILED,
+                  error: this.claudeCodeClient.extractErrorMessage(parsed),
+                  correlationId,
+                  startTime: context.startTime,
+                  endTime: new Date(),
+                  pid,
+                });
               }
-            }
+              break;
+
+            case 'failed':
+            case 'error':
+            case 'timeout':
+              resolveOnce({
+                taskId,
+                success: false,
+                state: TaskState.FAILED,
+                error: this.claudeCodeClient.extractErrorMessage(parsed),
+                correlationId,
+                startTime: context.startTime,
+                endTime: new Date(),
+                pid,
+              });
+              break;
+
+            case 'running':
+            case 'started':
+              if (context.onProgressCallback && parsed.data?.message) {
+                context.onProgressCallback(parsed.data.message);
+              }
+              break;
+
+            default:
+              if (['ready', 'state'].includes(parsed.event ?? '')) {
+                // Ignore lifecycle events that do not affect task resolution
+                break;
+              }
+
+              if (returnCode !== undefined && returnCode !== 0) {
+                resolveOnce({
+                  taskId,
+                  success: false,
+                  state: TaskState.FAILED,
+                  error: this.claudeCodeClient.extractErrorMessage(parsed),
+                  correlationId,
+                  startTime: context.startTime,
+                  endTime: new Date(),
+                  pid,
+                });
+              }
+              break;
           }
         }
       });

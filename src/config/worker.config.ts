@@ -17,6 +17,9 @@ export const ClaudeCodeOptionsSchema = z.object({
   maxTokens: z.number().positive().optional(),
   temperature: z.number().min(0).max(2).optional(),
   timeout: z.number().positive().optional().default(300000), // 5 minutes default
+  permission_mode: z
+    .enum(['bypassPermissions', 'default', 'plan', 'acceptEdits'])
+    .optional(),
 });
 
 // Task execution request schema

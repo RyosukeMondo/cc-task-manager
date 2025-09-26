@@ -1,111 +1,79 @@
 #!/usr/bin/env node
 
 const { spawn } = require('child_process');
-const { join } = require('path');
+const path = require('path');
 
-async function debugWorkerProcess() {
-  console.log('🔍 Debugging Worker Process Execution');
-  console.log('=====================================');
+console.log('Starting debug test of worker system...');
 
-  const pythonWrapperPath = join(process.cwd(), 'scripts/claude_wrapper.py');
-  const workingDir = join(process.cwd(), 'test-workspace');
+// Start the worker process
+const worker = spawn('python3', ['scripts/claude_wrapper.py'], {
+  cwd: process.cwd(),
+  stdio: ['pipe', 'pipe', 'pipe']
+});
 
-  const testInput = JSON.stringify({
-    command: "Create a simple Python script called debug-hello.py that prints 'Debug Hello World'",
-    working_directory: workingDir,
-    timeout: 30
-  });
+console.log('Worker process started with PID:', worker.pid);
 
-  console.log('📤 Spawning Python wrapper process...');
-  console.log('Wrapper path:', pythonWrapperPath);
-  console.log('Working directory:', workingDir);
-  console.log('Test input:', testInput);
-  console.log('');
+let outputBuffer = '';
 
-  const childProcess = spawn('python3', [pythonWrapperPath], {
-    cwd: workingDir,
-    stdio: ['pipe', 'pipe', 'pipe'],
-  });
+worker.stdout.on('data', (data) => {
+  const output = data.toString();
+  outputBuffer += output;
+  console.log('STDOUT:', output.trim());
 
-  let outputReceived = false;
-  let exitCode = null;
-  let exitSignal = null;
+  // Try to parse JSON responses
+  const lines = outputBuffer.split('\n');
+  outputBuffer = lines.pop() || '';
 
-  // Monitor stdout
-  childProcess.stdout.on('data', (data) => {
-    const lines = data.toString().split('\n').filter(line => line.trim());
-    lines.forEach(line => {
+  for (const line of lines) {
+    if (line.trim()) {
       try {
-        const parsed = JSON.parse(line);
-        console.log('📥 Wrapper output:', parsed);
+        const parsed = JSON.parse(line.trim());
+        console.log('Parsed JSON:', parsed);
 
-        if (parsed.status === 'ready' && !outputReceived) {
-          console.log('✅ Wrapper ready, sending input...');
-          childProcess.stdin.write(testInput + '\n');
+        if (parsed.status === 'completed') {
+          console.log('✅ Task completed successfully!');
+          worker.kill();
+          process.exit(0);
         }
 
-        if (parsed.status === 'completed' && parsed.return_code === 0) {
-          console.log('✅ Wrapper reports SUCCESS (return_code: 0)');
-          outputReceived = true;
+        if (parsed.status === 'failed' || parsed.status === 'error') {
+          console.log('❌ Task failed:', parsed);
+          worker.kill();
+          process.exit(1);
         }
-      } catch (err) {
-        console.log('📄 Raw output:', line);
+      } catch (e) {
+        console.log('Failed to parse JSON:', line.trim());
       }
-    });
-  });
-
-  // Monitor stderr
-  childProcess.stderr.on('data', (data) => {
-    console.log('🔧 Wrapper stderr:', data.toString().trim());
-  });
-
-  // Monitor process exit
-  childProcess.on('exit', (code, signal) => {
-    exitCode = code;
-    exitSignal = signal;
-    console.log('');
-    console.log('🏁 Process Exit Event:');
-    console.log('  Exit Code:', code);
-    console.log('  Signal:', signal);
-    console.log('  Expected: code should be 0 for success');
-
-    if (code === 0) {
-      console.log('✅ CORRECT: Worker should report this as SUCCESS');
-    } else {
-      console.log('❌ PROBLEM: Worker will report this as FAILURE');
-      console.log('   This explains why our jobs are failing!');
     }
-  });
-
-  childProcess.on('error', (error) => {
-    console.error('❌ Process error:', error.message);
-  });
-
-  // Wait for completion
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (exitCode !== null) {
-        resolve({ exitCode, exitSignal, outputReceived });
-      } else {
-        childProcess.kill();
-        resolve({ exitCode: 'timeout', exitSignal: null, outputReceived });
-      }
-    }, 45000);
-  });
-}
-
-debugWorkerProcess().then((result) => {
-  console.log('');
-  console.log('🎯 Debug Results:');
-  console.log('  Final Exit Code:', result.exitCode);
-  console.log('  Output Received:', result.outputReceived);
-  console.log('');
-
-  if (result.exitCode === 0) {
-    console.log('✅ The Python wrapper is working correctly!');
-    console.log('   The issue must be elsewhere in the worker system.');
-  } else {
-    console.log('❌ The Python wrapper is not exiting with code 0');
-    console.log('   This is why the worker reports failure.');
   }
-}).catch(console.error);
+});
+
+worker.stderr.on('data', (data) => {
+  console.log('STDERR:', data.toString().trim());
+});
+
+worker.on('close', (code) => {
+  console.log('Worker process closed with code:', code);
+});
+
+worker.on('error', (error) => {
+  console.error('Worker process error:', error);
+  process.exit(1);
+});
+
+// Send the test command
+const command = {
+  command: 'Create a simple hello.py file that prints "Hello World"',
+  working_directory: '.',
+  timeout: 60
+};
+
+console.log('Sending command:', command);
+worker.stdin.write(JSON.stringify(command) + '\n');
+
+// Set a timeout
+setTimeout(() => {
+  console.log('⏰ Test timed out');
+  worker.kill();
+  process.exit(1);
+}, 90000);
