@@ -154,16 +154,26 @@ describe('ProcessManagerService', () => {
         throw error;
       });
 
+      // Suppress logger output for this test since we expect errors
+      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation();
+
       await expect(service.spawnClaudeProcess(mockConfig)).rejects.toThrow('Spawn failed');
+      
+      loggerSpy.mockRestore();
     });
 
     it('should throw error when no PID is assigned', async () => {
       const processWithoutPid = { ...mockChildProcess, pid: undefined };
       mockSpawn.mockReturnValue(processWithoutPid);
 
+      // Suppress logger output for this test since we expect errors
+      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation();
+
       await expect(service.spawnClaudeProcess(mockConfig)).rejects.toThrow(
         'Process spawn failed - no PID assigned'
       );
+      
+      loggerSpy.mockRestore();
     });
 
     it('should setup event handlers on spawned process', async () => {
@@ -394,6 +404,9 @@ describe('ProcessManagerService', () => {
         throw error;
       });
 
+      // Suppress logger output for this test since we expect errors
+      const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation();
+
       await expect(service.spawnClaudeProcess({
         jobId: 'test-job-123',
         sessionName: 'test-session',
@@ -402,6 +415,8 @@ describe('ProcessManagerService', () => {
         pythonExecutable: '/usr/bin/python3',
         unbuffered: true,
       })).rejects.toThrow('Permission denied');
+      
+      loggerSpy.mockRestore();
     });
   });
 });

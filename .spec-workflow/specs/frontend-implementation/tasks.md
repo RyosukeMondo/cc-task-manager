@@ -1,22 +1,22 @@
 # Tasks Document
 
-- [ ] 1. Create frontend application structure and contract-driven foundation
+- [ ] 1. Create frontend application structure with existing contract foundation integration
   - File: apps/frontend/package.json, apps/frontend/src/app/layout.tsx, apps/frontend/tsconfig.json
-  - Set up Next.js 14+ frontend application with contract-driven development foundation
-  - Configure Zod schemas as single source of truth (SSOT) for API contracts and type generation
-  - Purpose: Establish contract-driven frontend application with SOLID principles and industry-standard architecture
-  - _Leverage: Existing Next.js patterns, workspace configuration, Zod schema patterns from @cc-task-manager/schemas_
+  - Set up Next.js 14+ frontend application leveraging existing contract-driven infrastructure from src/contracts/
+  - Integrate with existing ContractRegistry, TypeScriptGenerator, and contract validation infrastructure
+  - Purpose: Establish contract-driven frontend application with SOLID principles using existing SSOT foundation
+  - _Leverage: src/contracts/ContractRegistry.ts, src/contracts/TypeScriptGenerator.ts, existing contract infrastructure from src/contracts/, Next.js patterns, workspace configuration_
   - _Requirements: 1.1, 6.1_
-  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Architect specializing in Next.js and contract-driven development | Task: Create apps/frontend application structure with package.json, layout.tsx, and TypeScript configuration following requirements 1.1 and 6.1, establishing contract-driven foundation with Zod schemas as SSOT | Restrictions: Follow SOLID principles (SRP, OCP, LSP, ISP, DIP), maintain KISS principle, ensure proper Next.js App Router setup | Success: Frontend application structure created, Zod contract foundation established, TypeScript compilation succeeds, SOLID principles implemented
+  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Architect specializing in Next.js and contract-driven development | Task: Create apps/frontend application structure with package.json, layout.tsx, and TypeScript configuration following requirements 1.1 and 6.1, LEVERAGING existing contract infrastructure from src/contracts/ as SSOT foundation | Restrictions: Must reuse existing ContractRegistry and TypeScriptGenerator - do not recreate contract infrastructure, follow SOLID principles (SRP, OCP, LSP, ISP, DIP), maintain KISS principle, ensure proper Next.js App Router setup | Success: Frontend application structure created using existing contract foundation, ContractRegistry properly integrated, TypeScript generation working from existing infrastructure, SOLID principles implemented
 
-- [ ] 2. Implement Zod schema contracts and API client integration
-  - File: apps/frontend/src/lib/schemas/ (schema definitions and API client)
-  - Create comprehensive Zod schemas for frontend-specific validation extending backend contracts
-  - Integrate TanStack Query with Zod for type-safe API communication and server state management
-  - Purpose: Establish contract-driven API communication with automatic validation and type safety
-  - _Leverage: @cc-task-manager/schemas patterns, TanStack Query for industry-standard server state management_
+- [ ] 2. Generate TypeScript API client using existing contract infrastructure
+  - File: apps/frontend/src/lib/api/ (generated API client and TanStack Query integration)
+  - Use existing TypeScriptGenerator to create type-safe API client from backend contracts
+  - Integrate generated types with TanStack Query for server state management
+  - Purpose: Establish contract-driven API communication using existing SSOT infrastructure
+  - _Leverage: src/contracts/TypeScriptGenerator.ts, src/contracts/ContractRegistry.ts, existing backend schema contracts, TanStack Query for server state management_
   - _Requirements: 1.1, 1.2_
-  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Contract Engineer with expertise in Zod, TanStack Query, and type-safe API design | Task: Create comprehensive Zod schema contracts and integrate TanStack Query for type-safe API communication following requirements 1.1 and 1.2, implementing SSOT principle with contract validation | Restrictions: All API contracts must use Zod schemas, ensure complete type safety, follow contract-driven patterns from design document | Success: All API contracts defined with Zod, TanStack Query integration working, type safety achieved across frontend, contract validation implemented
+  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Integration Engineer with expertise in existing contract infrastructure and TanStack Query | Task: Generate TypeScript API client using existing TypeScriptGenerator and integrate with TanStack Query following requirements 1.1 and 1.2, leveraging existing SSOT contract infrastructure | Restrictions: Must use existing TypeScriptGenerator for client generation, consume contracts from existing ContractRegistry, integrate generated types with TanStack Query, ensure complete type safety, do not recreate contract validation | Success: API client generated using existing TypeScriptGenerator, TanStack Query integration working with generated types, type safety achieved using existing contracts, client-server contract synchronization maintained
 
 - [ ] 3. Implement authentication system with JWT and role-based UI adaptation
   - File: apps/frontend/src/lib/auth/ (authentication context and components)
@@ -27,14 +27,14 @@
   - _Requirements: 4.1, 4.2_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Security Engineer with expertise in JWT authentication and React Context | Task: Implement authentication system with JWT handling and role-based UI adaptation following requirements 4.1 and 4.2, applying SOLID principles especially Interface Segregation and Dependency Inversion | Restrictions: Must use secure JWT token storage, implement proper role-based rendering, follow security best practices, ensure seamless authentication flow | Success: JWT authentication working correctly, role-based UI adaptation implemented, authentication context providing secure state management, route protection functional
 
-- [ ] 4. Create task management components with contract validation
-  - File: apps/frontend/src/components/tasks/ (task CRUD components with Zod validation)
-  - Implement comprehensive task management UI using contract-driven validation
+- [ ] 4. Create task management components using existing contract validation
+  - File: apps/frontend/src/components/tasks/ (task CRUD components using generated types)
+  - Implement comprehensive task management UI using existing contract-validated types from TypeScriptGenerator
   - Apply Single Responsibility Principle with separate display, form, and list components
-  - Purpose: Provide type-safe task management operations with automatic validation and real-time updates
-  - _Leverage: Zod schemas from task 2, Shadcn/ui components, React Hook Form integration_
+  - Purpose: Provide type-safe task management operations with automatic validation using existing SSOT
+  - _Leverage: Generated types from src/contracts/TypeScriptGenerator.ts, existing contract schemas from ContractRegistry, Shadcn/ui components, React Hook Form integration_
   - _Requirements: 2.1, 2.2_
-  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Developer specializing in React components and contract-driven UI | Task: Create task management components with Zod-validated forms and real-time updates following requirements 2.1 and 2.2, implementing SRP with component composition | Restrictions: All components must use Zod contract validation, implement proper error handling with user-friendly feedback, follow Shadcn/ui patterns, ensure real-time update capability | Success: Task CRUD components implemented with Zod validation, SRP applied to component design, real-time updates working, contract-based form handling functional
+  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Developer specializing in React components and existing contract infrastructure | Task: Create task management components using generated types from existing TypeScriptGenerator following requirements 2.1 and 2.2, implementing SRP with component composition leveraging existing contract validation | Restrictions: Must use types generated from existing TypeScriptGenerator, leverage existing contract validation patterns, implement proper error handling with user-friendly feedback, follow Shadcn/ui patterns, ensure real-time update capability | Success: Task CRUD components implemented using existing generated types, SRP applied to component design, real-time updates working, existing contract-based validation functional
 
 - [ ] 5. Implement WebSocket client for real-time communication
   - File: apps/frontend/src/lib/websocket/ (WebSocket client with type-safe events)
@@ -63,14 +63,14 @@
   - _Requirements: 7.1, 7.2_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: UI/UX Engineer with expertise in design systems and theme management | Task: Implement theme system with CSS variables and user preferences following requirements 7.1 and 7.2, establishing SSOT for design tokens and theme configuration | Restrictions: Must use Tailwind CSS and CSS variables, implement system preference detection, ensure theme persistence across sessions, support accessibility features like high contrast and reduced motion | Success: Theme system working with light/dark modes, user preferences persisting correctly, design tokens centralized, accessibility theme options functional
 
-- [ ] 8. Create form components with comprehensive validation
-  - File: apps/frontend/src/components/forms/ (reusable form components with Zod integration)
-  - Implement React Hook Form integration with Zod for contract-driven form validation
-  - Apply Liskov Substitution Principle for form component variants and input types
-  - Purpose: Provide reusable, type-safe form components with consistent validation patterns
-  - _Leverage: React Hook Form for industry-standard form handling, Zod schemas for validation, Shadcn/ui form components_
+- [ ] 8. Create form components using existing contract validation infrastructure
+  - File: apps/frontend/src/components/forms/ (reusable form components with existing validation)
+  - Implement React Hook Form integration using existing contract validation from TypeScriptGenerator
+  - Apply Liskov Substitution Principle for form component variants leveraging existing schemas
+  - Purpose: Provide reusable, type-safe form components using existing SSOT validation patterns
+  - _Leverage: Generated types from src/contracts/TypeScriptGenerator.ts, existing Zod schemas from ContractRegistry, React Hook Form for form handling, Shadcn/ui form components_
   - _Requirements: 1.3, 1.4_
-  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Form Engineering Specialist with expertise in React Hook Form and validation patterns | Task: Create form components with React Hook Form and Zod integration following requirements 1.3 and 1.4, implementing Liskov Substitution Principle for component variants | Restrictions: Must use React Hook Form with Zod resolver, implement real-time validation feedback, ensure accessibility compliance for forms, follow Shadcn/ui form patterns | Success: Form components implemented with Zod validation, React Hook Form integration working, real-time validation functional, accessibility standards met
+  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Form Engineering Specialist with expertise in React Hook Form and existing contract infrastructure | Task: Create form components using existing contract validation from TypeScriptGenerator following requirements 1.3 and 1.4, implementing Liskov Substitution Principle for component variants leveraging existing schemas | Restrictions: Must use React Hook Form with generated types from existing contract infrastructure, leverage existing Zod validation patterns, implement real-time validation feedback, ensure accessibility compliance for forms, follow Shadcn/ui form patterns | Success: Form components implemented using existing contract validation, React Hook Form integration working with generated types, real-time validation functional using existing schemas, accessibility standards met
 
 - [ ] 9. Implement error handling and offline capability
   - File: apps/frontend/src/lib/error/ (error boundaries and offline handling)
@@ -99,14 +99,14 @@
   - _Requirements: 6.1, 6.2_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Accessibility and Performance Engineer with expertise in WCAG standards and Core Web Vitals | Task: Implement accessibility features and performance optimization following requirements 6.1 and 6.2, ensuring WCAG 2.1 AA compliance and Core Web Vitals targets | Restrictions: Must meet WCAG 2.1 AA standards, achieve Core Web Vitals targets (LCP < 2.5s, FID < 100ms, CLS < 0.1), implement proper focus management and ARIA labels, optimize bundle size and loading performance | Success: Accessibility compliance verified, Core Web Vitals targets met, focus management working correctly, performance optimization implemented
 
-- [ ] 12. Create comprehensive testing strategy with contract validation
+- [ ] 12. Create comprehensive testing strategy leveraging existing contract validation
   - File: apps/frontend/src/__tests__/ (unit tests, integration tests, accessibility tests)
-  - Create comprehensive test suite including contract testing with Zod schema validation
+  - Create comprehensive test suite extending existing contract testing infrastructure
   - Implement accessibility testing following SOLID principles with proper test isolation
-  - Purpose: Ensure code quality, accessibility compliance, and contract adherence
-  - _Leverage: Jest for unit testing, Testing Library for component testing, axe-core for accessibility testing_
+  - Purpose: Ensure code quality, accessibility compliance, and contract adherence using existing test infrastructure
+  - _Leverage: src/contracts/tests/ContractValidation.test.ts, src/contracts/tests/PactTestRunner.ts, Jest for unit testing, Testing Library for component testing, axe-core for accessibility testing_
   - _Requirements: All requirements for testing coverage_
-  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Quality Assurance Engineer with expertise in contract testing and accessibility validation | Task: Implement comprehensive testing strategy including Zod contract validation, accessibility tests, and component tests covering all requirements, ensuring SOLID principles in test design | Restrictions: Must achieve high test coverage for all components, implement contract testing with Zod schemas, use Testing Library best practices, ensure accessibility testing with axe-core, follow test isolation principles | Success: Comprehensive test suite implemented with high coverage, contract testing working with Zod validation, accessibility tests passing, component tests following best practices
+  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Quality Assurance Engineer with expertise in extending existing contract testing infrastructure | Task: Implement comprehensive testing strategy leveraging existing contract validation tests, adding accessibility tests and component tests covering all requirements, ensuring SOLID principles in test design | Restrictions: Must extend existing contract testing infrastructure from src/contracts/tests/, achieve high test coverage for all components, use Testing Library best practices, ensure accessibility testing with axe-core, follow test isolation principles | Success: Comprehensive test suite implemented extending existing contract tests, accessibility tests passing, component tests following best practices, existing contract validation integrated with frontend tests
 
 - [ ] 13. Configure build optimization and deployment preparation
   - File: apps/frontend/next.config.js, apps/frontend/Dockerfile
@@ -126,11 +126,11 @@
   - _Requirements: 5.3, 5.4_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Progressive Web App Engineer with expertise in service workers and offline-first design | Task: Implement PWA features and offline support following requirements 5.3 and 5.4, creating service worker with background sync and caching strategies | Restrictions: Must implement proper caching strategies, ensure offline functionality for core features, implement background sync for data updates, follow PWA best practices for installation and updates | Success: Service worker functional with offline caching, PWA installation working, background sync implemented, offline-first experience achieved
 
-- [ ] 15. Final integration testing and contract validation
-  - File: Complete frontend application integration
-  - Perform end-to-end integration testing with contract validation and performance verification
-  - Verify all SOLID principles implementation and contract-driven development compliance
-  - Purpose: Ensure complete system integration and principle compliance with optimal user experience
-  - _Leverage: All implemented components, contract testing framework, integration test utilities, performance monitoring tools_
+- [ ] 15. Final integration testing with existing contract validation infrastructure
+  - File: Complete frontend application integration leveraging existing contract tests
+  - Perform end-to-end integration testing using existing contract validation infrastructure and performance verification
+  - Verify all SOLID principles implementation and contract-driven development compliance using existing test framework
+  - Purpose: Ensure complete system integration and principle compliance with optimal user experience using existing SSOT
+  - _Leverage: src/contracts/integration/ContractIntegration.test.ts, all implemented components, existing contract testing framework from src/contracts/tests/, integration test utilities, performance monitoring tools_
   - _Requirements: All requirements validation_
-  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Integration Test Engineer with expertise in system validation and SOLID principles | Task: Perform comprehensive integration testing and contract validation covering all requirements, verifying SOLID principles implementation and contract-driven development success | Restrictions: All API contracts must be validated with Zod schemas, SOLID principles compliance verified, integration points tested thoroughly, performance benchmarks met, accessibility requirements validated | Success: Complete frontend integration working, all contracts validated, SOLID principles properly implemented, performance targets met, accessibility requirements satisfied, system ready for production deployment
+  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Integration Test Engineer with expertise in existing contract validation infrastructure | Task: Perform comprehensive integration testing and contract validation covering all requirements, leveraging existing contract integration tests and verifying SOLID principles implementation using existing contract-driven infrastructure | Restrictions: Must use existing contract validation infrastructure from src/contracts/, extend existing integration tests, validate all API contracts using existing ContractRegistry and generated types, verify SOLID principles compliance, test integration points thoroughly, meet performance benchmarks, validate accessibility requirements | Success: Complete frontend integration working with existing contract infrastructure, all contracts validated using existing validation framework, SOLID principles properly implemented, performance targets met, accessibility requirements satisfied, system ready for production deployment leveraging existing SSOT foundation
