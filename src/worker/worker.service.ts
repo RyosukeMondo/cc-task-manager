@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
@@ -9,7 +9,8 @@ import {
   TaskExecutionRequest, 
   TaskState, 
   validateTaskExecutionRequest, 
-  ProcessConfig 
+  ProcessConfig,
+  TaskExecutionRequestSchema 
 } from '../config/worker.config';
 import { ProcessManagerService } from './process-manager.service';
 import { StateMonitorService, ProcessStateTransition, FileSystemActivity } from './state-monitor.service';
@@ -19,6 +20,8 @@ import {
   StructuredError, 
   ClaudeCodeOptions 
 } from './claude-code-client.service';
+import { ContractRegistry } from '../contracts/ContractRegistry';
+import { ContractValidationPipe, ContractValidationErrorDetails } from '../contracts/ContractValidationPipe';
 
 export interface TaskExecutionResult {
   taskId: string;
@@ -64,12 +67,16 @@ export class WorkerService implements OnModuleInit {
     private readonly processManager: ProcessManagerService,
     private readonly stateMonitor: StateMonitorService,
     private readonly claudeCodeClient: ClaudeCodeClientService,
+    private readonly contractRegistry: ContractRegistry,
   ) {
     this.workerConfig = this.configService.get<WorkerConfig>('worker')!;
   }
 
   async onModuleInit(): Promise<void> {
     this.logger.log('Initializing WorkerService');
+    
+    // Register TaskExecutionRequest contract for validation
+    await this.registerTaskExecutionContract();
     
     // Set up event listeners for cross-service coordination
     this.setupEventListeners();
@@ -78,6 +85,79 @@ export class WorkerService implements OnModuleInit {
       maxConcurrentTasks: this.workerConfig.maxConcurrentTasks,
       processTimeoutMs: this.workerConfig.processTimeoutMs,
     });
+  }
+
+  /**
+   * Register TaskExecutionRequest contract for validation
+   * 
+   * @private Called during module initialization to ensure contract availability
+   */
+  private async registerTaskExecutionContract(): Promise<void> {
+    try {
+      const registered = await this.contractRegistry.registerContract(
+        'TaskExecutionRequest',
+        '1.0.0',
+        TaskExecutionRequestSchema,
+        {
+          description: 'Contract for validating task execution requests in the worker service',
+          compatibleVersions: ['1.0.0'],
+        }
+      );
+
+      if (!registered) {
+        this.logger.warn('Failed to register TaskExecutionRequest contract');
+      } else {
+        this.logger.log('TaskExecutionRequest contract registered successfully');
+      }
+    } catch (error) {
+      this.logger.error('Error registering TaskExecutionRequest contract:', error);
+    }
+  }
+
+  /**
+   * Validate task execution request using contract validation
+   * 
+   * @param request - Task execution request to validate
+   * @returns Promise resolving to validated request
+   * @throws Error with structured validation details if validation fails
+   * @private
+   */
+  private async validateTaskRequest(request: TaskExecutionRequest): Promise<TaskExecutionRequest> {
+    try {
+      // Use contract validation pipe for structured validation
+      const validationPipe = new ContractValidationPipe(
+        this.contractRegistry,
+        {
+          contractName: 'TaskExecutionRequest',
+          version: '1.0.0',
+          location: 'body'
+        }
+      );
+
+      // Validate the request using the contract validation pipe
+      const validatedRequest = validationPipe.transform(request, { type: 'body', metatype: Object, data: '' });
+      
+      // Additional legacy validation for backward compatibility
+      const legacyValidatedRequest = validateTaskExecutionRequest(validatedRequest);
+      
+      return legacyValidatedRequest;
+    } catch (error) {
+      // Enhanced error handling for contract validation errors
+      if (error instanceof BadRequestException) {
+        const contractError = error.getResponse() as ContractValidationErrorDetails;
+        this.logger.error('Contract validation failed for task request:', {
+          contract: contractError.contract,
+          location: contractError.location,
+          issues: contractError.issues,
+          message: contractError.message,
+        });
+        throw new Error(`Task validation failed: ${contractError.message}`);
+      }
+      
+      // Handle other validation errors
+      this.logger.error('Task request validation failed:', error);
+      throw error;
+    }
   }
 
   /**
@@ -127,8 +207,8 @@ export class WorkerService implements OnModuleInit {
    * ```
    */
   async executeTask(request: TaskExecutionRequest): Promise<TaskExecutionResult> {
-    // Validate request
-    const validatedRequest = validateTaskExecutionRequest(request);
+    // Validate request using contract validation
+    const validatedRequest = await this.validateTaskRequest(request);
     const correlationId = randomUUID();
     
     this.logger.log('Starting task execution', {
