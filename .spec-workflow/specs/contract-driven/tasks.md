@@ -36,7 +36,7 @@
   - _Requirements: 2.1, 2.2, 7.1_
   - _Prompt: Implement the task for spec contract-driven, first run spec-workflow-guide to get the workflow guide then implement the task: Role: NestJS expert specializing in validation pipes and middleware | Task: Build ContractValidationPipe that validates requests against registered contracts following requirements 2.1, 2.2, and 7.1, extending existing Zod validation patterns and NestJS pipe architecture | Restrictions: Must integrate with NestJS validation system, provide detailed error messages, maintain performance, do not bypass existing validation | _Leverage: existing Zod validation in worker.config.ts, NestJS patterns | _Requirements: 2.1 (automatic validation), 2.2 (structured errors), 7.1 (real-time validation) | Success: Pipe validates requests against contracts, returns structured errors, integrates seamlessly with NestJS | Instructions: Mark in-progress when starting, complete when validation pipe is fully integrated_
 
-- [ ] 5. Create Pact consumer test framework in src/contracts/tests/PactTestRunner.ts
+ - [-] 5. Create Pact consumer test framework in src/contracts/tests/PactTestRunner.ts
   - File: src/contracts/tests/PactTestRunner.ts
   - Implement consumer-driven contract testing for Claude Code SDK
   - Add provider verification capabilities
