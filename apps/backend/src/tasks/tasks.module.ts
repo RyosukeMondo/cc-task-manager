@@ -5,6 +5,7 @@ import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { TasksRepository } from './tasks.repository';
+import { QueueModule } from '../queue/queue.module';
 
 /**
  * Task Management Module
@@ -29,7 +30,7 @@ import { TasksRepository } from './tasks.repository';
  *    - Clean separation between HTTP, business, and data layers
  */
 @Module({
-  imports: [],
+  imports: [QueueModule], // Import QueueModule to use QueueService
   controllers: [TasksController],
   providers: [
     TasksService,

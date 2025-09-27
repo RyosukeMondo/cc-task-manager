@@ -2,18 +2,18 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { ApplicationConfigService } from './config.service';
 import { ContractRegistry } from '../../../../src/contracts/ContractRegistry';
-import { 
+import {
   AppConfigSchema,
   DatabaseConfigSchema,
   JwtConfigSchema,
   RedisConfigSchema,
-  ServerConfigSchema,
   WebSocketConfigSchema,
   LoggingConfigSchema,
   QueueConfigSchema,
-  HealthConfigSchema,
-  EnvironmentConfigSchema
+  SecurityConfigSchema,
+  MonitoringConfigSchema
 } from './config.schema';
+import { EnvironmentSchema } from './environment.schema';
 
 /**
  * Configuration validation function for NestJS ConfigModule
@@ -30,84 +30,94 @@ export function validateConfiguration(config: Record<string, unknown>) {
         enableMetrics: config.ENABLE_METRICS || 'true',
         enableTracing: config.ENABLE_TRACING || 'false',
       },
-      server: {
-        port: config.PORT || '3000',
+      app: {
+        name: config.APP_NAME || 'CC Task Manager Backend',
+        version: config.APP_VERSION || '1.0.0',
+        port: parseInt(config.PORT as string) || 3000,
         host: config.HOST || '0.0.0.0',
-        cors: {
-          origin: parseArrayOrString(config.CORS_ORIGIN as string || 'http://localhost:3000,http://localhost:3001'),
-          credentials: config.CORS_CREDENTIALS || 'true',
-        },
-        rateLimiting: {
-          ttl: config.RATE_LIMIT_TTL || '60',
-          limit: config.RATE_LIMIT_COUNT || '100',
-        },
+        globalPrefix: config.API_PREFIX || 'api',
+        corsOrigins: parseArrayOrString(config.CORS_ORIGINS as string || 'http://localhost:3000,http://localhost:3001'),
+        trustProxy: config.TRUST_PROXY === 'true' || false,
       },
       database: {
         url: config.DATABASE_URL || (() => { throw new Error('DATABASE_URL is required'); })(),
-        poolSize: config.DATABASE_POOL_SIZE || '10',
-        connectionTimeout: config.DATABASE_CONNECTION_TIMEOUT || '30000',
-        queryTimeout: config.DATABASE_QUERY_TIMEOUT || '60000',
-        enableLogging: config.DATABASE_LOGGING || 'false',
+        maxConnections: parseInt(config.DATABASE_POOL_MAX as string) || 10,
+        connectionTimeout: parseInt(config.DATABASE_TIMEOUT as string) || 30000,
+        queryTimeout: 60000,
+        ssl: config.DATABASE_SSL === 'true' || false,
       },
       jwt: {
         secret: config.JWT_SECRET || (() => { throw new Error('JWT_SECRET is required'); })(),
-        expiresIn: config.JWT_EXPIRES_IN || '1h',
+        expiresIn: config.JWT_ACCESS_EXPIRES_IN || '15m',
+        refreshExpiresIn: config.JWT_REFRESH_EXPIRES_IN || '7d',
         issuer: config.JWT_ISSUER || 'cc-task-manager',
         audience: config.JWT_AUDIENCE || 'cc-task-manager-api',
-        algorithm: config.JWT_ALGORITHM || 'HS256',
       },
       redis: {
-        host: config.REDIS_HOST || (() => { throw new Error('REDIS_HOST is required'); })(),
-        port: config.REDIS_PORT || '6379',
+        host: config.REDIS_HOST || 'localhost',
+        port: parseInt(config.REDIS_PORT as string) || 6379,
         password: config.REDIS_PASSWORD,
-        db: config.REDIS_DB || '0',
-        maxRetriesPerRequest: config.REDIS_MAX_RETRIES || '3',
-        retryDelayOnFailover: config.REDIS_RETRY_DELAY || '100',
-        enableReadyCheck: config.REDIS_READY_CHECK || 'true',
-        lazyConnect: config.REDIS_LAZY_CONNECT || 'true',
+        db: parseInt(config.REDIS_DB as string) || 0,
+        maxRetriesPerRequest: 3,
+        retryDelayOnFailover: 100,
+        lazyConnect: true,
       },
       websocket: {
         cors: {
-          origin: parseArrayOrString(config.WS_CORS_ORIGIN as string || 'http://localhost:3000,http://localhost:3001'),
-          credentials: config.WS_CORS_CREDENTIALS || 'true',
+          origin: parseArrayOrString(config.WEBSOCKET_CORS_ORIGINS as string || config.CORS_ORIGINS as string || 'http://localhost:3000,http://localhost:3001'),
+          credentials: true,
         },
-        transports: parseArrayOrString(config.WS_TRANSPORTS as string || 'websocket,polling'),
-        pingTimeout: config.WS_PING_TIMEOUT || '60000',
-        pingInterval: config.WS_PING_INTERVAL || '25000',
+        transports: ['websocket', 'polling'],
+        pingTimeout: 60000,
+        pingInterval: 25000,
       },
       logging: {
-        level: config.LOG_LEVEL || 'info',
-        prettyPrint: config.LOG_PRETTY_PRINT || 'false',
-        enableRequestLogging: config.LOG_REQUESTS || 'true',
-        enableErrorStackTrace: config.LOG_ERROR_STACK || 'true',
-        redactSensitiveData: config.LOG_REDACT_SENSITIVE || 'true',
+        level: config.LOG_LEVEL as any || 'info',
+        pretty: config.LOG_JSON !== 'true',
+        redact: ['password', 'token', 'secret', 'authorization'],
+        timestamp: true,
+        name: config.APP_NAME || 'cc-task-manager-backend',
       },
       queue: {
         defaultJobOptions: {
-          removeOnComplete: config.QUEUE_REMOVE_ON_COMPLETE || '100',
-          removeOnFail: config.QUEUE_REMOVE_ON_FAIL || '50',
-          attempts: config.QUEUE_ATTEMPTS || '3',
+          removeOnComplete: 100,
+          removeOnFail: 50,
+          attempts: 3,
           backoff: {
-            type: config.QUEUE_BACKOFF_TYPE || 'exponential',
-            delay: config.QUEUE_BACKOFF_DELAY || '2000',
+            type: 'exponential' as const,
+            delay: 2000,
           },
         },
-        concurrency: config.QUEUE_CONCURRENCY || '5',
+        concurrency: 5,
       },
-      health: {
-        enabled: config.HEALTH_ENABLED || 'true',
-        timeout: config.HEALTH_TIMEOUT || '5000',
-        retries: config.HEALTH_RETRIES || '3',
-        endpoints: {
-          health: config.HEALTH_ENDPOINT || '/health',
-          readiness: config.HEALTH_READINESS_ENDPOINT || '/health/ready',
-          liveness: config.HEALTH_LIVENESS_ENDPOINT || '/health/live',
-        },
+      security: {
+        bcryptRounds: parseInt(config.BCRYPT_ROUNDS as string) || 12,
+        rateLimitWindowMs: parseInt(config.RATE_LIMIT_WINDOW_MS as string) || 900000,
+        rateLimitMax: parseInt(config.RATE_LIMIT_MAX_REQUESTS as string) || 100,
+        sessionTimeout: 1800000,
+        maxLoginAttempts: 5,
+        lockoutDuration: 900000,
+      },
+      monitoring: {
+        healthCheckTimeout: 10000,
+        metricsEnabled: config.ENABLE_METRICS === 'true',
+        tracingEnabled: false,
+        errorReportingEnabled: true,
       },
     };
 
-    // Validate complete configuration
-    const validatedConfig = AppConfigSchema.parse(structuredConfig);
+    // Validate complete configuration using individual schemas
+    const validatedConfig = {
+      app: AppConfigSchema.parse(structuredConfig.app),
+      database: DatabaseConfigSchema.parse(structuredConfig.database),
+      jwt: JwtConfigSchema.parse(structuredConfig.jwt),
+      redis: RedisConfigSchema.parse(structuredConfig.redis),
+      websocket: WebSocketConfigSchema.parse(structuredConfig.websocket),
+      logging: LoggingConfigSchema.parse(structuredConfig.logging),
+      queue: QueueConfigSchema.parse(structuredConfig.queue),
+      security: SecurityConfigSchema.parse(structuredConfig.security),
+      monitoring: MonitoringConfigSchema.parse(structuredConfig.monitoring),
+    };
     
     console.log('✅ Configuration validation successful');
     return validatedConfig;
@@ -209,11 +219,11 @@ function parseArrayOrString(value: string): string | string[] {
         );
 
         await contractRegistry.registerContract(
-          'server-config',
+          'security-config',
           '1.0.0',
-          ServerConfigSchema,
+          SecurityConfigSchema,
           {
-            description: 'HTTP server and CORS configuration',
+            description: 'Security and authentication configuration',
             compatibleVersions: ['1.0.0'],
           }
         );
@@ -249,11 +259,11 @@ function parseArrayOrString(value: string): string | string[] {
         );
 
         await contractRegistry.registerContract(
-          'health-config',
+          'monitoring-config',
           '1.0.0',
-          HealthConfigSchema,
+          MonitoringConfigSchema,
           {
-            description: 'Health check endpoints configuration',
+            description: 'Monitoring and observability configuration',
             compatibleVersions: ['1.0.0'],
           }
         );
@@ -261,9 +271,9 @@ function parseArrayOrString(value: string): string | string[] {
         await contractRegistry.registerContract(
           'environment-config',
           '1.0.0',
-          EnvironmentConfigSchema,
+          EnvironmentSchema,
           {
-            description: 'Environment-specific configuration',
+            description: 'Complete environment configuration schema',
             compatibleVersions: ['1.0.0'],
           }
         );

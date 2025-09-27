@@ -1,17 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
-import { 
-  AppConfig, 
-  AppConfigSchema,
+import {
+  AppConfig,
   DatabaseConfig,
   JwtConfig,
   RedisConfig,
-  ServerConfig,
   WebSocketConfig,
   LoggingConfig,
   QueueConfig,
-  HealthConfig,
-  EnvironmentConfig
+  SecurityConfig,
+  MonitoringConfig
 } from './config.schema';
 
 /**
@@ -28,10 +26,22 @@ import {
  * - Comprehensive error handling
  * - Integration with existing ContractRegistry patterns
  */
+interface ApplicationConfig {
+  app: AppConfig;
+  database: DatabaseConfig;
+  jwt: JwtConfig;
+  redis: RedisConfig;
+  websocket: WebSocketConfig;
+  logging: LoggingConfig;
+  queue: QueueConfig;
+  security: SecurityConfig;
+  monitoring: MonitoringConfig;
+}
+
 @Injectable()
 export class ApplicationConfigService {
   private readonly logger = new Logger(ApplicationConfigService.name);
-  private readonly config: AppConfig;
+  private readonly config: ApplicationConfig;
 
   constructor(private readonly nestConfigService: NestConfigService) {
     this.config = this.loadAndValidateConfig();
@@ -40,11 +50,20 @@ export class ApplicationConfigService {
 
   /**
    * Get complete application configuration
-   * 
+   *
    * @returns Validated application configuration
    */
-  getConfig(): AppConfig {
+  getConfig(): ApplicationConfig {
     return this.config;
+  }
+
+  /**
+   * Get app configuration
+   *
+   * @returns App configuration object
+   */
+  getAppConfig(): AppConfig {
+    return this.config.app;
   }
 
   /**
@@ -75,12 +94,12 @@ export class ApplicationConfigService {
   }
 
   /**
-   * Get server configuration
-   * 
-   * @returns Server configuration object
+   * Get security configuration
+   *
+   * @returns Security configuration object
    */
-  getServerConfig(): ServerConfig {
-    return this.config.server;
+  getSecurityConfig(): SecurityConfig {
+    return this.config.security;
   }
 
   /**
@@ -111,48 +130,48 @@ export class ApplicationConfigService {
   }
 
   /**
-   * Get health check configuration
-   * 
-   * @returns Health check configuration object
+   * Get monitoring configuration
+   *
+   * @returns Monitoring configuration object
    */
-  getHealthConfig(): HealthConfig {
-    return this.config.health;
+  getMonitoringConfig(): MonitoringConfig {
+    return this.config.monitoring;
   }
 
   /**
-   * Get environment configuration
-   * 
-   * @returns Environment configuration object
+   * Get node environment
+   *
+   * @returns Current node environment
    */
-  getEnvironmentConfig(): EnvironmentConfig {
-    return this.config.environment;
+  getNodeEnv(): string {
+    return this.nestConfigService.get('NODE_ENV', 'development');
   }
 
   /**
    * Check if application is in development mode
-   * 
+   *
    * @returns True if in development mode
    */
   isDevelopment(): boolean {
-    return this.config.environment.nodeEnv === 'development';
+    return this.getNodeEnv() === 'development';
   }
 
   /**
    * Check if application is in production mode
-   * 
+   *
    * @returns True if in production mode
    */
   isProduction(): boolean {
-    return this.config.environment.nodeEnv === 'production';
+    return this.getNodeEnv() === 'production';
   }
 
   /**
    * Check if application is in test mode
-   * 
+   *
    * @returns True if in test mode
    */
   isTest(): boolean {
-    return this.config.environment.nodeEnv === 'test';
+    return this.getNodeEnv() === 'test';
   }
 
   /**
@@ -184,98 +203,26 @@ export class ApplicationConfigService {
    * @returns Validated application configuration
    * @throws Error if validation fails
    */
-  private loadAndValidateConfig(): AppConfig {
+  private loadAndValidateConfig(): ApplicationConfig {
     try {
-      // Extract configuration from environment variables
-      const rawConfig = {
-        environment: {
-          nodeEnv: this.nestConfigService.get('NODE_ENV', 'development'),
-          debug: this.nestConfigService.get('DEBUG', 'false'),
-          enableSwagger: this.nestConfigService.get('ENABLE_SWAGGER', 'true'),
-          enableMetrics: this.nestConfigService.get('ENABLE_METRICS', 'true'),
-          enableTracing: this.nestConfigService.get('ENABLE_TRACING', 'false'),
-        },
-        server: {
-          port: this.nestConfigService.get('PORT', '3000'),
-          host: this.nestConfigService.get('HOST', '0.0.0.0'),
-          cors: {
-            origin: this.parseArrayOrString(this.nestConfigService.get('CORS_ORIGIN', 'http://localhost:3000,http://localhost:3001')),
-            credentials: this.nestConfigService.get('CORS_CREDENTIALS', 'true'),
-          },
-          rateLimiting: {
-            ttl: this.nestConfigService.get('RATE_LIMIT_TTL', '60'),
-            limit: this.nestConfigService.get('RATE_LIMIT_COUNT', '100'),
-          },
-        },
-        database: {
-          url: this.nestConfigService.getOrThrow('DATABASE_URL'),
-          poolSize: this.nestConfigService.get('DATABASE_POOL_SIZE', '10'),
-          connectionTimeout: this.nestConfigService.get('DATABASE_CONNECTION_TIMEOUT', '30000'),
-          queryTimeout: this.nestConfigService.get('DATABASE_QUERY_TIMEOUT', '60000'),
-          enableLogging: this.nestConfigService.get('DATABASE_LOGGING', 'false'),
-        },
-        jwt: {
-          secret: this.nestConfigService.getOrThrow('JWT_SECRET'),
-          expiresIn: this.nestConfigService.get('JWT_EXPIRES_IN', '1h'),
-          issuer: this.nestConfigService.get('JWT_ISSUER', 'cc-task-manager'),
-          audience: this.nestConfigService.get('JWT_AUDIENCE', 'cc-task-manager-api'),
-          algorithm: this.nestConfigService.get('JWT_ALGORITHM', 'HS256'),
-        },
-        redis: {
-          host: this.nestConfigService.getOrThrow('REDIS_HOST'),
-          port: this.nestConfigService.get('REDIS_PORT', '6379'),
-          password: this.nestConfigService.get('REDIS_PASSWORD'),
-          db: this.nestConfigService.get('REDIS_DB', '0'),
-          maxRetriesPerRequest: this.nestConfigService.get('REDIS_MAX_RETRIES', '3'),
-          retryDelayOnFailover: this.nestConfigService.get('REDIS_RETRY_DELAY', '100'),
-          enableReadyCheck: this.nestConfigService.get('REDIS_READY_CHECK', 'true'),
-          lazyConnect: this.nestConfigService.get('REDIS_LAZY_CONNECT', 'true'),
-        },
-        websocket: {
-          cors: {
-            origin: this.parseArrayOrString(this.nestConfigService.get('WS_CORS_ORIGIN', 'http://localhost:3000,http://localhost:3001')),
-            credentials: this.nestConfigService.get('WS_CORS_CREDENTIALS', 'true'),
-          },
-          transports: this.parseArrayOrString(this.nestConfigService.get('WS_TRANSPORTS', 'websocket,polling')),
-          pingTimeout: this.nestConfigService.get('WS_PING_TIMEOUT', '60000'),
-          pingInterval: this.nestConfigService.get('WS_PING_INTERVAL', '25000'),
-        },
-        logging: {
-          level: this.nestConfigService.get('LOG_LEVEL', 'info'),
-          prettyPrint: this.nestConfigService.get('LOG_PRETTY_PRINT', 'false'),
-          enableRequestLogging: this.nestConfigService.get('LOG_REQUESTS', 'true'),
-          enableErrorStackTrace: this.nestConfigService.get('LOG_ERROR_STACK', 'true'),
-          redactSensitiveData: this.nestConfigService.get('LOG_REDACT_SENSITIVE', 'true'),
-        },
-        queue: {
-          defaultJobOptions: {
-            removeOnComplete: this.nestConfigService.get('QUEUE_REMOVE_ON_COMPLETE', '100'),
-            removeOnFail: this.nestConfigService.get('QUEUE_REMOVE_ON_FAIL', '50'),
-            attempts: this.nestConfigService.get('QUEUE_ATTEMPTS', '3'),
-            backoff: {
-              type: this.nestConfigService.get('QUEUE_BACKOFF_TYPE', 'exponential'),
-              delay: this.nestConfigService.get('QUEUE_BACKOFF_DELAY', '2000'),
-            },
-          },
-          concurrency: this.nestConfigService.get('QUEUE_CONCURRENCY', '5'),
-        },
-        health: {
-          enabled: this.nestConfigService.get('HEALTH_ENABLED', 'true'),
-          timeout: this.nestConfigService.get('HEALTH_TIMEOUT', '5000'),
-          retries: this.nestConfigService.get('HEALTH_RETRIES', '3'),
-          endpoints: {
-            health: this.nestConfigService.get('HEALTH_ENDPOINT', '/health'),
-            readiness: this.nestConfigService.get('HEALTH_READINESS_ENDPOINT', '/health/ready'),
-            liveness: this.nestConfigService.get('HEALTH_LIVENESS_ENDPOINT', '/health/live'),
-          },
-        },
+      // Get validated configuration from ConfigModule
+      const validatedConfig = {
+        app: this.nestConfigService.get('app'),
+        database: this.nestConfigService.get('database'),
+        jwt: this.nestConfigService.get('jwt'),
+        redis: this.nestConfigService.get('redis'),
+        websocket: this.nestConfigService.get('websocket'),
+        logging: this.nestConfigService.get('logging'),
+        queue: this.nestConfigService.get('queue'),
+        security: this.nestConfigService.get('security'),
+        monitoring: this.nestConfigService.get('monitoring'),
       };
 
-      // Validate configuration using Zod schema
-      const validatedConfig = AppConfigSchema.parse(rawConfig);
-      
-      this.logger.log('Configuration validation successful');
-      return validatedConfig;
+      if (!validatedConfig.app || !validatedConfig.database || !validatedConfig.jwt || !validatedConfig.redis) {
+        throw new Error('Required configuration sections are missing');
+      }
+
+      return validatedConfig as ApplicationConfig;
     } catch (error) {
       this.logger.error('Configuration validation failed:', error);
       

@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { WebSocketModule } from './websocket/websocket.module';
 import { DatabaseModule } from './database/database.module';
+import { QueueModule } from './queue/queue.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { EnhancedLoggingModule } from './logging/enhanced-logging.module';
 import { RequestLoggingMiddleware } from './logging/request-logging.middleware';
@@ -49,9 +50,12 @@ import { RequestLoggingMiddleware } from './logging/request-logging.middleware';
     
     // Task management module
     TasksModule,
-    
+
     // WebSocket module for real-time communication
     WebSocketModule,
+
+    // Queue module for job processing with BullMQ
+    QueueModule,
   ],
   
   controllers: [AppController],

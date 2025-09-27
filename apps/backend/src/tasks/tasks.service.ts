@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TasksRepository, ITasksRepository } from './tasks.repository';
+import { QueueService } from '../queue/queue.service';
 import { 
   TaskBase, 
   CreateTask, 
@@ -46,6 +47,7 @@ export class TasksService {
   constructor(
     private readonly tasksRepository: ITasksRepository,
     private readonly schemaRegistry: BackendSchemaRegistry,
+    private readonly queueService: QueueService,
   ) {}
 
   /**
@@ -72,9 +74,32 @@ export class TasksService {
 
     // Create task through repository
     const createdTask = await this.tasksRepository.create(validation.data, createdById);
-    
+
     this.logger.log(`Created task: ${createdTask.id} - "${createdTask.title}" by user ${createdById}`);
-    
+
+    // Queue task notification job for assignee if assigned
+    if (createdTask.assigneeId) {
+      try {
+        await this.queueService.addJob({
+          type: 'TASK_NOTIFICATION',
+          taskId: createdTask.id,
+          notificationType: 'TASK_ASSIGNED',
+          recipientIds: [createdTask.assigneeId],
+          taskTitle: createdTask.title,
+          taskDescription: createdTask.description,
+          metadata: {
+            userId: createdById,
+            timestamp: new Date(),
+            retryCount: 0,
+          },
+        });
+        this.logger.debug(`Queued task assignment notification for user ${createdTask.assigneeId}`);
+      } catch (error) {
+        // Don't fail task creation if notification queueing fails
+        this.logger.error(`Failed to queue task notification: ${error.message}`);
+      }
+    }
+
     return createdTask;
   }
 

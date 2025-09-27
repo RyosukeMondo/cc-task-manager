@@ -52,6 +52,19 @@ import {
 // Import all database schemas
 import { DatabaseSchemas } from './database.schemas';
 
+// Import all queue schemas
+import {
+  TaskNotificationJobSchema,
+  EmailJobSchema,
+  ReportGenerationJobSchema,
+  DataExportJobSchema,
+  ScheduledTaskJobSchema,
+  WebhookDeliveryJobSchema,
+  QueueJobSchema,
+  JobOptionsSchema,
+  QueueMetricsSchema,
+} from '../queue/queue.schemas';
+
 /**
  * Backend Schema Registry Service
  * 
@@ -73,13 +86,14 @@ export class BackendSchemaRegistry implements OnModuleInit {
    */
   async onModuleInit(): Promise<void> {
     this.logger.log('Registering backend schemas with ContractRegistry...');
-    
+
     try {
       await this.registerAuthSchemas();
       await this.registerTaskSchemas();
       await this.registerUserSchemas();
       await this.registerDatabaseSchemas();
-      
+      await this.registerQueueSchemas();
+
       this.logger.log('Successfully registered all backend schemas');
     } catch (error) {
       this.logger.error('Failed to register backend schemas:', error);
@@ -572,6 +586,87 @@ export class BackendSchemaRegistry implements OnModuleInit {
     }
 
     this.logger.log(`Registered ${databaseSchemas.length} database schemas`);
+  }
+
+  /**
+   * Register queue-related schemas for BullMQ job processing
+   */
+  private async registerQueueSchemas(): Promise<void> {
+    const queueSchemas = [
+      {
+        name: 'TaskNotificationJob',
+        version: '1.0.0',
+        schema: TaskNotificationJobSchema,
+        description: 'Task notification job schema for queue processing',
+      },
+      {
+        name: 'EmailJob',
+        version: '1.0.0',
+        schema: EmailJobSchema,
+        description: 'Email job schema for queue processing',
+      },
+      {
+        name: 'ReportGenerationJob',
+        version: '1.0.0',
+        schema: ReportGenerationJobSchema,
+        description: 'Report generation job schema for queue processing',
+      },
+      {
+        name: 'DataExportJob',
+        version: '1.0.0',
+        schema: DataExportJobSchema,
+        description: 'Data export job schema for queue processing',
+      },
+      {
+        name: 'ScheduledTaskJob',
+        version: '1.0.0',
+        schema: ScheduledTaskJobSchema,
+        description: 'Scheduled task job schema for queue processing',
+      },
+      {
+        name: 'WebhookDeliveryJob',
+        version: '1.0.0',
+        schema: WebhookDeliveryJobSchema,
+        description: 'Webhook delivery job schema for queue processing',
+      },
+      {
+        name: 'QueueJob',
+        version: '1.0.0',
+        schema: QueueJobSchema,
+        description: 'Union type for all queue job types',
+      },
+      {
+        name: 'JobOptions',
+        version: '1.0.0',
+        schema: JobOptionsSchema,
+        description: 'BullMQ job options configuration schema',
+      },
+      {
+        name: 'QueueMetrics',
+        version: '1.0.0',
+        schema: QueueMetricsSchema,
+        description: 'Queue metrics schema for monitoring and reporting',
+      },
+    ];
+
+    for (const schemaConfig of queueSchemas) {
+      const success = await this.contractRegistry.registerContract(
+        schemaConfig.name,
+        schemaConfig.version,
+        schemaConfig.schema,
+        {
+          name: schemaConfig.name,
+          version: schemaConfig.version,
+          description: schemaConfig.description,
+        }
+      );
+
+      if (!success) {
+        throw new Error(`Failed to register queue schema: ${schemaConfig.name}`);
+      }
+    }
+
+    this.logger.log(`Registered ${queueSchemas.length} queue schemas`);
   }
 
   /**
