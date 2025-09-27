@@ -17,6 +17,12 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
-  }
+    "noFallthroughCasesInSwitch": false,
+    "composite": true
+  },
+  "references": [
+    { "path": "./packages/types" },
+    { "path": "./packages/schemas" },
+    { "path": "./apps/frontend" }
+  ]
 }

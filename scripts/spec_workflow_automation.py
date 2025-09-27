@@ -619,6 +619,9 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                                         if total_tasks > 0 and pending_tasks == 0 and completed_tasks >= 3:
                                             logger.info("🎯 *** COMPLETION DETECTED *** All tasks marked [x] in tasks file!")
                                             logger.info("🚨 TRIGGERING IMMEDIATE SPEC COMPLETION!")
+                                            # Set completion flag immediately
+                                            self.spec_completed = True
+                                            logger.info("🎉 SPEC COMPLETION FLAG SET!")
                                             return True
                                         else:
                                             logger.info(f"🔍 Not complete: {pending_tasks} pending tasks remain")
@@ -648,6 +651,9 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                                                         if total > 0 and completed == total:
                                                             logger.info("🎯 *** COMPLETION DETECTED *** via spec-workflow taskProgress!")
                                                             logger.info("🚨 TRIGGERING IMMEDIATE SPEC COMPLETION!")
+                                                            # Set completion flag immediately
+                                                            self.spec_completed = True
+                                                            logger.info("🎉 SPEC COMPLETION FLAG SET!")
                                                             return True
                                         except Exception as e:
                                             logger.debug(f"🔍 JSON parse failed (not an error): {e}")
