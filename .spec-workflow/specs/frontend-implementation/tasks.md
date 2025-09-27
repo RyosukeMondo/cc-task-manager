@@ -1,24 +1,24 @@
 # Tasks Document
 
-- [ ] 1. Create frontend application structure with existing contract foundation integration
+- [-] 1. Create frontend application structure with existing contract foundation integration
   - File: apps/frontend/package.json, apps/frontend/src/app/layout.tsx, apps/frontend/tsconfig.json
-  - Set up Next.js 14+ frontend application leveraging existing contract-driven infrastructure from src/contracts/
-  - Integrate with existing ContractRegistry, TypeScriptGenerator, and contract validation infrastructure
-  - Purpose: Establish contract-driven frontend application with SOLID principles using existing SSOT foundation
-  - _Leverage: src/contracts/ContractRegistry.ts, src/contracts/TypeScriptGenerator.ts, existing contract infrastructure from src/contracts/, Next.js patterns, workspace configuration_
+  - Set up Next.js 14+ frontend application leveraging existing contract-driven infrastructure from both src/contracts/ and packages/
+  - Integrate with existing ContractRegistry, TypeScriptGenerator, and new @cc-task-manager/schemas and @cc-task-manager/types packages
+  - Purpose: Establish contract-driven frontend application with SOLID principles using existing SSOT foundation from both legacy and modern infrastructure
+  - _Leverage: src/contracts/ContractRegistry.ts, src/contracts/TypeScriptGenerator.ts, packages/schemas (ProcessConfigSchema, TaskExecutionRequestSchema, WorkerConfigSchema, TaskStatusSchema), packages/types (ProcessConfig, ClaudeCodeOptions, TaskExecutionRequest, WorkerConfig, TaskStatus), Next.js patterns, workspace configuration_
   - _Requirements: 1.1, 6.1_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Architect specializing in Next.js and contract-driven development | Task: Create apps/frontend application structure with package.json, layout.tsx, and TypeScript configuration following requirements 1.1 and 6.1, LEVERAGING existing contract infrastructure from src/contracts/ as SSOT foundation | Restrictions: Must reuse existing ContractRegistry and TypeScriptGenerator - do not recreate contract infrastructure, follow SOLID principles (SRP, OCP, LSP, ISP, DIP), maintain KISS principle, ensure proper Next.js App Router setup | Success: Frontend application structure created using existing contract foundation, ContractRegistry properly integrated, TypeScript generation working from existing infrastructure, SOLID principles implemented
 
-- [ ] 2. Generate TypeScript API client using existing contract infrastructure
+- [-] 2. Generate TypeScript API client using existing contract infrastructure
   - File: apps/frontend/src/lib/api/ (generated API client and TanStack Query integration)
-  - Use existing TypeScriptGenerator to create type-safe API client from backend contracts
-  - Integrate generated types with TanStack Query for server state management
-  - Purpose: Establish contract-driven API communication using existing SSOT infrastructure
-  - _Leverage: src/contracts/TypeScriptGenerator.ts, src/contracts/ContractRegistry.ts, existing backend schema contracts, TanStack Query for server state management_
+  - Use existing TypeScriptGenerator and @cc-task-manager/schemas to create type-safe API client from backend contracts
+  - Integrate generated types and package types with TanStack Query for server state management
+  - Purpose: Establish contract-driven API communication using existing SSOT infrastructure from both legacy and modern sources
+  - _Leverage: src/contracts/TypeScriptGenerator.ts, src/contracts/ContractRegistry.ts, packages/schemas (worker schemas, validation functions), packages/types (TypeScript interfaces), existing backend schema contracts, TanStack Query for server state management_
   - _Requirements: 1.1, 1.2_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Integration Engineer with expertise in existing contract infrastructure and TanStack Query | Task: Generate TypeScript API client using existing TypeScriptGenerator and integrate with TanStack Query following requirements 1.1 and 1.2, leveraging existing SSOT contract infrastructure | Restrictions: Must use existing TypeScriptGenerator for client generation, consume contracts from existing ContractRegistry, integrate generated types with TanStack Query, ensure complete type safety, do not recreate contract validation | Success: API client generated using existing TypeScriptGenerator, TanStack Query integration working with generated types, type safety achieved using existing contracts, client-server contract synchronization maintained
 
-- [ ] 3. Implement authentication system with JWT and role-based UI adaptation
+- [-] 3. Implement authentication system with JWT and role-based UI adaptation
   - File: apps/frontend/src/lib/auth/ (authentication context and components)
   - Create JWT-based authentication using secure storage following Interface Segregation Principle
   - Implement role-based UI adaptation with permission-driven component rendering
@@ -27,21 +27,21 @@
   - _Requirements: 4.1, 4.2_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Security Engineer with expertise in JWT authentication and React Context | Task: Implement authentication system with JWT handling and role-based UI adaptation following requirements 4.1 and 4.2, applying SOLID principles especially Interface Segregation and Dependency Inversion | Restrictions: Must use secure JWT token storage, implement proper role-based rendering, follow security best practices, ensure seamless authentication flow | Success: JWT authentication working correctly, role-based UI adaptation implemented, authentication context providing secure state management, route protection functional
 
-- [ ] 4. Create task management components using existing contract validation
+- [x] 4. Create task management components using existing contract validation
   - File: apps/frontend/src/components/tasks/ (task CRUD components using generated types)
-  - Implement comprehensive task management UI using existing contract-validated types from TypeScriptGenerator
-  - Apply Single Responsibility Principle with separate display, form, and list components
-  - Purpose: Provide type-safe task management operations with automatic validation using existing SSOT
-  - _Leverage: Generated types from src/contracts/TypeScriptGenerator.ts, existing contract schemas from ContractRegistry, Shadcn/ui components, React Hook Form integration_
+  - Implement comprehensive task management UI using existing contract-validated types from TypeScriptGenerator and @cc-task-manager packages
+  - Apply Single Responsibility Principle with separate display, form, and list components leveraging TaskState enum and TaskStatus types
+  - Purpose: Provide type-safe task management operations with automatic validation using existing SSOT from both infrastructure sources
+  - _Leverage: Generated types from src/contracts/TypeScriptGenerator.ts, existing contract schemas from ContractRegistry, packages/schemas (TaskState enum, TaskStatusSchema), packages/types (TaskStatus, TaskExecutionRequest), Shadcn/ui components, React Hook Form integration_
   - _Requirements: 2.1, 2.2_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Developer specializing in React components and existing contract infrastructure | Task: Create task management components using generated types from existing TypeScriptGenerator following requirements 2.1 and 2.2, implementing SRP with component composition leveraging existing contract validation | Restrictions: Must use types generated from existing TypeScriptGenerator, leverage existing contract validation patterns, implement proper error handling with user-friendly feedback, follow Shadcn/ui patterns, ensure real-time update capability | Success: Task CRUD components implemented using existing generated types, SRP applied to component design, real-time updates working, existing contract-based validation functional
 
 - [ ] 5. Implement WebSocket client for real-time communication
   - File: apps/frontend/src/lib/websocket/ (WebSocket client with type-safe events)
   - Create Socket.IO WebSocket client with JWT authentication and room-based subscriptions
-  - Use Zod schemas for WebSocket event validation following SSOT principle
-  - Purpose: Enable real-time task status updates and system notifications with type safety
-  - _Leverage: Socket.IO client patterns, JWT authentication from auth module, Zod event schemas_
+  - Use existing Zod schemas from packages/schemas for WebSocket event validation following SSOT principle
+  - Purpose: Enable real-time task status updates and system notifications with type safety using existing schema infrastructure
+  - _Leverage: Socket.IO client patterns, JWT authentication from auth module, packages/schemas (TaskStatusSchema, ProcessConfigSchema), existing Zod validation patterns from ContractRegistry_
   - _Requirements: 2.3, 5.1_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Real-time Communication Engineer with expertise in Socket.IO and WebSocket architecture | Task: Implement WebSocket client with JWT authentication and Zod event validation following requirements 2.3 and 5.1, applying SOLID principles with clean event handling separation | Restrictions: Must authenticate WebSocket connections with JWT, implement automatic reconnection with exponential backoff, validate all events with Zod schemas, ensure proper connection state management | Success: WebSocket client functional with JWT auth, real-time events working with type validation, automatic reconnection implemented, connection state properly managed
 
@@ -65,10 +65,10 @@
 
 - [ ] 8. Create form components using existing contract validation infrastructure
   - File: apps/frontend/src/components/forms/ (reusable form components with existing validation)
-  - Implement React Hook Form integration using existing contract validation from TypeScriptGenerator
-  - Apply Liskov Substitution Principle for form component variants leveraging existing schemas
-  - Purpose: Provide reusable, type-safe form components using existing SSOT validation patterns
-  - _Leverage: Generated types from src/contracts/TypeScriptGenerator.ts, existing Zod schemas from ContractRegistry, React Hook Form for form handling, Shadcn/ui form components_
+  - Implement React Hook Form integration using existing contract validation from TypeScriptGenerator and @cc-task-manager/schemas
+  - Apply Liskov Substitution Principle for form component variants leveraging existing schemas from both infrastructure sources
+  - Purpose: Provide reusable, type-safe form components using existing SSOT validation patterns from packages and legacy contract system
+  - _Leverage: Generated types from src/contracts/TypeScriptGenerator.ts, existing Zod schemas from ContractRegistry, packages/schemas (validation functions: validateProcessConfig, validateTaskExecutionRequest, validateWorkerConfig, validateTaskStatus), packages/types (TypeScript interfaces), React Hook Form for form handling, Shadcn/ui form components_
   - _Requirements: 1.3, 1.4_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Form Engineering Specialist with expertise in React Hook Form and existing contract infrastructure | Task: Create form components using existing contract validation from TypeScriptGenerator following requirements 1.3 and 1.4, implementing Liskov Substitution Principle for component variants leveraging existing schemas | Restrictions: Must use React Hook Form with generated types from existing contract infrastructure, leverage existing Zod validation patterns, implement real-time validation feedback, ensure accessibility compliance for forms, follow Shadcn/ui form patterns | Success: Form components implemented using existing contract validation, React Hook Form integration working with generated types, real-time validation functional using existing schemas, accessibility standards met
 
@@ -81,14 +81,14 @@
   - _Requirements: 5.1, 5.2_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Reliability Engineer with expertise in error handling and offline-first design | Task: Implement error boundaries and offline capability following requirements 5.1 and 5.2, ensuring graceful degradation and automatic recovery mechanisms | Restrictions: Must implement React Error Boundaries, use TanStack Query for retry logic, provide clear user feedback for offline states, ensure data synchronization on reconnection | Success: Error boundaries preventing app crashes, offline capability working with cached data, automatic retry logic functional, user feedback for connection states implemented
 
-- [ ] 10. Create state management with Zustand and TanStack Query
+- [ ] 10. Create state management with Zustand and TanStack Query using package types
   - File: apps/frontend/src/stores/ (client state stores and server state configuration)
   - Implement Zustand for client state and TanStack Query for server state following separation of concerns
-  - Apply Dependency Inversion Principle with abstract state interfaces and concrete implementations
-  - Purpose: Provide efficient, type-safe state management with clear separation between client and server state
-  - _Leverage: Zustand for lightweight client state, TanStack Query for server state caching, TypeScript for type safety_
+  - Apply Dependency Inversion Principle with abstract state interfaces leveraging @cc-task-manager/types
+  - Purpose: Provide efficient, type-safe state management with clear separation between client and server state using existing type definitions
+  - _Leverage: Zustand for lightweight client state, TanStack Query for server state caching, packages/types (TaskStatus, ProcessConfig, WorkerConfig, ClaudeCodeOptions), packages/schemas (TaskState enum), TypeScript for enhanced type safety_
   - _Requirements: 1.5, 2.4_
-  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: State Management Architect with expertise in Zustand and TanStack Query | Task: Create state management system with Zustand and TanStack Query following requirements 1.5 and 2.4, implementing Dependency Inversion Principle with clear state abstractions | Restrictions: Must separate client and server state clearly, use TypeScript for type safety, implement proper caching strategies, ensure state persistence where appropriate | Success: Zustand client state working correctly, TanStack Query server state caching functional, state separation clear, type safety maintained throughout
+  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: State Management Architect with expertise in Zustand and TanStack Query using existing package types | Task: Create state management system with Zustand and TanStack Query following requirements 1.5 and 2.4, implementing Dependency Inversion Principle with clear state abstractions leveraging @cc-task-manager types | Restrictions: Must separate client and server state clearly, use existing TypeScript types from packages/types, implement proper caching strategies using TaskStatus and ProcessConfig types, ensure state persistence where appropriate, leverage TaskState enum for status management | Success: Zustand client state working correctly with package types, TanStack Query server state caching functional with TaskStatus integration, state separation clear using defined interfaces, type safety maintained throughout with package type definitions
 
 - [ ] 11. Implement accessibility and performance optimization
   - File: apps/frontend/src/lib/accessibility/ (accessibility utilities and performance optimization)
@@ -101,10 +101,10 @@
 
 - [ ] 12. Create comprehensive testing strategy leveraging existing contract validation
   - File: apps/frontend/src/__tests__/ (unit tests, integration tests, accessibility tests)
-  - Create comprehensive test suite extending existing contract testing infrastructure
-  - Implement accessibility testing following SOLID principles with proper test isolation
-  - Purpose: Ensure code quality, accessibility compliance, and contract adherence using existing test infrastructure
-  - _Leverage: src/contracts/tests/ContractValidation.test.ts, src/contracts/tests/PactTestRunner.ts, Jest for unit testing, Testing Library for component testing, axe-core for accessibility testing_
+  - Create comprehensive test suite extending existing contract testing infrastructure from both src/contracts and packages
+  - Implement accessibility testing following SOLID principles with proper test isolation leveraging existing validation patterns
+  - Purpose: Ensure code quality, accessibility compliance, and contract adherence using existing test infrastructure from both legacy and modern sources
+  - _Leverage: src/contracts/tests/ContractValidation.test.ts, src/contracts/tests/PactTestRunner.ts, packages/schemas validation functions, packages/types for test data typing, Jest for unit testing, Testing Library for component testing, axe-core for accessibility testing_
   - _Requirements: All requirements for testing coverage_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Quality Assurance Engineer with expertise in extending existing contract testing infrastructure | Task: Implement comprehensive testing strategy leveraging existing contract validation tests, adding accessibility tests and component tests covering all requirements, ensuring SOLID principles in test design | Restrictions: Must extend existing contract testing infrastructure from src/contracts/tests/, achieve high test coverage for all components, use Testing Library best practices, ensure accessibility testing with axe-core, follow test isolation principles | Success: Comprehensive test suite implemented extending existing contract tests, accessibility tests passing, component tests following best practices, existing contract validation integrated with frontend tests
 
@@ -126,11 +126,20 @@
   - _Requirements: 5.3, 5.4_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Progressive Web App Engineer with expertise in service workers and offline-first design | Task: Implement PWA features and offline support following requirements 5.3 and 5.4, creating service worker with background sync and caching strategies | Restrictions: Must implement proper caching strategies, ensure offline functionality for core features, implement background sync for data updates, follow PWA best practices for installation and updates | Success: Service worker functional with offline caching, PWA installation working, background sync implemented, offline-first experience achieved
 
-- [ ] 15. Final integration testing with existing contract validation infrastructure
-  - File: Complete frontend application integration leveraging existing contract tests
-  - Perform end-to-end integration testing using existing contract validation infrastructure and performance verification
-  - Verify all SOLID principles implementation and contract-driven development compliance using existing test framework
-  - Purpose: Ensure complete system integration and principle compliance with optimal user experience using existing SSOT
-  - _Leverage: src/contracts/integration/ContractIntegration.test.ts, all implemented components, existing contract testing framework from src/contracts/tests/, integration test utilities, performance monitoring tools_
+- [ ] 15. Configure package-aware development workflow and build system
+  - File: apps/frontend/package.json, apps/frontend/next.config.js (package integration configuration)
+  - Set up monorepo package references and build system optimized for @cc-task-manager packages
+  - Configure TypeScript path mapping and module resolution for seamless package integration
+  - Purpose: Ensure optimal development experience with automatic package rebuilds and type checking across workspace
+  - _Leverage: packages/schemas, packages/types, packages/utils, pnpm workspace configuration, Next.js module federation, TypeScript project references_
+  - _Requirements: 1.1, 6.3_
+  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Build System Engineer with expertise in monorepo configuration and package management | Task: Configure package-aware development workflow integrating @cc-task-manager packages following requirements 1.1 and 6.3, optimizing build system for seamless package integration | Restrictions: Must configure pnpm workspace properly, set up TypeScript project references for packages, enable hot reloading for package changes, optimize build performance with proper caching, ensure package type checking integration | Success: Development workflow configured with automatic package rebuilds, TypeScript path mapping working correctly, hot reloading functional for package changes, build system optimized for monorepo structure
+
+- [ ] 16. Final integration testing with comprehensive contract validation infrastructure
+  - File: Complete frontend application integration leveraging existing contract tests and package validation
+  - Perform end-to-end integration testing using existing contract validation infrastructure from both src/contracts and packages
+  - Verify all SOLID principles implementation and contract-driven development compliance using existing test framework extended with package validation
+  - Purpose: Ensure complete system integration and principle compliance with optimal user experience using existing SSOT from both infrastructure sources
+  - _Leverage: src/contracts/integration/ContractIntegration.test.ts, packages/schemas validation functions, packages/types for comprehensive type checking, all implemented components, existing contract testing framework from src/contracts/tests/, integration test utilities, performance monitoring tools_
   - _Requirements: All requirements validation_
-  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Integration Test Engineer with expertise in existing contract validation infrastructure | Task: Perform comprehensive integration testing and contract validation covering all requirements, leveraging existing contract integration tests and verifying SOLID principles implementation using existing contract-driven infrastructure | Restrictions: Must use existing contract validation infrastructure from src/contracts/, extend existing integration tests, validate all API contracts using existing ContractRegistry and generated types, verify SOLID principles compliance, test integration points thoroughly, meet performance benchmarks, validate accessibility requirements | Success: Complete frontend integration working with existing contract infrastructure, all contracts validated using existing validation framework, SOLID principles properly implemented, performance targets met, accessibility requirements satisfied, system ready for production deployment leveraging existing SSOT foundation
+  - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Integration Test Engineer with expertise in existing contract validation infrastructure from both legacy and modern sources | Task: Perform comprehensive integration testing and contract validation covering all requirements, leveraging existing contract integration tests from src/contracts/ and new validation from packages/schemas, verifying SOLID principles implementation using both infrastructure sources | Restrictions: Must use existing contract validation infrastructure from src/contracts/ AND packages/schemas, extend existing integration tests with package validation functions, validate all API contracts using existing ContractRegistry AND @cc-task-manager schemas, verify SOLID principles compliance, test integration points thoroughly leveraging both TaskStatus types and generated contracts, meet performance benchmarks, validate accessibility requirements | Success: Complete frontend integration working with both legacy contract infrastructure and modern package system, all contracts validated using both validation frameworks, SOLID principles properly implemented across both systems, performance targets met, accessibility requirements satisfied, system ready for production deployment leveraging comprehensive SSOT foundation from both sources
