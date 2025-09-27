@@ -27,7 +27,7 @@
   - _Requirements: 2.1, 2.2_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Security Engineer with expertise in JWT authentication and CASL authorization | Task: Implement authentication module with Passport.js JWT and CASL ABAC following requirements 2.1 and 2.2, applying SOLID principles especially Interface Segregation and Dependency Inversion | Restrictions: Must use industry-standard JWT tokens, implement proper CASL attribute-based permissions, follow security best practices, ensure guard-based protection | Success: JWT authentication working correctly, CASL authorization implemented with fine-grained permissions, authentication guards protect all endpoints, security principles enforced_
 
-- [ ] 4. Create task management module with existing contract validation infrastructure
+- [x] 4. Create task management module with existing contract validation infrastructure
   - File: apps/backend/src/tasks/ (task CRUD operations using existing validation)
   - Implement comprehensive task management API using existing ContractValidationPipe
   - Apply Single Responsibility Principle with separate controller, service, and repository layers

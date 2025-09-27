@@ -9,6 +9,7 @@ import { BackendSchemaRegistry } from './schemas/schema-registry';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { TasksModule } from './tasks/tasks.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 /**
@@ -66,6 +67,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     
     // Authentication and authorization module
     AuthModule,
+    
+    // Task management module
+    TasksModule,
   ],
   
   controllers: [AppController],
