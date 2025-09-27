@@ -6,7 +6,16 @@
  */
 
 import { z } from 'zod'
-import { validateProcessConfig, validateTaskExecutionRequest, validateWorkerConfig, validateTaskStatus } from '@cc-task-manager/schemas'
+import {
+  validateProcessConfig,
+  validateTaskExecutionRequest,
+  validateWorkerConfig,
+  validateTaskStatus,
+  ProcessConfigSchema,
+  TaskExecutionRequestSchema,
+  WorkerConfigSchema,
+  TaskStatusSchema
+} from '@cc-task-manager/schemas'
 import { TaskStatus, ProcessConfig, WorkerConfig, TaskExecutionRequest } from '@cc-task-manager/types'
 import { TaskState } from '@cc-task-manager/schemas'
 
@@ -17,17 +26,15 @@ describe('Frontend Contract Integration', () => {
   describe('Package Schema Validation', () => {
     it('should validate ProcessConfig using package schemas', () => {
       const validProcessConfig: ProcessConfig = {
-        timeout: 30000,
-        retryCount: 3,
-        maxConcurrentTasks: 5,
-        environment: 'development',
-        logging: {
-          level: 'info',
-          enableDetailedLogs: true
-        }
+        jobId: 'test-job-123',
+        sessionName: 'test-session',
+        workingDirectory: '/tmp/test',
+        pythonExecutable: 'python3',
+        wrapperScriptPath: '/path/to/wrapper.py',
+        unbuffered: true
       }
 
-      const result = validateProcessConfig(validProcessConfig)
+      const result = ProcessConfigSchema.safeParse(validProcessConfig)
       expect(result.success).toBe(true)
       if (result.success) {
         expect(result.data).toEqual(validProcessConfig)
@@ -36,18 +43,21 @@ describe('Frontend Contract Integration', () => {
 
     it('should validate TaskExecutionRequest using package schemas', () => {
       const validTaskRequest: TaskExecutionRequest = {
-        task: 'console.log("Hello World")',
+        id: 'task-123',
+        prompt: 'console.log("Hello World")',
+        sessionName: 'test-session',
+        workingDirectory: '/tmp/test',
         options: {
           timeout: 15000,
-          workingDirectory: '/tmp',
-          environmentVariables: { NODE_ENV: 'test' }
-        }
+          model: 'claude-3-sonnet'
+        },
+        timeoutMs: 300000
       }
 
-      const result = validateTaskExecutionRequest(validTaskRequest)
+      const result = TaskExecutionRequestSchema.safeParse(validTaskRequest)
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.task).toBe('console.log("Hello World")')
+        expect(result.data.prompt).toBe('console.log("Hello World")')
         expect(result.data.options?.timeout).toBe(15000)
       }
     })
@@ -55,36 +65,37 @@ describe('Frontend Contract Integration', () => {
     it('should validate WorkerConfig using package schemas', () => {
       const validWorkerConfig: WorkerConfig = {
         maxConcurrentTasks: 3,
-        timeout: 45000,
-        retryAttempts: 2,
-        enableHealthCheck: true
+        processTimeoutMs: 45000,
+        gracefulShutdownMs: 5000,
+        wrapperScriptPath: '/path/to/wrapper.py',
+        queueName: 'test-queue',
+        redisHost: 'localhost',
+        redisPort: 6379
       }
 
-      const result = validateWorkerConfig(validWorkerConfig)
+      const result = WorkerConfigSchema.safeParse(validWorkerConfig)
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data).toEqual(validWorkerConfig)
+        expect(result.data.maxConcurrentTasks).toBe(3)
+        expect(result.data.processTimeoutMs).toBe(45000)
       }
     })
 
     it('should validate TaskStatus using package schemas', () => {
       const validTaskStatus: TaskStatus = {
-        id: 'task-123',
+        taskId: 'task-123',
         state: TaskState.RUNNING,
-        progress: 0.5,
-        startTime: new Date(),
+        progress: '50%',
         lastActivity: new Date(),
-        metadata: {
-          correlationId: 'corr-123',
-          tags: ['test', 'validation']
-        }
+        pid: 1234
       }
 
-      const result = validateTaskStatus(validTaskStatus)
+      const result = TaskStatusSchema.safeParse(validTaskStatus)
       expect(result.success).toBe(true)
       if (result.success) {
         expect(result.data.state).toBe(TaskState.RUNNING)
-        expect(result.data.progress).toBe(0.5)
+        expect(result.data.progress).toBe('50%')
+        expect(result.data.taskId).toBe('task-123')
       }
     })
   })
@@ -101,29 +112,27 @@ describe('Frontend Contract Integration', () => {
     it('should validate TaskState enum values', () => {
       const validStates = Object.values(TaskState)
       const testTaskStatus: TaskStatus = {
-        id: 'test-task',
+        taskId: 'test-task',
         state: TaskState.COMPLETED,
-        progress: 1.0,
-        startTime: new Date(),
+        progress: '100%',
         lastActivity: new Date()
       }
 
       expect(validStates).toContain(testTaskStatus.state)
 
-      const result = validateTaskStatus(testTaskStatus)
+      const result = TaskStatusSchema.safeParse(testTaskStatus)
       expect(result.success).toBe(true)
     })
 
     it('should reject invalid TaskState values', () => {
       const invalidTaskStatus = {
-        id: 'test-task',
+        taskId: 'test-task',
         state: 'invalid_state', // Invalid state
-        progress: 1.0,
-        startTime: new Date(),
+        progress: '100%',
         lastActivity: new Date()
       }
 
-      const result = validateTaskStatus(invalidTaskStatus as any)
+      const result = TaskStatusSchema.safeParse(invalidTaskStatus as any)
       expect(result.success).toBe(false)
     })
   })
@@ -131,31 +140,32 @@ describe('Frontend Contract Integration', () => {
   describe('Contract Validation Error Handling', () => {
     it('should provide detailed validation errors for ProcessConfig', () => {
       const invalidProcessConfig = {
-        timeout: -1000, // Invalid: negative timeout
-        retryCount: 'invalid', // Invalid: string instead of number
-        maxConcurrentTasks: 0, // Invalid: zero concurrent tasks
+        // Missing required fields: jobId, sessionName, workingDirectory, wrapperScriptPath
+        pythonExecutable: '', // Invalid: empty string
+        unbuffered: 'invalid', // Invalid: string instead of boolean
       }
 
-      const result = validateProcessConfig(invalidProcessConfig as any)
+      const result = ProcessConfigSchema.safeParse(invalidProcessConfig as any)
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error.issues.length).toBeGreaterThan(0)
         // Check for specific validation errors
         const errorMessages = result.error.issues.map(issue => issue.message)
-        expect(errorMessages.some(msg => msg.includes('timeout') || msg.includes('number'))).toBe(true)
+        expect(errorMessages.some(msg => msg.includes('Required'))).toBe(true)
       }
     })
 
     it('should provide detailed validation errors for TaskExecutionRequest', () => {
       const invalidTaskRequest = {
-        task: '', // Invalid: empty task
+        id: '', // Invalid: empty id
+        prompt: '', // Invalid: empty prompt
+        // Missing sessionName and workingDirectory
         options: {
           timeout: 'invalid', // Invalid: string instead of number
-          workingDirectory: null, // Invalid: null value
         }
       }
 
-      const result = validateTaskExecutionRequest(invalidTaskRequest as any)
+      const result = TaskExecutionRequestSchema.safeParse(invalidTaskRequest as any)
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error.issues.length).toBeGreaterThan(0)
@@ -169,44 +179,39 @@ describe('Frontend Contract Integration', () => {
       // with validation functions from packages/schemas
 
       const taskStatus: TaskStatus = {
-        id: 'compatibility-test',
+        taskId: 'compatibility-test',
         state: TaskState.RUNNING,
-        progress: 0.75,
-        startTime: new Date('2023-01-01T10:00:00Z'),
+        progress: '75%',
         lastActivity: new Date('2023-01-01T10:30:00Z'),
-        metadata: {
-          correlationId: 'test-correlation',
-          tags: ['compatibility', 'test']
-        }
+        pid: 1234
       }
 
       // This should compile and validate successfully
-      const validationResult = validateTaskStatus(taskStatus)
+      const validationResult = TaskStatusSchema.safeParse(taskStatus)
       expect(validationResult.success).toBe(true)
 
       if (validationResult.success) {
         // Ensure the validated data maintains type safety
         const validatedData: TaskStatus = validationResult.data
-        expect(validatedData.id).toBe('compatibility-test')
+        expect(validatedData.taskId).toBe('compatibility-test')
         expect(validatedData.state).toBe(TaskState.RUNNING)
-        expect(validatedData.progress).toBe(0.75)
+        expect(validatedData.progress).toBe('75%')
       }
     })
 
     it('should handle optional fields correctly across packages', () => {
       const minimalTaskStatus: TaskStatus = {
-        id: 'minimal-test',
+        taskId: 'minimal-test',
         state: TaskState.PENDING,
-        progress: 0,
-        startTime: new Date(),
         lastActivity: new Date()
-        // metadata is optional
+        // progress, pid, error, exitCode are optional
       }
 
-      const result = validateTaskStatus(minimalTaskStatus)
+      const result = TaskStatusSchema.safeParse(minimalTaskStatus)
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.metadata).toBeUndefined()
+        expect(result.data.progress).toBeUndefined()
+        expect(result.data.pid).toBeUndefined()
       }
     })
   })
@@ -221,23 +226,29 @@ describe('Frontend Contract Integration', () => {
         return schema.safeParse(data)
       }
 
-      // Use TaskExecutionRequest validation as an example
-      const taskRequest: TaskExecutionRequest = {
-        task: 'legacy integration test',
+      // Use simplified TaskExecutionRequest for legacy compatibility test
+      const taskRequest = {
+        id: 'legacy-test',
+        prompt: 'legacy integration test',
+        sessionName: 'legacy-session',
+        workingDirectory: '/tmp/legacy',
         options: {
           timeout: 20000
         }
       }
 
-      // Simulate validation using both new package validation and legacy pattern
-      const packageValidation = validateTaskExecutionRequest(taskRequest)
+      // Validate using new package schema
+      const packageValidation = TaskExecutionRequestSchema.safeParse(taskRequest)
 
       // Create a simple schema for legacy validation simulation
       const legacySchema = z.object({
-        task: z.string(),
+        id: z.string(),
+        prompt: z.string(),
+        sessionName: z.string(),
+        workingDirectory: z.string(),
         options: z.object({
           timeout: z.number()
-        }).optional()
+        })
       })
 
       const legacyValidation = mockContractValidation(taskRequest, legacySchema)
@@ -247,7 +258,7 @@ describe('Frontend Contract Integration', () => {
       expect(legacyValidation.success).toBe(true)
 
       if (packageValidation.success && legacyValidation.success) {
-        expect(packageValidation.data.task).toBe(legacyValidation.data.task)
+        expect(packageValidation.data.prompt).toBe(legacyValidation.data.prompt)
       }
     })
   })

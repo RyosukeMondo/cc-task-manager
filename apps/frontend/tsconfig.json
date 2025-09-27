@@ -17,6 +17,8 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "composite": true,
+    "tsBuildInfoFile": "./.next/.tsbuildinfo",
     "plugins": [
       {
         "name": "next"
@@ -43,5 +45,9 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "references": [
+    { "path": "../../packages/types" },
+    { "path": "../../packages/schemas" }
   ]
 }

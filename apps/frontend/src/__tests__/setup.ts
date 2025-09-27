@@ -1,8 +1,14 @@
 import '@testing-library/jest-dom'
 import 'jest-canvas-mock'
+import React from 'react'
 
 // Global test setup
-global.ResizeObserver = require('resize-observer-polyfill')
+global.ResizeObserver = global.ResizeObserver || class ResizeObserver {
+  constructor(cb: any) {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
 
 // Mock Chart.js
 jest.mock('chart.js', () => ({
@@ -21,9 +27,18 @@ jest.mock('chart.js', () => ({
 
 // Mock react-chartjs-2
 jest.mock('react-chartjs-2', () => ({
-  Line: ({ data, options }: any) => <div data-testid="line-chart" data-chart-data={JSON.stringify(data)} />,
-  Bar: ({ data, options }: any) => <div data-testid="bar-chart" data-chart-data={JSON.stringify(data)} />,
-  Doughnut: ({ data, options }: any) => <div data-testid="doughnut-chart" data-chart-data={JSON.stringify(data)} />,
+  Line: ({ data, options }: any) => React.createElement('div', {
+    'data-testid': 'line-chart',
+    'data-chart-data': JSON.stringify(data)
+  }),
+  Bar: ({ data, options }: any) => React.createElement('div', {
+    'data-testid': 'bar-chart',
+    'data-chart-data': JSON.stringify(data)
+  }),
+  Doughnut: ({ data, options }: any) => React.createElement('div', {
+    'data-testid': 'doughnut-chart',
+    'data-chart-data': JSON.stringify(data)
+  }),
 }))
 
 // Mock Next.js router
