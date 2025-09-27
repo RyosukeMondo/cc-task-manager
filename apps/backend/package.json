@@ -20,6 +20,7 @@
   "dependencies": {
     "@casl/ability": "^6.5.0",
     "@casl/mongoose": "^8.0.0",
+    "@nestjs/axios": "^3.0.0",
     "@nestjs/bullmq": "^10.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",
@@ -34,6 +35,7 @@
     "@nestjs/websockets": "^10.0.0",
     "@prisma/client": "^5.0.0",
     "@types/uuid": "^11.0.0",
+    "axios": "^1.6.0",
     "bcrypt": "^5.1.0",
     "bullmq": "^4.0.0",
     "class-transformer": "^0.5.1",

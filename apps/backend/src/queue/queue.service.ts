@@ -377,6 +377,57 @@ export class QueueService implements OnModuleDestroy {
   }
 
   /**
+   * Get health status of all queues
+   *
+   * @returns Array of queue health information
+   */
+  async getQueuesHealth(): Promise<Array<{
+    name: string;
+    status: 'healthy' | 'unhealthy';
+    activeJobs: number;
+    waitingJobs: number;
+    completedJobs: number;
+    failedJobs: number;
+  }>> {
+    const healthChecks = [];
+
+    for (const [name, queue] of this.queues.entries()) {
+      try {
+        const [active, waiting, completed, failed] = await Promise.all([
+          queue.getActiveCount(),
+          queue.getWaitingCount(),
+          queue.getCompletedCount(),
+          queue.getFailedCount(),
+        ]);
+
+        const failureRate = completed > 0 ? (failed / (completed + failed)) * 100 : 0;
+        const status = failureRate > 10 ? 'unhealthy' : 'healthy';
+
+        healthChecks.push({
+          name,
+          status,
+          activeJobs: active,
+          waitingJobs: waiting,
+          completedJobs: completed,
+          failedJobs: failed,
+        });
+      } catch (error) {
+        this.logger.error(`Failed to get health for queue ${name}: ${error.message}`);
+        healthChecks.push({
+          name,
+          status: 'unhealthy',
+          activeJobs: 0,
+          waitingJobs: 0,
+          completedJobs: 0,
+          failedJobs: 0,
+        });
+      }
+    }
+
+    return healthChecks;
+  }
+
+  /**
    * Process task notification job
    */
   private async processTaskNotification(job: Job<TaskNotificationJob>): Promise<void> {

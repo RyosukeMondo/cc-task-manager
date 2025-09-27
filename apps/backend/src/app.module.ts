@@ -14,6 +14,7 @@ import { WebSocketModule } from './websocket/websocket.module';
 import { DatabaseModule } from './database/database.module';
 import { QueueModule } from './queue/queue.module';
 import { OpenApiModule } from './docs/openapi.module';
+import { HealthModule } from './health/health.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { EnhancedLoggingModule } from './logging/enhanced-logging.module';
 import { RequestLoggingMiddleware } from './logging/request-logging.middleware';
@@ -62,6 +63,9 @@ import { CorrelationIdMiddleware } from './common/middleware';
 
     // Queue module for job processing with BullMQ
     QueueModule,
+
+    // Health module for monitoring and health checks
+    HealthModule,
 
     // OpenAPI documentation module using existing ApiContractGenerator
     OpenApiModule,

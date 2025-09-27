@@ -117,7 +117,7 @@
   - _Requirements: 7.3, 7.4_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Documentation Engineer with expertise in existing OpenAPI infrastructure | Task: Configure comprehensive OpenAPI documentation using existing ApiContractGenerator and extend for backend API client setup following requirements 7.3 and 7.4, leveraging existing SSOT documentation infrastructure | Restrictions: Must use existing ApiContractGenerator for documentation generation, extend existing Swagger setup from src/main.ts, reuse existing TypeScriptGenerator for client generation, ensure interactive Swagger UI functionality, maintain documentation currency with existing contract changes | Success: OpenAPI documentation generated using existing ApiContractGenerator, interactive Swagger UI functional extending existing setup, API client generation configured using existing TypeScriptGenerator, documentation stays current with contract registry changes_
 
-- [-] 14. Implement health checks and monitoring endpoints
+- [x] 14. Implement health checks and monitoring endpoints
   - File: apps/backend/src/health/ (health checks and monitoring)
   - Create comprehensive health check endpoints for system monitoring
   - Implement readiness and liveness probes for containerized deployments
