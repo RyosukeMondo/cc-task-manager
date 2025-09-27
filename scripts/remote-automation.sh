@@ -50,13 +50,14 @@ print_warning() {
 
 # Function to show usage
 show_usage() {
-    echo -e "${GREEN}PM2 Command Center for Spec Workflow Automation${NC}"
+    echo -e "${GREEN}PM2 Command Center for Spec Workflow (Symmetric)${NC}"
     echo "Usage: $0 [command] [app_name] [options]"
+    echo "       PROCESS_TYPE=automation|dashboard|both $0 [command] [app_name]"
     echo ""
-    echo "Commands:"
-    echo "  start [app]     - Start automation process(es) (detached)"
-    echo "  stop [app]      - Stop automation process(es)"
-    echo "  restart [app]   - Restart automation process(es)"
+    echo "Commands (symmetric - affects BOTH automation + dashboard by default):"
+    echo "  start [app]     - Start process(es) (detached)"
+    echo "  stop [app]      - Stop process(es)"
+    echo "  restart [app]   - Restart process(es)"
     echo "  logs [app]      - View logs (live tail)"
     echo "  status [app]    - Show process status"
     echo "  list            - List all PM2 processes"
@@ -67,16 +68,23 @@ show_usage() {
     echo "  flush [app]     - Flush log files"
     echo "  cleanup         - Remove orphaned spec-workflow processes"
     echo ""
+    echo "Process Type Control (environment variable):"
+    echo "  PROCESS_TYPE=automation - Target only automation processes"
+    echo "  PROCESS_TYPE=dashboard  - Target only dashboard processes"
+    echo "  PROCESS_TYPE=both       - Target both automation + dashboard (default)"
+    echo ""
     echo "App names (optional - defaults to all):"
-    echo "  cc-task-manager - spec-workflow-automation-cc-task-manager"
-    echo "  warps           - spec-workflow-automation-warps"
-    echo "  mind            - spec-workflow-automation-mind"
+    echo "  cc-task-manager - automation + dashboard for cc-task-manager"
+    echo "  warps           - automation + dashboard for warps"
+    echo "  mind            - automation + dashboard for mind"
     echo ""
     echo "Examples:"
-    echo "  $0 start              # Start all automation processes"
-    echo "  $0 start cc-task-manager # Start only cc-task-manager process"
-    echo "  $0 logs warps         # View warps logs"
-    echo "  $0 status             # Check all process status"
+    echo "  $0 start                          # Start all automation + dashboard processes"
+    echo "  $0 delete                         # Delete all automation + dashboard processes"
+    echo "  PROCESS_TYPE=automation $0 start  # Start only automation processes"
+    echo "  PROCESS_TYPE=dashboard $0 delete  # Delete only dashboard processes"
+    echo "  $0 start cc-task-manager          # Start cc-task-manager automation + dashboard"
+    echo "  $0 logs warps                     # View both warps automation + dashboard logs"
 }
 
 # Change to project directory
@@ -86,17 +94,33 @@ cd "$PROJECT_DIR"
 COMMAND="${1:-}"
 APP_NAME="${2:-}"
 
-# Function to get target processes
+# Function to get target processes (symmetric: both automation AND dashboard)
 get_target_processes() {
+    local process_type="${PROCESS_TYPE:-both}"  # Default to both automation + dashboard
+
     case "$1" in
         "")
-            echo "${EXPECTED_AUTOMATION_PROCESSES[@]}"
+            if [[ "$process_type" == "automation" ]]; then
+                echo "${EXPECTED_AUTOMATION_PROCESSES[@]}"
+            elif [[ "$process_type" == "dashboard" ]]; then
+                echo "${EXPECTED_DASHBOARD_PROCESSES[@]}"
+            else
+                # Both by default for symmetric commands
+                echo "${EXPECTED_AUTOMATION_PROCESSES[@]} ${EXPECTED_DASHBOARD_PROCESSES[@]}"
+            fi
             ;;
         *)
             # Check if it's a known project name
             for project in "${PROJECTS[@]}"; do
                 if [[ "$1" == "$project" ]]; then
-                    echo "spec-workflow-automation-$project"
+                    if [[ "$process_type" == "automation" ]]; then
+                        echo "spec-workflow-automation-$project"
+                    elif [[ "$process_type" == "dashboard" ]]; then
+                        echo "spec-workflow-dashboard-$project"
+                    else
+                        # Both by default
+                        echo "spec-workflow-automation-$project spec-workflow-dashboard-$project"
+                    fi
                     return
                 fi
             done
@@ -182,9 +206,17 @@ case "$COMMAND" in
                 fi
             done
         else
-            # Start all spec-workflow-automation processes
-            pm2 start "$ECOSYSTEM_FILE" --only "spec-workflow-automation-cc-task-manager,spec-workflow-automation-warps,spec-workflow-automation-mind"
-            print_success "All automation processes started"
+            # Start all processes based on process type
+            process_list=$(echo $TARGET_PROCESSES | tr ' ' ',')
+            pm2 start "$ECOSYSTEM_FILE" --only "$process_list"
+
+            process_type_desc="automation + dashboard"
+            if [[ "${PROCESS_TYPE:-both}" == "automation" ]]; then
+                process_type_desc="automation"
+            elif [[ "${PROCESS_TYPE:-both}" == "dashboard" ]]; then
+                process_type_desc="dashboard"
+            fi
+            print_success "All $process_type_desc processes started"
         fi
 
         # Show status
@@ -221,14 +253,22 @@ case "$COMMAND" in
         ;;
 
     logs)
-        if [ -n "$APP_NAME" ] && [ "$APP_NAME" != "spec-workflow-automation-main spec-workflow-automation-warps spec-workflow-automation-mind" ]; then
+        if [ -n "$APP_NAME" ]; then
             print_info "Showing logs for $TARGET_PROCESSES (Ctrl+C to exit)..."
             echo ""
-            pm2 logs $TARGET_PROCESSES --lines 50
+            process_list=$(echo $TARGET_PROCESSES | tr ' ' ',')
+            pm2 logs $process_list --lines 50
         else
-            print_info "Showing logs for all automation processes (Ctrl+C to exit)..."
+            process_type_desc="automation + dashboard"
+            if [[ "${PROCESS_TYPE:-both}" == "automation" ]]; then
+                process_type_desc="automation"
+            elif [[ "${PROCESS_TYPE:-both}" == "dashboard" ]]; then
+                process_type_desc="dashboard"
+            fi
+            print_info "Showing logs for all $process_type_desc processes (Ctrl+C to exit)..."
             echo ""
-            pm2 logs spec-workflow-automation-cc-task-manager,spec-workflow-automation-warps,spec-workflow-automation-mind --lines 50
+            process_list=$(echo $TARGET_PROCESSES | tr ' ' ',')
+            pm2 logs $process_list --lines 50
         fi
         ;;
 
@@ -304,7 +344,7 @@ case "$COMMAND" in
     "")
         # Default behavior - show status and usage
         any_running=false
-        for process in spec-workflow-automation-cc-task-manager spec-workflow-automation-warps spec-workflow-automation-mind; do
+        for process in ${ALL_EXPECTED_PROCESSES[@]}; do
             if pm2 describe "$process" &>/dev/null; then
                 any_running=true
                 break
@@ -312,8 +352,9 @@ case "$COMMAND" in
         done
 
         if [ "$any_running" = true ]; then
-            print_info "Current status:"
-            pm2 status spec-workflow-automation-cc-task-manager,spec-workflow-automation-warps,spec-workflow-automation-mind 2>/dev/null || true
+            print_info "Current status (all spec-workflow processes):"
+            all_processes=$(echo ${ALL_EXPECTED_PROCESSES[@]} | tr ' ' ',')
+            pm2 status $all_processes 2>/dev/null || true
             echo ""
         fi
         show_usage

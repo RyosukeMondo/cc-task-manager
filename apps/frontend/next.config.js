@@ -2,7 +2,6 @@
 const nextConfig = {
   experimental: {
     // Enable experimental features as needed
-    serverComponentsExternalPackages: ['@cc-task-manager/schemas', '@cc-task-manager/types']
   },
   transpilePackages: ['@cc-task-manager/schemas', '@cc-task-manager/types'],
   webpack: (config, { isServer }) => {

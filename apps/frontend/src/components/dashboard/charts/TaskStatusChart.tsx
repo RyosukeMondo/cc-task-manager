@@ -11,8 +11,8 @@ import {
   taskStateColors
 } from './BaseChart';
 
-interface TaskStatusData {
-  [key in TaskState]: number;
+type TaskStatusData = {
+  [K in TaskState]: number;
 }
 
 interface TaskStatusChartProps extends Omit<BaseChartProps, 'data'> {

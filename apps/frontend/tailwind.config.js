@@ -51,6 +51,22 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Custom theme variables
+        theme: {
+          'bg-primary': "hsl(var(--theme-background-primary))",
+          'bg-secondary': "hsl(var(--theme-background-secondary))",
+          'bg-tertiary': "hsl(var(--theme-background-tertiary))",
+          'text-primary': "hsl(var(--theme-text-primary))",
+          'text-secondary': "hsl(var(--theme-text-secondary))",
+          'text-muted': "hsl(var(--theme-text-muted))",
+          'border-subtle': "hsl(var(--theme-border-subtle))",
+          'border-strong': "hsl(var(--theme-border-strong))",
+          'shadow': "hsl(var(--theme-shadow))",
+          'success': "hsl(var(--theme-success))",
+          'warning': "hsl(var(--theme-warning))",
+          'error': "hsl(var(--theme-error))",
+          'info': "hsl(var(--theme-info))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
