@@ -36,7 +36,7 @@
   - _Requirements: 3.1, 3.2_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Developer specializing in NestJS modules and contract-driven APIs | Task: Create task management module with existing ContractValidationPipe for CRUD operations following requirements 3.1 and 3.2, implementing SRP with layered architecture leveraging existing contract infrastructure | Restrictions: Must use existing ContractValidationPipe for validation, register task schemas in existing ContractRegistry, implement proper error handling with existing structured responses, follow REST conventions, ensure database transaction integrity | Success: Task CRUD endpoints implemented using existing validation infrastructure, SRP applied to layered architecture, BullMQ job creation integrated, existing contract-based error responses working_
 
-- [ ] 5. Implement WebSocket gateway for real-time communication
+- [x] 5. Implement WebSocket gateway for real-time communication
   - File: apps/backend/src/websocket/ (real-time gateway with type-safe events)
   - Create Socket.IO WebSocket gateway with JWT authentication and room-based targeting
   - Use Zod schemas for WebSocket event validation following SSOT principle

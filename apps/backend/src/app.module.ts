@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
+import { WebSocketModule } from './websocket/websocket.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 /**
@@ -70,6 +71,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     
     // Task management module
     TasksModule,
+    
+    // WebSocket module for real-time communication
+    WebSocketModule,
   ],
   
   controllers: [AppController],
