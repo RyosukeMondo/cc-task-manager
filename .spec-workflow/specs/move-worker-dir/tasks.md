@@ -36,7 +36,7 @@
   - _Requirements: 2.1_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Package Manager specialist with expertise in npm workspaces and monorepo configuration | Task: Configure worker as workspace package following requirement 2.1, adding to root package.json workspaces and setting up proper dependency management | Restrictions: Do not break existing workspace configuration, maintain dependency version consistency, ensure workspace scripts work correctly | Success: Worker recognized as workspace package, dependencies resolve correctly, npm workspace commands work for worker_
 
-- [ ] 5. Update configuration imports to use shared packages
+- [x] 5. Update configuration imports to use shared packages
   - File: apps/worker/src/worker.module.ts, apps/worker/src/main.ts
   - Update configuration imports to use @cc-task-manager/schemas and @cc-task-manager/types
   - Replace relative config imports with workspace package imports
