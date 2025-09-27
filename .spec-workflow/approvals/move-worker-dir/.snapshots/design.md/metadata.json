@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/move-worker-dir/design.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-27T09:42:32.348Z",
+      "trigger": "initial",
+      "approvalId": "approval_1758966152340_nhfj20k5a",
+      "approvalTitle": "Design for moving worker to apps/worker with independent application structure"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-27T09:42:59.478Z",
+      "trigger": "approved",
+      "approvalId": "approval_1758966152340_nhfj20k5a",
+      "approvalTitle": "Design for moving worker to apps/worker with independent application structure"
+    }
+  ]
+}

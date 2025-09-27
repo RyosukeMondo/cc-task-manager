@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/move-worker-dir/requirements.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-27T09:39:52.755Z",
+      "trigger": "initial",
+      "approvalId": "approval_1758965992744_ve57nf0r1",
+      "approvalTitle": "Requirements for moving worker to apps/worker directory"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-27T09:41:04.425Z",
+      "trigger": "approved",
+      "approvalId": "approval_1758965992744_ve57nf0r1",
+      "approvalTitle": "Requirements for moving worker to apps/worker directory"
+    }
+  ]
+}

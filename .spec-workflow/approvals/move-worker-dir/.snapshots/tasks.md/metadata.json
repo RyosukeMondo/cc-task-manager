@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/move-worker-dir/tasks.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-27T09:44:17.224Z",
+      "trigger": "initial",
+      "approvalId": "approval_1758966257216_tpms1xzcz",
+      "approvalTitle": "Implementation tasks for moving worker to apps/worker directory"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-27T09:44:53.159Z",
+      "trigger": "approved",
+      "approvalId": "approval_1758966257216_tpms1xzcz",
+      "approvalTitle": "Implementation tasks for moving worker to apps/worker directory"
+    }
+  ]
+}

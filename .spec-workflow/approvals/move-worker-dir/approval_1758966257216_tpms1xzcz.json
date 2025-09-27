@@ -1,0 +1,12 @@
+{
+  "id": "approval_1758966257216_tpms1xzcz",
+  "title": "Implementation tasks for moving worker to apps/worker directory",
+  "filePath": ".spec-workflow/specs/move-worker-dir/tasks.md",
+  "type": "document",
+  "status": "approved",
+  "createdAt": "2025-09-27T09:44:17.216Z",
+  "category": "spec",
+  "categoryName": "move-worker-dir",
+  "response": "ダッシュボードから承認",
+  "respondedAt": "2025-09-27T09:44:53.161Z"
+}
