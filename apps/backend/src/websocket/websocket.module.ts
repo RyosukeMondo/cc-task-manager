@@ -1,53 +1,84 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthModule } from '../auth/auth.module';
 import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
 import { WebSocketAuthGuard } from './websocket-auth.guard';
-import { AuthModule } from '../auth/auth.module';
 
 /**
- * WebSocket module for real-time communication
+ * WebSocket Module for real-time communication
  * 
  * This module demonstrates SOLID principles:
  * 1. Single Responsibility Principle - focused on WebSocket functionality
- * 2. Dependency Inversion Principle - depends on auth abstractions
- * 3. Open/Closed Principle - extensible for new WebSocket features
- * 4. Interface Segregation Principle - clean separation of concerns
+ * 2. Open/Closed Principle - extensible for new WebSocket features
+ * 3. Dependency Inversion Principle - depends on abstractions (JwtModule, AuthModule)
+ * 4. Interface Segregation Principle - clean separation of WebSocket concerns
  * 
  * Features:
- * - JWT-authenticated WebSocket connections
- * - Room-based message targeting
- * - Zod schema validation for all events
- * - Type-safe real-time communication
+ * - WebSocket gateway with JWT authentication
+ * - Real-time event broadcasting and room management
+ * - Type-safe event validation using Zod schemas
+ * - Integration with existing authentication infrastructure
+ * - Business logic coordination through WebSocketService
+ * 
+ * Integration points:
+ * - Leverages existing JWT configuration from AuthModule
+ * - Integrates with task management for real-time updates
+ * - Supports project-based and user-based room targeting
+ * - Provides WebSocket statistics and monitoring capabilities
  */
 @Module({
   imports: [
-    // JWT configuration for WebSocket authentication
+    // Import AuthModule to leverage existing JWT infrastructure
+    AuthModule,
+    
+    // Configure JWT module for WebSocket authentication
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '1h'),
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '15m'),
         },
       }),
       inject: [ConfigService],
     }),
-    
-    // Authentication module for user verification
-    AuthModule,
   ],
   
   providers: [
+    // Core WebSocket providers
     WebSocketGateway,
     WebSocketService,
     WebSocketAuthGuard,
   ],
   
   exports: [
+    // Export services for use in other modules
     WebSocketGateway,
     WebSocketService,
   ],
 })
-export class WebSocketModule {}
+export class WebSocketModule {
+  /**
+   * Static method to create module with custom configuration
+   * Allows for easy testing and development customization
+   */
+  static forRoot(options?: {
+    namespace?: string;
+    cors?: {
+      origin: string | string[];
+      credentials?: boolean;
+    };
+  }) {
+    return {
+      module: WebSocketModule,
+      providers: [
+        {
+          provide: 'WEBSOCKET_OPTIONS',
+          useValue: options || {},
+        },
+      ],
+    };
+  }
+}

@@ -142,12 +142,12 @@ export class WebSocketService {
 
     // Broadcast to assignee's personal room
     if (task.assigneeId) {
-      const assigneeRoom = this.gateway.getUserRoom(task.assigneeId);
+      const assigneeRoom = this.getUserRoom(task.assigneeId);
       this.gateway.emitToRoom(assigneeRoom, event);
     }
 
     // Broadcast to creator's personal room
-    const creatorRoom = this.gateway.getUserRoom(task.createdById);
+    const creatorRoom = this.getUserRoom(task.createdById);
     this.gateway.emitToRoom(creatorRoom, event);
   }
 

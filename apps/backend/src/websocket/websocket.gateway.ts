@@ -1,5 +1,5 @@
 import {
-  WebSocketGateway,
+  WebSocketGateway as WSGateway,
   WebSocketServer,
   SubscribeMessage,
   OnGatewayConnection,
@@ -48,7 +48,7 @@ import { JWTPayload } from '../schemas/auth.schemas';
  * - Real-time task status updates and system notifications
  */
 @Injectable()
-@WebSocketGateway({
+@WSGateway({
   namespace: '/ws',
   cors: {
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -447,7 +447,7 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   /**
    * Helper method to generate user-specific room names
    */
-  private getUserRoom(userId: string): string {
+  getUserRoom(userId: string): string {
     return `user:${userId}`;
   }
 
