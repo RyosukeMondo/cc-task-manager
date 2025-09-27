@@ -7,8 +7,9 @@ import { WorkerService, TaskExecutionResult, TaskExecutionContext } from '../wor
 import { ProcessManagerService } from '../process-manager.service';
 import { StateMonitorService, ProcessStateTransition, FileSystemActivity } from '../state-monitor.service';
 import { ClaudeCodeClientService, ParsedResponse } from '../claude-code-client.service';
-import { WorkerConfig, TaskExecutionRequest, TaskState } from '../../../../src/config/worker.config';
+import { WorkerConfig, TaskExecutionRequest, TaskState } from '../../../../packages/types/src';
 import { EventEmitter } from 'events';
+import { ContractRegistry } from '../../../../src/contracts/ContractRegistry';
 
 
 describe('WorkerService', () => {
@@ -17,6 +18,7 @@ describe('WorkerService', () => {
   let processManager: ProcessManagerService;
   let stateMonitor: StateMonitorService;
   let claudeCodeClient: ClaudeCodeClientService;
+  let contractRegistry: ContractRegistry;
   let mockWorkerConfig: WorkerConfig;
   let mockChildProcess: any;
 
@@ -98,6 +100,14 @@ describe('WorkerService', () => {
             extractErrorMessage: jest.fn(),
           },
         },
+        {
+          provide: ContractRegistry,
+          useValue: {
+            register: jest.fn(),
+            get: jest.fn(),
+            validate: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -106,6 +116,7 @@ describe('WorkerService', () => {
     processManager = module.get<ProcessManagerService>(ProcessManagerService);
     stateMonitor = module.get<StateMonitorService>(StateMonitorService);
     claudeCodeClient = module.get<ClaudeCodeClientService>(ClaudeCodeClientService);
+    contractRegistry = module.get<ContractRegistry>(ContractRegistry);
 
     // Setup default mocks
     jest.mocked(processManager.spawnClaudeProcess).mockResolvedValue(mockChildProcess as ChildProcess);
@@ -641,7 +652,8 @@ describe('WorkerService', () => {
           eventEmitter,
           processManager,
           stateMonitor,
-          claudeCodeClient
+          claudeCodeClient,
+          contractRegistry
         );
       }).toThrow();
     });

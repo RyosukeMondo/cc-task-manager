@@ -45,7 +45,7 @@
   - _Requirements: 1.2, 2.2_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Configuration Engineer with expertise in NestJS configuration and workspace packages | Task: Update configuration imports following requirements 1.2 and 2.2, replacing relative imports with workspace package imports from @cc-task-manager/schemas and @cc-task-manager/types | Restrictions: Maintain existing configuration behavior, do not change configuration values, ensure type safety preserved | Success: Configuration imports use workspace packages, all configuration loads correctly, type safety maintained_
 
-- [ ] 6. Move and update worker tests to new structure
+- [x] 6. Move and update worker tests to new structure
   - File: apps/worker/src/tests/ (moved from src/worker/tests/)
   - Relocate worker tests and update import paths
   - Update test configuration to work with new application structure
