@@ -1,5 +1,16 @@
 import { z } from 'zod';
 
+// Task state enumeration for schema validation
+export enum TaskState {
+  PENDING = 'pending',
+  RUNNING = 'running',
+  ACTIVE = 'active',
+  IDLE = 'idle',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled'
+}
+
 /**
  * Process configuration schema for secure Claude Code process spawning
  * Validates all parameters required for safe child process creation
@@ -82,7 +93,7 @@ export const WorkerConfigSchema = z.object({
  */
 export const TaskStatusSchema = z.object({
   taskId: z.string(),
-  state: z.enum(['pending', 'running', 'active', 'idle', 'completed', 'failed', 'cancelled']),
+  state: z.nativeEnum(TaskState),
   pid: z.number().optional(),
   progress: z.string().optional(),
   lastActivity: z.date(),

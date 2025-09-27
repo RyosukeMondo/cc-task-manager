@@ -2,7 +2,8 @@ import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bullmq';
-import { WorkerConfig, TaskExecutionRequest, validateTaskExecutionRequest } from '../../../src/config/worker.config';
+import { validateTaskExecutionRequest } from '@cc-task-manager/schemas';
+import { WorkerConfig, TaskExecutionRequest } from '@cc-task-manager/types';
 import { WorkerService, TaskExecutionResult } from './worker.service';
 
 export interface ClaudeCodeJobData {

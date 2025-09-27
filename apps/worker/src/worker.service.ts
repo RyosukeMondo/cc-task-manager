@@ -4,14 +4,9 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
 import { ChildProcess } from 'child_process';
 import { join } from 'path';
-import { 
-  WorkerConfig, 
-  TaskExecutionRequest, 
-  TaskState, 
-  validateTaskExecutionRequest, 
-  ProcessConfig,
-  TaskExecutionRequestSchema 
-} from '../../../src/config/worker.config';
+import { validateTaskExecutionRequest, TaskExecutionRequestSchema } from '@cc-task-manager/schemas';
+import { WorkerConfig, TaskExecutionRequest, ProcessConfig } from '@cc-task-manager/types';
+import { TaskState } from '@cc-task-manager/types';
 import { ProcessManagerService } from './process-manager.service';
 import { StateMonitorService, ProcessStateTransition, FileSystemActivity } from './state-monitor.service';
 import { 

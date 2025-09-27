@@ -63,7 +63,7 @@
   - _Requirements: 2.1, 2.2_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: NestJS Developer with expertise in application bootstrap and lifecycle management | Task: Create worker application entry point following requirements 2.1 and 2.2, implementing NestJS bootstrap with proper configuration and graceful shutdown | Restrictions: Do not duplicate existing backend configuration, maintain worker-specific settings, ensure proper error handling | Success: Worker runs as standalone application, graceful shutdown works correctly, application-specific configuration loaded_
 
-- [ ] 8. Update build configuration for independent worker compilation
+- [x] 8. Update build configuration for independent worker compilation
   - File: apps/worker/tsconfig.json, apps/worker/nest-cli.json
   - Configure TypeScript compilation for worker application
   - Set up NestJS CLI configuration for independent builds

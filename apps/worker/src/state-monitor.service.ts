@@ -5,12 +5,9 @@ import * as chokidar from 'chokidar';
 import { debounce, throttle } from 'lodash-es';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
-import { 
-  WorkerConfig, 
-  TaskState, 
-  TaskStatus, 
-  validateTaskStatus 
-} from '../../../src/config/worker.config';
+import { validateTaskStatus } from '@cc-task-manager/schemas';
+import { WorkerConfig, TaskStatus } from '@cc-task-manager/types';
+import { TaskState } from '@cc-task-manager/types';
 
 export interface ProcessStateTransition {
   taskId: string;

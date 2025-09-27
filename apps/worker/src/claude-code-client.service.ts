@@ -4,7 +4,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { randomUUID } from 'crypto';
 import { ChildProcess } from 'child_process';
 import { z } from 'zod';
-import { WorkerConfig, ClaudeCodeOptionsSchema } from '../../../src/config/worker.config';
+import { ClaudeCodeOptionsSchema } from '@cc-task-manager/schemas';
+import { WorkerConfig } from '@cc-task-manager/types';
 
 const PromptOptionsSchema = z
   .object({

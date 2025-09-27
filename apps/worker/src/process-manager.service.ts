@@ -2,11 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { spawn, ChildProcess, SpawnOptions } from 'child_process';
 import { randomUUID } from 'crypto';
-import { 
-  ProcessConfig, 
-  WorkerConfig, 
-  validateProcessConfig 
-} from '../../../src/config/worker.config';
+import { validateProcessConfig } from '@cc-task-manager/schemas';
+import { ProcessConfig, WorkerConfig } from '@cc-task-manager/types';
 
 /**
  * ProcessManagerService - Secure Claude Code process lifecycle management

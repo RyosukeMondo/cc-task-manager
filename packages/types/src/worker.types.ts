@@ -4,22 +4,12 @@ import {
   ClaudeCodeOptionsSchema,
   TaskExecutionRequestSchema,
   WorkerConfigSchema,
-  TaskStatusSchema
-} from '@cc-task-manager/schemas/src/worker.schemas';
+  TaskStatusSchema,
+  TaskState
+} from '@cc-task-manager/schemas';
 
-/**
- * Task state enumeration for process lifecycle tracking
- * Represents all possible states in the task execution lifecycle
- */
-export enum TaskState {
-  PENDING = 'pending',
-  RUNNING = 'running',
-  ACTIVE = 'active',
-  IDLE = 'idle',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled'
-}
+// Re-export TaskState for convenience
+export { TaskState } from '@cc-task-manager/schemas';
 
 /**
  * TypeScript type exports derived from Zod schemas
