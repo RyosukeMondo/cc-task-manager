@@ -95,14 +95,29 @@ export class PactTestRunner {
   private mockBaseUrl?: string;
 
   constructor(options: PactRunnerOptions) {
-    const tmp = os.tmpdir();
+    // Use process.env.TMPDIR or fallback to /tmp for testing compatibility
+    let tmp: string;
+    try {
+      tmp = process.env.TMPDIR || os.tmpdir() || '/tmp';
+    } catch {
+      tmp = '/tmp';
+    }
+
+    // Safe path joining for testing environments
+    const safePath = (base: string, ...parts: string[]) => {
+      try {
+        return path.join(base, ...parts);
+      } catch {
+        return `${base}/${parts.join('/')}`;
+      }
+    };
 
     this.config = {
       consumer: options.consumer,
       provider: options.provider,
       port: options.port ?? this.pickEphemeralPort(),
-      dir: options.dir ?? path.join(tmp, 'pacts'),
-      logDir: options.logDir ?? path.join(tmp, 'pact-logs'),
+      dir: options.dir ?? safePath(tmp, 'pacts'),
+      logDir: options.logDir ?? safePath(tmp, 'pact-logs'),
       spec: options.spec ?? SpecificationVersion.SPECIFICATION_VERSION_V3,
     };
   }
