@@ -81,7 +81,7 @@
   - _Requirements: 2.1, 2.2, 4.1_
   - _Prompt: Implement the task for spec contract-driven, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend integration specialist with expertise in NestJS services and validation | Task: Integrate contract validation into existing WorkerService following requirements 2.1, 2.2, and 4.1, enhancing executeTask method while preserving existing functionality | Restrictions: Must not break existing worker functionality, maintain performance, preserve error handling patterns, ensure backward compatibility | _Leverage: existing WorkerService architecture, TaskExecutionRequestSchema, structured error handling | _Requirements: 2.1 (automatic validation), 2.2 (structured errors), 4.1 (contract verification) | Success: Worker service uses contract validation, maintains existing functionality, provides enhanced error reporting | Instructions: Mark in-progress when starting, complete when worker service is fully contract-validated_
 
-- [ ] 10. Create contract CLI tools in scripts/contract-cli.ts
+- [x] 10. Create contract CLI tools in scripts/contract-cli.ts
   - File: scripts/contract-cli.ts
   - Implement command-line interface for contract management
   - Add validation, documentation generation, and compatibility checking commands
