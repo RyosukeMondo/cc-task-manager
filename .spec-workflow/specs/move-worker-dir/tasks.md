@@ -9,7 +9,7 @@
   - _Requirements: 2.1, 3.1_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: DevOps Engineer specializing in monorepo architecture and NestJS applications | Task: Create apps/worker directory structure with independent package.json, main.ts entry point, and tsconfig.json following requirements 2.1 and 3.1, establishing worker as standalone NestJS application in monorepo | Restrictions: Do not modify existing worker code yet, maintain compatibility with existing dependencies, follow workspace package conventions | Success: Apps directory created with proper worker structure, package.json includes correct NestJS dependencies, tsconfig configured for independent compilation_
 
-- [ ] 2. Move worker source code to apps/worker/src
+- [x] 2. Move worker source code to apps/worker/src
   - File: apps/worker/src/ (all worker TypeScript files)
   - Relocate all files from src/worker/ to apps/worker/src/ maintaining directory structure
   - Preserve file organization: processors, claude-code, monitoring subdirectories
