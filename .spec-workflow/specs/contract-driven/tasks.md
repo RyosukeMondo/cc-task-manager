@@ -27,7 +27,7 @@
   - _Requirements: 2.1, 3.1_
   - _Prompt: Implement the task for spec contract-driven, first run spec-workflow-guide to get the workflow guide then implement the task: Role: TypeScript tooling expert specializing in code generation and type inference | Task: Create TypeScriptGenerator service for automatic type generation from Zod contracts following requirements 2.1 and 3.1, leveraging existing TypeScript configuration and Zod inference patterns | Restrictions: Must generate valid TypeScript code, maintain type safety, integrate with build process, do not break existing type definitions | _Leverage: existing TypeScript config, Zod inference patterns | _Requirements: 2.1 (automatic type updates), 3.1 (compile-time safety) | Success: Service generates TypeScript types from contracts, integrates with build process, provides type-safe API clients | Instructions: Mark in-progress when starting, complete when type generation works with build system_
 
-- [ ] 4. Implement contract validation pipe in src/contracts/ContractValidationPipe.ts
+ - [x] 4. Implement contract validation pipe in src/contracts/ContractValidationPipe.ts
   - File: src/contracts/ContractValidationPipe.ts
   - Create NestJS pipe for contract-based request validation
   - Add structured error response handling
