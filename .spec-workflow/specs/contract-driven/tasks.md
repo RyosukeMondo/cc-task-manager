@@ -45,7 +45,7 @@
   - _Requirements: 4.1, 4.2, 4.3_
   - _Prompt: Implement the task for spec contract-driven, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Quality engineer specializing in consumer-driven contract testing and Pact framework | Task: Build PactTestRunner for testing Claude Code SDK integration following requirements 4.1, 4.2, and 4.3, leveraging existing test infrastructure and Claude Code client patterns | Restrictions: Must work with existing Jest setup, not expose production data, ensure test reliability, follow Pact best practices | _Leverage: existing test setup, Claude Code client patterns from worker service | _Requirements: 4.1 (contract verification), 4.2 (upgrade compatibility), 4.3 (clear error messages) | Success: Pact tests verify Claude Code integration, detect breaking changes, provide clear failure reports | Instructions: Mark in-progress when starting, complete when Pact testing framework is operational_
 
-- [ ] 6. Add CI/CD contract validation in .github/workflows/contract-validation.yml
+- [x] 6. Add CI/CD contract validation in .github/workflows/contract-validation.yml
   - File: .github/workflows/contract-validation.yml
   - Create GitHub Actions workflow for contract validation
   - Add compatibility checking and build failure on violations

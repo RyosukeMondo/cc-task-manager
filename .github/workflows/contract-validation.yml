@@ -1,0 +1,124 @@
+name: Contract Validation
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "src/contracts/**"
+      - ".github/workflows/contract-validation.yml"
+      - "package.json"
+      - "jest.integration.config.js"
+      - "pnpm-lock.yaml"
+      - "package-lock.json"
+  pull_request:
+    branches:
+      - "**"
+    paths:
+      - "src/contracts/**"
+      - ".github/workflows/contract-validation.yml"
+      - "package.json"
+      - "jest.integration.config.js"
+      - "pnpm-lock.yaml"
+      - "package-lock.json"
+  workflow_dispatch:
+
+concurrency:
+  group: contract-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: Validate Contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      NODE_ENV: ci
+      TMPDIR: ${{ github.workspace }}/.tmp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare workspace directories
+        run: mkdir -p .tmp
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run contract validation and compatibility tests
+        run: >-
+          npm run test:contract --
+          --ci
+          --runInBand
+          --reporters=default
+          --reporters=github-actions
+          --json
+          --outputFile=contract-tests-report.json
+
+      - name: Publish contract validation summary
+        if: always()
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const reportPath = 'contract-tests-report.json';
+          if (!fs.existsSync(reportPath)) {
+            process.exit(0);
+          }
+
+          const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+          if (!summaryPath) {
+            console.warn('GITHUB_STEP_SUMMARY is not defined');
+            process.exit(0);
+          }
+
+          const data = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+          const results = data.testResults || [];
+
+          const total = data.numTotalTests ?? 0;
+          const passed = data.numPassedTests ?? 0;
+          const failed = data.numFailedTests ?? 0;
+          const skipped = data.numPendingTests ?? 0;
+
+          const failingSuites = results
+            .filter((suite) => suite.message || suite.status === 'failed')
+            .map((suite) => `- ${suite.name}`)
+            .join('\n');
+
+          const lines = [
+            '### Contract Validation Results',
+            '',
+            `- Total tests: ${total}`,
+            `- Passed: ${passed}`,
+            `- Failed: ${failed}`,
+            `- Skipped: ${skipped}`,
+          ];
+
+          if (failingSuites) {
+            lines.push('', '#### Failing Suites', failingSuites);
+          }
+
+          fs.appendFileSync(summaryPath, lines.join('\n') + '\n');
+          NODE
+
+      - name: Upload contract artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-test-artifacts
+          path: |
+            contract-tests-report.json
+            coverage-contracts/**
+            .tmp/pacts/**
+            .tmp/pact-logs/**
+          if-no-files-found: ignore
