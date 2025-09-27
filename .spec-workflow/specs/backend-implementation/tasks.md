@@ -81,7 +81,7 @@
   - _Requirements: 3.1, 3.3_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Queue Architecture Engineer with expertise in BullMQ and job processing | Task: Implement BullMQ integration for job scheduling and worker coordination following requirements 3.1 and 3.3, applying Open/Closed Principle for extensible job management | Restrictions: Must use BullMQ for reliable job processing, implement proper error handling and retry logic, validate job data with Zod schemas, ensure worker communication via Redis | Success: BullMQ integration functional for job scheduling, queue monitoring implemented, job validation with Zod schemas, worker coordination established_
 
-- [ ] 10. Extend existing error handling with backend-specific global filters
+- [x] 10. Extend existing error handling with backend-specific global filters
   - File: apps/backend/src/common/ (global exception filters extending existing patterns)
   - Extend existing contract-based error handling from src/contracts/ with backend-specific global filters
   - Reuse existing structured error response patterns and enhance for backend application

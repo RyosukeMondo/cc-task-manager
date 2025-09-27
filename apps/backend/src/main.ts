@@ -6,6 +6,11 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ContractRegistry } from '../../../src/contracts/ContractRegistry';
 import { ApiContractGenerator } from '../../../src/contracts/ApiContractGenerator';
+import {
+  HttpExceptionFilter,
+  ContractValidationFilter,
+  AllExceptionsFilter,
+} from './common/filters';
 
 /**
  * Bootstrap function for contract-driven backend application
@@ -43,6 +48,15 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       disableErrorMessages: process.env.NODE_ENV === 'production',
     })
+  );
+
+  // Set up global exception filters extending existing error handling infrastructure
+  // Filters are applied in reverse order (last registered is executed first)
+  // This follows Open/Closed Principle - extending existing patterns without modification
+  app.useGlobalFilters(
+    new AllExceptionsFilter(), // Catch-all for unhandled exceptions
+    new HttpExceptionFilter(), // Handle standard HTTP exceptions
+    new ContractValidationFilter(), // Handle contract validation errors specifically
   );
 
   // Apply Open/Closed Principle - extend existing documentation without modification

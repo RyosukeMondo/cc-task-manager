@@ -15,6 +15,7 @@ import { QueueModule } from './queue/queue.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { EnhancedLoggingModule } from './logging/enhanced-logging.module';
 import { RequestLoggingMiddleware } from './logging/request-logging.middleware';
+import { CorrelationIdMiddleware } from './common/middleware';
 
 /**
  * Root application module following SOLID principles
@@ -96,6 +97,12 @@ export class AppModule implements NestModule {
    * Implements Single Level of Abstraction Principle (SLAP)
    */
   configure(consumer: MiddlewareConsumer) {
+    // Apply correlation ID middleware first to ensure all requests have IDs
+    consumer
+      .apply(CorrelationIdMiddleware)
+      .forRoutes('*');
+
+    // Then apply request logging middleware which will use the correlation ID
     consumer
       .apply(RequestLoggingMiddleware)
       .forRoutes('*'); // Apply to all routes for comprehensive request tracking
