@@ -49,6 +49,9 @@ import {
   UserStatisticsSchema,
 } from './user.schemas';
 
+// Import all database schemas
+import { DatabaseSchemas } from './database.schemas';
+
 /**
  * Backend Schema Registry Service
  * 
@@ -75,6 +78,7 @@ export class BackendSchemaRegistry implements OnModuleInit {
       await this.registerAuthSchemas();
       await this.registerTaskSchemas();
       await this.registerUserSchemas();
+      await this.registerDatabaseSchemas();
       
       this.logger.log('Successfully registered all backend schemas');
     } catch (error) {
@@ -378,6 +382,196 @@ export class BackendSchemaRegistry implements OnModuleInit {
     }
 
     this.logger.log(`Registered ${userSchemas.length} user management schemas`);
+  }
+
+  /**
+   * Register database schemas that mirror Prisma models
+   */
+  private async registerDatabaseSchemas(): Promise<void> {
+    const databaseSchemas = [
+      // Entity schemas
+      {
+        name: 'DatabaseUser',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseUser,
+        description: 'Database user entity schema mirroring Prisma User model',
+      },
+      {
+        name: 'DatabaseTask',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseTask,
+        description: 'Database task entity schema mirroring Prisma Task model',
+      },
+      {
+        name: 'DatabaseProject',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseProject,
+        description: 'Database project entity schema mirroring Prisma Project model',
+      },
+      {
+        name: 'DatabaseUserSession',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseUserSession,
+        description: 'Database user session entity schema mirroring Prisma UserSession model',
+      },
+      
+      // Create schemas
+      {
+        name: 'CreateDatabaseUser',
+        version: '1.0.0',
+        schema: DatabaseSchemas.CreateDatabaseUser,
+        description: 'Database user creation schema for repository operations',
+      },
+      {
+        name: 'CreateDatabaseTask',
+        version: '1.0.0',
+        schema: DatabaseSchemas.CreateDatabaseTask,
+        description: 'Database task creation schema for repository operations',
+      },
+      {
+        name: 'CreateDatabaseProject',
+        version: '1.0.0',
+        schema: DatabaseSchemas.CreateDatabaseProject,
+        description: 'Database project creation schema for repository operations',
+      },
+      {
+        name: 'CreateDatabaseUserSession',
+        version: '1.0.0',
+        schema: DatabaseSchemas.CreateDatabaseUserSession,
+        description: 'Database user session creation schema for repository operations',
+      },
+      
+      // Update schemas
+      {
+        name: 'UpdateDatabaseUser',
+        version: '1.0.0',
+        schema: DatabaseSchemas.UpdateDatabaseUser,
+        description: 'Database user update schema for repository operations',
+      },
+      {
+        name: 'UpdateDatabaseTask',
+        version: '1.0.0',
+        schema: DatabaseSchemas.UpdateDatabaseTask,
+        description: 'Database task update schema for repository operations',
+      },
+      {
+        name: 'UpdateDatabaseProject',
+        version: '1.0.0',
+        schema: DatabaseSchemas.UpdateDatabaseProject,
+        description: 'Database project update schema for repository operations',
+      },
+      {
+        name: 'UpdateDatabaseUserSession',
+        version: '1.0.0',
+        schema: DatabaseSchemas.UpdateDatabaseUserSession,
+        description: 'Database user session update schema for repository operations',
+      },
+      
+      // Relationship schemas
+      {
+        name: 'DatabaseUserWithRelations',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseUserWithRelations,
+        description: 'Database user with relationships schema for complex queries',
+      },
+      {
+        name: 'DatabaseTaskWithRelations',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseTaskWithRelations,
+        description: 'Database task with relationships schema for complex queries',
+      },
+      {
+        name: 'DatabaseProjectWithRelations',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseProjectWithRelations,
+        description: 'Database project with relationships schema for complex queries',
+      },
+      
+      // Query filter schemas
+      {
+        name: 'DatabaseUserQueryFilters',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseUserQueryFilters,
+        description: 'Database user query filters for repository search operations',
+      },
+      {
+        name: 'DatabaseTaskQueryFilters',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseTaskQueryFilters,
+        description: 'Database task query filters for repository search operations',
+      },
+      {
+        name: 'DatabaseProjectQueryFilters',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseProjectQueryFilters,
+        description: 'Database project query filters for repository search operations',
+      },
+      
+      // Utility schemas
+      {
+        name: 'DatabasePagination',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabasePagination,
+        description: 'Database pagination schema for paginated queries',
+      },
+      {
+        name: 'DatabaseTransactionContext',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseTransactionContext,
+        description: 'Database transaction context schema for transaction management',
+      },
+      {
+        name: 'DatabaseHealthCheck',
+        version: '1.0.0',
+        schema: DatabaseSchemas.DatabaseHealthCheck,
+        description: 'Database health check schema for monitoring',
+      },
+      
+      // Enum schemas
+      {
+        name: 'UserRole',
+        version: '1.0.0',
+        schema: DatabaseSchemas.UserRole,
+        description: 'User role enumeration schema',
+      },
+      {
+        name: 'UserStatus',
+        version: '1.0.0',
+        schema: DatabaseSchemas.UserStatus,
+        description: 'User status enumeration schema',
+      },
+      {
+        name: 'TaskStatus',
+        version: '1.0.0',
+        schema: DatabaseSchemas.TaskStatus,
+        description: 'Task status enumeration schema',
+      },
+      {
+        name: 'TaskPriority',
+        version: '1.0.0',
+        schema: DatabaseSchemas.TaskPriority,
+        description: 'Task priority enumeration schema',
+      },
+    ];
+
+    for (const schemaConfig of databaseSchemas) {
+      const success = await this.contractRegistry.registerContract(
+        schemaConfig.name,
+        schemaConfig.version,
+        schemaConfig.schema,
+        {
+          name: schemaConfig.name,
+          version: schemaConfig.version,
+          description: schemaConfig.description,
+        }
+      );
+
+      if (!success) {
+        throw new Error(`Failed to register database schema: ${schemaConfig.name}`);
+      }
+    }
+
+    this.logger.log(`Registered ${databaseSchemas.length} database schemas`);
   }
 
   /**

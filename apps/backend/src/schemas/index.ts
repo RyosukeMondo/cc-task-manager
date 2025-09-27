@@ -15,6 +15,9 @@ export * from './task.schemas';
 // Export all user management schemas and types
 export * from './user.schemas';
 
+// Export all database schemas and types
+export * from './database.schemas';
+
 // Export the schema registry service
 export * from './schema-registry';
 
@@ -30,6 +33,7 @@ export enum SchemaCategory {
   AUTH = 'auth',
   TASK = 'task',
   USER = 'user',
+  DATABASE = 'database',
 }
 
 /**
@@ -42,6 +46,7 @@ export const SCHEMA_METADATA = {
     [SchemaCategory.AUTH]: 'Authentication and authorization schemas',
     [SchemaCategory.TASK]: 'Task management and workflow schemas',
     [SchemaCategory.USER]: 'User management and profile schemas',
+    [SchemaCategory.DATABASE]: 'Database entity schemas mirroring Prisma models',
   },
   contractRegistry: {
     description: 'Integrates with existing ContractRegistry for SSOT validation',
