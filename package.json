@@ -27,7 +27,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:integration": "pnpm --filter @cc-task-manager/worker test:integration",
     "test:contract": "jest --config ./jest.contract.config.js",
-    "contract": "ts-node scripts/contract-cli.ts"
+    "contract": "ts-node scripts/contract-cli.ts",
+    "worker:test": "bash apps/worker/scripts/run-worker-test.sh",
+    "worker:test:bullmq": "node apps/worker/scripts/test-bullmq-worker.js"
   },
   "dependencies": {
     "@nestjs/bullmq": "^10.0.0",
