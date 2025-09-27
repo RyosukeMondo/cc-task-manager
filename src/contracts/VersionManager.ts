@@ -226,7 +226,7 @@ export class VersionManager {
 
       // Check version lifecycle compliance
       const allVersions = this.contractRegistry.getContractVersions(contractName);
-      const supportedVersions = this.getSupportedVersions(allVersions, policy);
+      const supportedVersions = this.getSupportedVersionsWithPolicy(allVersions, policy);
       
       if (!supportedVersions.includes(version)) {
         violations.push({
@@ -431,7 +431,7 @@ export class VersionManager {
         .map(contract => contract.metadata.version);
     }
 
-    return this.getSupportedVersions(allVersions, policy);
+    return this.getSupportedVersionsWithPolicy(allVersions, policy);
   }
 
   /**
@@ -579,7 +579,7 @@ export class VersionManager {
    * @param policy Version policy
    * @returns Array of supported version strings
    */
-  private getSupportedVersions(allVersions: ContractRegistration[], policy: VersionPolicy): string[] {
+  private getSupportedVersionsWithPolicy(allVersions: ContractRegistration[], policy: VersionPolicy): string[] {
     const now = new Date();
     const supportedVersions: string[] = [];
 
