@@ -7,6 +7,24 @@ Monitors Claude Code output and handles session lifecycle automatically.
 
 Usage:
     python scripts/spec_workflow_automation.py --spec-name "Contract Driven" --project "/home/rmondo/repos/cc-task-manager"
+
+Debug Options:
+    --debug-raw         Show complete raw JSON data (most verbose)
+    --debug-all         Show all events with full data (very verbose)
+    --debug-payload     Show payload structure analysis
+    --debug-content     Show content structure analysis
+    --debug-metadata    Show stream metadata
+    --debug-tools       Show tool usage details (default: enabled)
+    --debug-full        Don't truncate long content
+    --max-content N     Set max content length before truncation (default: 500)
+
+Debug Levels (from least to most verbose):
+    1. Default: Tool usage only
+    2. --debug-metadata: + stream metadata
+    3. --debug-payload: + payload structure
+    4. --debug-content: + content analysis
+    5. --debug-all: + all events with data
+    6. --debug-raw: + complete raw JSON (maximum verbosity)
 """
 
 import argparse
@@ -34,7 +52,7 @@ logger = logging.getLogger(__name__)
 class SpecWorkflowAutomation:
     """Automates spec-workflow task execution using Claude Code sessions."""
 
-    def __init__(self, spec_name: str, project_path: str, session_log_file: Optional[str] = None):
+    def __init__(self, spec_name: str, project_path: str, session_log_file: Optional[str] = None, debug_options: Optional[Dict[str, bool]] = None):
         self.spec_name = spec_name
         self.project_path = Path(project_path).resolve()
         self.claude_process: Optional[subprocess.Popen] = None
@@ -43,6 +61,18 @@ class SpecWorkflowAutomation:
         self.shutdown_requested = False
         self.current_run_id: Optional[str] = None
         self.session_log_file = session_log_file
+
+        # Debug configuration options
+        self.debug_options = debug_options or {
+            'show_raw_data': False,
+            'show_payload_structure': False,
+            'show_content_analysis': False,
+            'show_tool_details': True,
+            'show_stream_metadata': False,
+            'show_all_events': False,
+            'truncate_long_content': True,
+            'max_content_length': 500
+        }
 
         # Setup signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -226,45 +256,143 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             except Exception as e:
                 logger.warning(f"Failed to write session log: {e}")
 
+    def _debug_log_data(self, data: Dict[str, Any]) -> None:
+        """Comprehensive debug logging with configurable options."""
+        try:
+            event = data.get("event", "unknown")
+
+            # Always show raw data structure if enabled
+            if self.debug_options.get('show_raw_data'):
+                logger.debug(f"RAW DATA: {json.dumps(data, indent=2)}")
+                return
+
+            # Show all events if enabled
+            if self.debug_options.get('show_all_events'):
+                logger.debug(f"EVENT: {event} | DATA: {json.dumps(data, indent=2)}")
+                return
+
+            # For stream events, show detailed analysis
+            if event == "stream":
+                payload = data.get("payload", {})
+
+                if self.debug_options.get('show_payload_structure'):
+                    logger.debug(f"PAYLOAD STRUCTURE: {list(payload.keys())}")
+
+                if self.debug_options.get('show_stream_metadata'):
+                    metadata = {k: v for k, v in data.items() if k != "payload"}
+                    if metadata:
+                        logger.debug(f"STREAM METADATA: {metadata}")
+
+                # Content analysis
+                readable_content = self._extract_readable_content(data)
+                if readable_content != "No readable content":
+                    if self.debug_options.get('show_content_analysis'):
+                        logger.debug(f"CONTENT ANALYSIS: {self._analyze_content_structure(payload)}")
+                    logger.debug(f"Claude stream: {readable_content}")
+
+            # Tool usage details
+            elif self.debug_options.get('show_tool_details'):
+                if event in ["tool_call", "tool_result"]:
+                    logger.debug(f"TOOL EVENT: {event} | {json.dumps(data, indent=2)}")
+
+        except Exception as e:
+            logger.debug(f"Debug logging failed: {e}")
+
+    def _analyze_content_structure(self, payload: Dict[str, Any]) -> str:
+        """Analyze the structure of content for debugging."""
+        analysis = []
+
+        # Check payload keys
+        analysis.append(f"Keys: {list(payload.keys())}")
+
+        # Analyze content array
+        content = payload.get("content", [])
+        if isinstance(content, list):
+            content_types = [item.get("type", "unknown") if isinstance(item, dict) else type(item).__name__ for item in content]
+            analysis.append(f"Content types: {content_types}")
+
+            # Count different content types
+            type_counts = {}
+            for item in content:
+                if isinstance(item, dict):
+                    item_type = item.get("type", "unknown")
+                    type_counts[item_type] = type_counts.get(item_type, 0) + 1
+            if type_counts:
+                analysis.append(f"Type counts: {type_counts}")
+
+        # Check for tool-related content
+        if any("tool" in str(k).lower() for k in payload.keys()):
+            tool_keys = [k for k in payload.keys() if "tool" in str(k).lower()]
+            analysis.append(f"Tool keys: {tool_keys}")
+
+        return " | ".join(analysis)
+
     def _extract_readable_content(self, data: Dict[str, Any]) -> str:
         """Extract readable content from Claude stream data."""
         try:
             payload = data.get("payload", {})
-
-            # Extract text content from various payload structures
             content_parts = []
+            max_length = self.debug_options.get('max_content_length', 500)
 
             # Direct message/text content
             if "message" in payload:
-                content_parts.append(f"Message: {payload['message']}")
+                msg = payload['message']
+                if self.debug_options.get('truncate_long_content') and len(str(msg)) > max_length:
+                    msg = str(msg)[:max_length] + "..."
+                content_parts.append(f"Message: {msg}")
 
             # Content array (typical for Claude responses)
             content = payload.get("content", [])
             if isinstance(content, list):
-                for item in content:
+                for i, item in enumerate(content):
                     if isinstance(item, dict):
                         if item.get("type") == "text" and "text" in item:
-                            content_parts.append(f"Text: {item['text']}")
+                            text = item['text']
+                            if self.debug_options.get('truncate_long_content') and len(text) > max_length:
+                                text = text[:max_length] + "..."
+                            content_parts.append(f"Text[{i}]: {text}")
                         elif item.get("type") == "tool_use":
                             tool_name = item.get("name", "unknown")
                             tool_input = item.get("input", {})
-                            content_parts.append(f"Tool: {tool_name} with {tool_input}")
+                            input_str = json.dumps(tool_input, indent=2)
+                            if self.debug_options.get('truncate_long_content') and len(input_str) > max_length:
+                                input_str = input_str[:max_length] + "..."
+                            content_parts.append(f"Tool[{i}]: {tool_name} with {input_str}")
+                        elif item.get("type") == "tool_result":
+                            tool_id = item.get("tool_use_id", "unknown")
+                            result = item.get("content", "")
+                            if self.debug_options.get('truncate_long_content') and len(str(result)) > max_length:
+                                result = str(result)[:max_length] + "..."
+                            content_parts.append(f"ToolResult[{i}]: {tool_id} -> {result}")
                         elif "text" in item:
-                            content_parts.append(f"Content: {item['text']}")
+                            text = item['text']
+                            if self.debug_options.get('truncate_long_content') and len(text) > max_length:
+                                text = text[:max_length] + "..."
+                            content_parts.append(f"Content[{i}]: {text}")
 
-            # Tool results
+            # Tool results (direct in payload)
             if "result" in payload:
                 result = payload["result"]
-                if isinstance(result, str) and len(result) < 500:  # Limit long results
-                    content_parts.append(f"Result: {result}")
-                elif isinstance(result, dict):
-                    content_parts.append(f"Result: {json.dumps(result, indent=2)[:500]}...")
-                else:
-                    content_parts.append(f"Result: {str(result)[:200]}...")
+                result_str = str(result)
+                if self.debug_options.get('truncate_long_content') and len(result_str) > max_length:
+                    if isinstance(result, dict):
+                        result_str = json.dumps(result, indent=2)[:max_length] + "..."
+                    else:
+                        result_str = result_str[:max_length] + "..."
+                content_parts.append(f"Result: {result_str}")
 
             # Error content
             if "error" in payload:
-                content_parts.append(f"Error: {payload['error']}")
+                error = payload['error']
+                if self.debug_options.get('truncate_long_content') and len(str(error)) > max_length:
+                    error = str(error)[:max_length] + "..."
+                content_parts.append(f"Error: {error}")
+
+            # Additional payload keys for debugging
+            if self.debug_options.get('show_payload_structure'):
+                other_keys = [k for k in payload.keys() if k not in ["content", "message", "result", "error"]]
+                if other_keys:
+                    content_parts.append(f"Other keys: {other_keys}")
 
             return " | ".join(content_parts) if content_parts else "No readable content"
 
@@ -297,11 +425,11 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             # Log all session data to file if configured
             self._log_session_data(data)
 
+            # Use comprehensive debug logging
+            self._debug_log_data(data)
+
             # Enhanced logging for different event types
             if event == "stream":
-                readable_content = self._extract_readable_content(data)
-                logger.debug(f"Claude stream: {readable_content}")
-
                 # Log tool usage specifically
                 payload = data.get("payload", {})
                 content = payload.get("content", [])
@@ -453,13 +581,69 @@ def main():
         help="File path to log JSONL session data (optional)"
     )
 
+    # Debug options
+    parser.add_argument(
+        "--debug-raw",
+        action="store_true",
+        help="Show complete raw JSON data for all events (most verbose)"
+    )
+    parser.add_argument(
+        "--debug-all",
+        action="store_true",
+        help="Show all events with full data (very verbose)"
+    )
+    parser.add_argument(
+        "--debug-payload",
+        action="store_true",
+        help="Show payload structure analysis"
+    )
+    parser.add_argument(
+        "--debug-content",
+        action="store_true",
+        help="Show content structure analysis"
+    )
+    parser.add_argument(
+        "--debug-metadata",
+        action="store_true",
+        help="Show stream metadata"
+    )
+    parser.add_argument(
+        "--debug-tools",
+        action="store_true",
+        default=True,
+        help="Show tool usage details (default: enabled)"
+    )
+    parser.add_argument(
+        "--debug-full",
+        action="store_true",
+        help="Don't truncate long content (show full text)"
+    )
+    parser.add_argument(
+        "--max-content",
+        type=int,
+        default=500,
+        help="Maximum content length before truncation (default: 500)"
+    )
+
     args = parser.parse_args()
 
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
     try:
-        automation = SpecWorkflowAutomation(args.spec_name, args.project, args.session_log)
+        # Setup debug options based on arguments
+        debug_options = {
+            'show_raw_data': getattr(args, 'debug_raw', False),
+            'show_payload_structure': getattr(args, 'debug_payload', False),
+            'show_content_analysis': getattr(args, 'debug_content', False),
+            'show_tool_details': getattr(args, 'debug_tools', True),
+            'show_stream_metadata': getattr(args, 'debug_metadata', False),
+            'show_all_events': getattr(args, 'debug_all', False),
+            'truncate_long_content': not getattr(args, 'debug_full', False),
+            'max_content_length': getattr(args, 'max_content', 500)
+        }
+
+        automation = SpecWorkflowAutomation(args.spec_name, args.project, args.session_log, debug_options)
         success = automation.run()
         sys.exit(0 if success else 1)
 
