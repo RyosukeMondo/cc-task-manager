@@ -8,7 +8,7 @@ const path = require('path');
 console.log('🚀 Testing Claude Code Worker System...\n');
 
 const testPrompt = 'Create a simple test.txt file with the content "Worker test successful!"';
-const workingDirectory = './test-workspace';
+const workingDirectory = path.join(__dirname, 'test-workspace');
 const testTimeoutSeconds = 60;
 
 const testPayload = {
@@ -26,7 +26,7 @@ console.log('📝 Test Command:', testPayload);
 console.log('\n⚡ Starting Python wrapper...\n');
 
 const wrapper = spawn('python3', [require('path').resolve(__dirname, '../../../scripts/claude_wrapper.py')], {
-  cwd: process.cwd(),
+  cwd: __dirname,
   stdio: ['pipe', 'pipe', 'pipe'],
 });
 console.log(`🔧 Spawned wrapper PID: ${wrapper.pid}`);
