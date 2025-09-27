@@ -12,7 +12,7 @@ import {
 } from './environment.schema';
 
 // Configuration service
-import { AppConfigurationService } from './configuration.service';
+import { ApplicationConfigService as AppConfigurationService } from './config.service';
 
 /**
  * Configuration Module

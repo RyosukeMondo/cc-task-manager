@@ -90,7 +90,7 @@
   - _Requirements: 1.3, 1.4_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Reliability Engineer with expertise in error handling and existing contract infrastructure | Task: Extend existing error handling infrastructure with backend-specific global exception filters following requirements 1.3 and 1.4, leveraging existing SSOT error response formats from contract infrastructure | Restrictions: Must reuse existing error handling patterns from src/contracts/, extend existing Zod error schemas, implement security-safe error messages, provide correlation IDs for tracking, ensure proper HTTP status codes, do not recreate error handling infrastructure | Success: Global exception filter implemented extending existing error infrastructure, consistent error responses using existing patterns, security-safe error handling, correlation ID tracking for debugging_
 
-- [ ] 11. Setup user management module with CASL integration
+- [x] 11. Setup user management module with CASL integration
   - File: apps/backend/src/users/ (user CRUD with authorization integration)
   - Implement user management operations with integrated CASL authorization
   - Apply Liskov Substitution Principle for user service implementations

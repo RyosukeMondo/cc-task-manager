@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
+import { UserModule } from './users/user.module';
 import { WebSocketModule } from './websocket/websocket.module';
 import { DatabaseModule } from './database/database.module';
 import { QueueModule } from './queue/queue.module';
@@ -51,6 +52,9 @@ import { CorrelationIdMiddleware } from './common/middleware';
     
     // Task management module
     TasksModule,
+
+    // User management module with CASL authorization
+    UserModule,
 
     // WebSocket module for real-time communication
     WebSocketModule,

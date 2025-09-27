@@ -11,7 +11,7 @@ module.exports = {
     cwd: '/home/rmondo/repos/cc-task-manager',
     instances: 1,
     autorestart: false,
-    watch: true,
+    watch: false,
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production'
@@ -19,6 +19,30 @@ module.exports = {
     log_date_format: 'YYYY-MM-DD HH:mm:ss',
     error_file: 'logs/pm2-spec-workflow-error.log',
     out_file: 'logs/pm2-spec-workflow-out.log',
+    merge_logs: true,
+    time: true
+  }, {
+    name: 'spec-workflow-dashboard',
+    script: 'npx',
+    args: [
+      '-y',
+      '@pimzino/spec-workflow-mcp@latest',
+      '/home/rmondo/repos/cc-task-manager',
+      '--dashboard',
+      '--port',
+      '3401'
+    ],
+    cwd: '/home/rmondo/repos/cc-task-manager',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production'
+    },
+    log_date_format: 'YYYY-MM-DD HH:mm:ss',
+    error_file: 'logs/pm2-dashboard-error.log',
+    out_file: 'logs/pm2-dashboard-out.log',
     merge_logs: true,
     time: true
   }]
