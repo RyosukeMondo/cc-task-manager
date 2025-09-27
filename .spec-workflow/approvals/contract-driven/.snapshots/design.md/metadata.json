@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/contract-driven/design.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-27T02:42:39.717Z",
+      "trigger": "initial",
+      "approvalId": "approval_1758940959707_30bkfgfdh",
+      "approvalTitle": "Contract-Driven Development Design"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-27T02:43:08.351Z",
+      "trigger": "approved",
+      "approvalId": "approval_1758940959707_30bkfgfdh",
+      "approvalTitle": "Contract-Driven Development Design"
+    }
+  ]
+}

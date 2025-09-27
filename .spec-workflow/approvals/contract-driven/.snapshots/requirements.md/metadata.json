@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/contract-driven/requirements.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-27T02:33:16.238Z",
+      "trigger": "initial",
+      "approvalId": "approval_1758940396199_lcaedzrfe",
+      "approvalTitle": "Contract-Driven Development Requirements"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-27T02:41:00.599Z",
+      "trigger": "approved",
+      "approvalId": "approval_1758940396199_lcaedzrfe",
+      "approvalTitle": "Contract-Driven Development Requirements"
+    }
+  ]
+}

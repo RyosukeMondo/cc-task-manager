@@ -9,7 +9,7 @@
   - _Requirements: 1.1, 1.2_
   - _Prompt: Implement the task for spec contract-driven, first run spec-workflow-guide to get the workflow guide then implement the task: Role: TypeScript architect specializing in schema management and versioning systems | Task: Create a comprehensive ContractRegistry class for managing Zod schemas with version control, compatibility checking, and centralized storage following requirements 1.1 and 1.2, leveraging existing Zod patterns from src/config/worker.config.ts | Restrictions: Do not modify existing schemas, maintain backward compatibility, follow established TypeScript patterns, use dependency injection | _Leverage: src/config/worker.config.ts for Zod patterns, existing TypeScript architecture | _Requirements: 1.1 (auto-generated OpenAPI), 1.2 (single source of truth) | Success: ContractRegistry manages schemas with versioning, provides compatibility checking, integrates with existing Zod architecture, supports contract registration and retrieval | Instructions: Mark this task as in-progress in tasks.md when starting, complete when ContractRegistry is fully implemented and tested_
 
-- [ ] 2. Implement OpenAPI generation service in src/contracts/ApiContractGenerator.ts
+- [x] 2. Implement OpenAPI generation service in src/contracts/ApiContractGenerator.ts
   - File: src/contracts/ApiContractGenerator.ts
   - Create service to generate OpenAPI specs from Zod schemas
   - Add endpoint metadata handling and documentation generation

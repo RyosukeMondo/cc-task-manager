@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/contract-driven/tasks.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-27T02:44:46.783Z",
+      "trigger": "initial",
+      "approvalId": "approval_1758941086765_fwe1qetyu",
+      "approvalTitle": "Contract-Driven Development Tasks"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-27T02:45:51.964Z",
+      "trigger": "approved",
+      "approvalId": "approval_1758941086765_fwe1qetyu",
+      "approvalTitle": "Contract-Driven Development Tasks"
+    }
+  ]
+}
