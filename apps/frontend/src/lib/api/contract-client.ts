@@ -1,5 +1,15 @@
 import { ContractRegistry } from '@/contracts/ContractRegistry'
 import { TypeScriptGenerator } from '@/contracts/TypeScriptGenerator'
+import {
+  validateProcessConfig,
+  validateTaskExecutionRequest,
+  validateWorkerConfig,
+  validateTaskStatus,
+  ProcessConfigSchema,
+  TaskExecutionRequestSchema,
+  WorkerConfigSchema,
+  TaskStatusSchema
+} from '@cc-task-manager/schemas'
 import type {
   ProcessConfig,
   TaskExecutionRequest,
@@ -23,13 +33,14 @@ export class ContractApiClient {
   }
 
   /**
-   * Make a type-safe API request using contract validation
+   * Make a type-safe API request using dual validation (contract + schema package)
    * Implements Dependency Inversion Principle (DIP) with contract abstractions
    */
   private async request<T>(
     method: string,
     path: string,
     data?: unknown,
+    schemaValidator?: (data: unknown) => unknown,
     contractName?: string,
     contractVersion?: string
   ): Promise<T> {
@@ -46,21 +57,34 @@ export class ContractApiClient {
       },
     }
 
-    // Validate request data against contract if specified
-    if (data && contractName && contractVersion) {
+    let validatedData = data
+
+    // First: Validate using package schemas (SSOT from @cc-task-manager/schemas)
+    if (data && schemaValidator) {
+      try {
+        validatedData = schemaValidator(data)
+      } catch (error) {
+        throw new Error(`Schema validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    }
+
+    // Second: Additional contract validation if specified (legacy support)
+    if (validatedData && contractName && contractVersion) {
       const validation = this.contractRegistry.validateAgainstContract(
         contractName,
         contractVersion,
-        data
+        validatedData
       )
 
       if (!validation.success) {
         throw new Error(`Contract validation failed: ${validation.error}`)
       }
 
-      options.body = JSON.stringify(validation.data)
-    } else if (data) {
-      options.body = JSON.stringify(data)
+      validatedData = validation.data
+    }
+
+    if (validatedData) {
+      options.body = JSON.stringify(validatedData)
     }
 
     const response = await fetch(url, options)
@@ -87,6 +111,7 @@ export class ContractApiClient {
       'POST',
       '/api/tasks',
       task,
+      validateTaskExecutionRequest,
       'TaskExecutionRequest',
       '1.0.0'
     )
@@ -97,6 +122,7 @@ export class ContractApiClient {
       'PATCH',
       `/api/tasks/${taskId}`,
       updates,
+      (data) => TaskStatusSchema.partial().parse(data),
       'TaskStatus',
       '1.0.0'
     )
@@ -116,6 +142,7 @@ export class ContractApiClient {
       'POST',
       '/api/processes',
       config,
+      validateProcessConfig,
       'ProcessConfig',
       '1.0.0'
     )
@@ -131,6 +158,7 @@ export class ContractApiClient {
       'POST',
       '/api/workers',
       config,
+      validateWorkerConfig,
       'WorkerConfig',
       '1.0.0'
     )

@@ -9,7 +9,7 @@
   - _Requirements: 1.1, 6.1_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Architect specializing in Next.js and contract-driven development | Task: Create apps/frontend application structure with package.json, layout.tsx, and TypeScript configuration following requirements 1.1 and 6.1, LEVERAGING existing contract infrastructure from src/contracts/ as SSOT foundation | Restrictions: Must reuse existing ContractRegistry and TypeScriptGenerator - do not recreate contract infrastructure, follow SOLID principles (SRP, OCP, LSP, ISP, DIP), maintain KISS principle, ensure proper Next.js App Router setup | Success: Frontend application structure created using existing contract foundation, ContractRegistry properly integrated, TypeScript generation working from existing infrastructure, SOLID principles implemented
 
-- [-] 2. Generate TypeScript API client using existing contract infrastructure
+- [x] 2. Generate TypeScript API client using existing contract infrastructure
   - File: apps/frontend/src/lib/api/ (generated API client and TanStack Query integration)
   - Use existing TypeScriptGenerator and @cc-task-manager/schemas to create type-safe API client from backend contracts
   - Integrate generated types and package types with TanStack Query for server state management
