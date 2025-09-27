@@ -8,6 +8,16 @@ Your system provides **three different ways** to run Claude Code tasks:
 2. **NestJS Application with Queue** - Full-featured task management system
 3. **Direct CLI Testing** - For debugging Claude Code commands
 
+## Architecture
+
+The system now uses a **monorepo structure** with independent applications:
+
+- **Main Application** (`src/`): Core API and web interface
+- **Worker Application** (`apps/worker/`): Independent Claude Code task processor
+- **Shared Packages** (`packages/`): Common types, schemas, and utilities
+
+The worker runs as a standalone NestJS application that can be deployed independently from the main application.
+
 ---
 
 ## Method 1: Direct Python Wrapper (Recommended for Testing)
@@ -53,7 +63,9 @@ docker run -d -p 6379:6379 redis:latest
 
 > 💡 The `test-bullmq-worker.js` script now checks for Redis automatically. If Redis is not available but Docker is installed, it will start (or reuse) a local container named `claude-redis` based on `redis:7-alpine` before running the test.
 
-### Starting the Application
+### Starting the Applications
+
+#### Main Application
 ```bash
 # Development mode
 npm run start:dev
@@ -63,6 +75,20 @@ npm run build
 npm run start:prod
 
 # The app starts on port 3000 by default
+```
+
+#### Worker Application (Independent)
+```bash
+# Development mode
+npm run start:worker:dev
+
+# Production mode
+npm run build:worker
+npm run start:worker:prod
+
+# Or using workspace commands directly
+pnpm --filter @cc-task-manager/worker start:dev
+pnpm --filter @cc-task-manager/worker start:prod
 ```
 
 ### Using the Queue System
@@ -131,11 +157,11 @@ CLAUDE_API_KEY=your-api-key  # If needed
 ```
 
 ### Application Config
-Check `src/config/` for detailed configuration options including:
-- Worker pool settings
-- Queue configuration
-- Claude Code wrapper paths
-- Timeout settings
+The worker now runs as an independent application with its own configuration:
+- Worker configuration: `apps/worker/src/` and shared packages
+- Main app configuration: `src/config/` for the main application
+- Shared configuration: `packages/schemas/` and `packages/types/`
+- Worker-specific settings: Worker pool, queue configuration, timeout settings
 
 ---
 
@@ -148,10 +174,22 @@ node test-worker.js
 
 ### 2. Test Queue System (requires Redis)
 ```bash
-node simple-test.js
+node test-bullmq-worker.js
 ```
 
-### 3. Test Claude Code Directly
+### 3. Test Worker Application Independently
+```bash
+# Run worker tests
+npm run test:worker
+
+# Build worker independently
+npm run build:worker
+
+# Start worker in development mode
+npm run start:worker:dev
+```
+
+### 4. Test Claude Code Directly
 ```bash
 claude --version
 claude auth status
@@ -179,8 +217,11 @@ sudo systemctl start redis-server
 
 **Worker Not Processing Jobs**
 ```bash
-# Check application logs
+# Check main application logs
 npm run start:dev
+
+# Check worker application logs
+npm run start:worker:dev
 
 # Check worker status in logs
 ```
@@ -241,8 +282,9 @@ python3 scripts/claude_wrapper.py
 
 1. **Test the basic wrapper**: Run `node test-worker.js`
 2. **Set up Redis**: For queue system testing
-3. **Start the app**: `npm run start:dev`
-4. **Create custom tasks**: Use the queue system for your workflows
-5. **Monitor workers**: Check logs and queue status
+3. **Start the main app**: `npm run start:dev`
+4. **Start the worker app**: `npm run start:worker:dev`
+5. **Create custom tasks**: Use the queue system for your workflows
+6. **Monitor workers**: Check logs and queue status
 
 The worker system is functional - the main issue appears to be Claude Code CLI hanging on certain commands. The wrapper handles this gracefully with timeouts and proper error reporting.

@@ -81,7 +81,7 @@
   - _Requirements: 1.4_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Cleanup Specialist with expertise in code migration and dependency management | Task: Remove old worker directory and update references following requirement 1.4, completing the migration safely | Restrictions: Verify all functionality works before deletion, do not remove files still in use, ensure no broken imports remain | Success: Old worker directory removed, no broken references, all imports point to new location_
 
-- [ ] 10. Update documentation and scripts for new worker structure
+- [x] 10. Update documentation and scripts for new worker structure
   - File: README.md, package.json scripts, docker configurations
   - Update documentation to reflect new worker application structure
   - Modify build and development scripts to handle worker independently
