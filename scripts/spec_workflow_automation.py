@@ -207,98 +207,58 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             self.current_run_id = None
 
     def _check_text_for_completion_patterns(self, text_content: str) -> bool:
-        """Check a text string for completion patterns."""
+        """Check a text string for completion patterns - LIMITED to specific completion indicators.
+
+        Only detects completion when Claude explicitly states that all tasks are marked as completed
+        in the tasks file, indicating genuine spec completion analysis.
+        """
         if not text_content or len(text_content.strip()) == 0:
             return False
 
         text_lower = text_content.lower()
-        logger.debug(f"🔍 Pattern checking on text ({len(text_content)} chars): {text_lower[:100]}...")
+        logger.debug(f"🔍 Checking limited completion patterns in: {text_lower[:100]}...")
 
-        # Simple string-based completion patterns (case insensitive)
-        simple_patterns = [
-            "all tasks completed", "spec completed",
-            "all tasks in the spec have been finished",
-            "all tasks in the backend-implementation spec have been finished",
-            "no remaining tasks", "0 remaining tasks", "0 tasks remaining",
-            "[x] all tasks", "✓ all tasks", "✅ all tasks",
-            "status: completed", "overall status: completed",
-            "all tasks status: completed",
-            "all tasks are marked as completed",
-            "all tasks have been completed successfully",
-            "backend-implementation spec has been fully completed",
-            "spec has been fully completed",
-            "end session", "check remaining task count",
-            "✅ all 15 tasks completed",
-            "since there are no remaining tasks to work on",
+        # HARDCODED ROBUST patterns - cast a wide net for completion detection
+        specific_completion_patterns = [
+            # Original patterns
             "specification is fully implemented",
-            "15/15 tasks completed (100%)",
+            "all tasks are marked as completed",
+            "all tasks are marked as completed (`[x]`)",
+            "all tasks in the tasks file are completed",
+            "all tasks are completed (`[x]`)",
+
+            # Hardcoded numeric patterns for common task counts
+            "all 12 tasks are completed",
             "all 15 tasks are completed",
+            "all 10 tasks are completed",
+            "all 8 tasks are completed",
+            "all 6 tasks are completed",
 
-            # Additional patterns from latest logs
-            "all 15 tasks have already been completed",
-            "all 15 tasks in the backend-implementation spec have been completed",
-            "remaining task count: 0",
+            # Zero pending patterns
             "0 pending tasks",
-            "all tasks marked as [x]",
-            "specification is fully complete",
-            "backend-implementation specification is fully complete",
-            "since all 15 tasks have already been completed",
-            "since there are no pending tasks"
+            "with 0 pending tasks",
+            "0 tasks remaining",
+            "no pending tasks",
+            "no remaining tasks",
+
+            # Status completion patterns
+            "specification shows that all",
+            "specification status: completed",
+            "overall status: completed",
+            "spec completed",
+            "spec is completed",
+            "specification completed",
+
+            # Combined patterns from the logs
+            "all 12 tasks are completed with 0 pending tasks",
+            "shows that all 12 tasks are completed",
+            "specification shows that all 12 tasks are completed"
         ]
 
-        for pattern in simple_patterns:
+        for pattern in specific_completion_patterns:
             if pattern in text_lower:
-                logger.info(f"🎯 COMPLETION PATTERN DETECTED: '{pattern}' in text!")
-                logger.info(f"🔍 Text excerpt: {text_content[:300]}...")
+                logger.info(f"🎯 SPECIFIC COMPLETION PATTERN: '{pattern}' detected!")
                 return True
-
-        # Debug: Log some key patterns that should match to see why they don't
-        key_patterns_to_check = [
-            "all 15 tasks have already been completed",
-            "0 pending tasks",
-            "specification is fully complete"
-        ]
-
-        for key_pattern in key_patterns_to_check:
-            if key_pattern in text_lower:
-                logger.debug(f"🔍 Found key pattern '{key_pattern}' but no match triggered - check logic!")
-            else:
-                logger.debug(f"🔍 Key pattern '{key_pattern}' NOT found in text")
-
-        # Regex-based patterns for numeric completion (X/X format)
-        numeric_patterns = [
-            r'(\d+)/(\d+)\s+completed',        # "15/15 completed"
-            r'(\d+)/(\d+)\s+tasks?\s+(?:completed|finished)', # "5/5 tasks finished"
-            r'task\s+progress:\s*(\d+)/(\d+)', # "Task progress: 15/15"
-            r'completed:\s*(\d+)/(\d+)',       # "completed: 15/15"
-            r'(\d+)\s+of\s+(\d+)\s+tasks?\s+completed', # "15 of 15 tasks completed"
-            r'all\s+(\d+)\s+tasks?\s+(?:are\s+)?(?:marked\s+as\s+)?completed', # "All 15 tasks completed"
-            r'(\d+)\s+tasks?\s+completed',     # "15 tasks completed"
-            r'remaining\s+tasks?:\s*\*?\*?0\*?\*?', # "Remaining tasks: 0" or "**0**"
-        ]
-
-        for pattern in numeric_patterns:
-            match = re.search(pattern, text_lower)
-            if match:
-                if len(match.groups()) >= 2:
-                    # For X/Y patterns, check if X == Y
-                    completed = int(match.group(1))
-                    total = int(match.group(2))
-                    if completed == total and total > 0:
-                        logger.info(f"🎯 NUMERIC COMPLETION PATTERN DETECTED: {completed}/{total}")
-                        return True
-                else:
-                    # For remaining tasks = 0 patterns or single number patterns
-                    logger.info(f"🎯 COMPLETION PATTERN DETECTED: '{match.group(0)}'")
-                    return True
-
-        # Check for markdown checkbox completion patterns - count [x] vs total tasks
-        completed_tasks = len(re.findall(r'\[x\]|\[X\]|✓|✅', text_content))
-        total_tasks = len(re.findall(r'\[[x \-]\]|\[X \-\]', text_content, re.IGNORECASE))
-
-        if completed_tasks > 0 and total_tasks > 0 and completed_tasks == total_tasks:
-            logger.info(f"🎯 ALL MARKDOWN TASKS COMPLETED: {completed_tasks}/{total_tasks}")
-            return True
 
         return False
 
@@ -327,107 +287,73 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                                     return True
 
 
-                            # Check tool results
+                            # Check tool results - ONLY from spec-workflow tools
                             elif item.get("type") == "tool_result":
                                 tool_result_content = item.get("content")
 
-                                # Log the raw tool result for debugging
-                                logger.debug(f"Tool result found: {tool_result_content}")
+                                # Check if this is from a spec-workflow tool
+                                tool_use_id = item.get("tool_use_id", "")
+
+                                # Enhanced debug logging for ALL tool results
+                                logger.info(f"🔧 TOOL RESULT DETECTED - ID: {tool_use_id}")
+                                logger.info(f"🔧 Tool result content type: {type(tool_result_content)}")
+                                logger.info(f"🔧 Tool result content preview: {str(tool_result_content)[:300]}...")
 
                                 # Parse the tool result content if it's a string
                                 if isinstance(tool_result_content, str):
                                     try:
                                         result_data = json.loads(tool_result_content)
 
-                                        # Log parsed result data
-                                        logger.debug(f"Parsed tool result: {result_data}")
+                                        # Enhanced logging for JSON tool results
+                                        logger.info(f"🔧 Parsed JSON tool result keys: {list(result_data.keys()) if isinstance(result_data, dict) else 'not a dict'}")
 
-                                        # Check if this is a spec-status result
+                                        # STRICT: Only check completion for spec-workflow tool results
+                                        # Look for spec-workflow specific data structures
                                         if (isinstance(result_data, dict) and
                                             result_data.get("success") and
                                             "data" in result_data):
 
                                             data = result_data["data"]
-                                            logger.debug(f"Tool result data: {data}")
 
-                                            # Check task progress
+                                            # Verify this looks like spec-workflow data (has spec-specific fields)
+                                            has_spec_fields = any(field in data for field in [
+                                                "taskProgress", "overallStatus", "specName", "name",
+                                                "completedTasks", "pendingTasks", "phases", "currentPhase"
+                                            ])
+
+                                            logger.info(f"🔧 Tool result has spec fields: {has_spec_fields}")
+                                            if has_spec_fields:
+                                                logger.info(f"🔧 Available data fields: {list(data.keys())}")
+
+                                            if not has_spec_fields:
+                                                logger.debug("Tool result doesn't contain spec-workflow fields, ignoring")
+                                                continue
+
+                                            logger.info(f"🎯 SPEC-WORKFLOW TOOL RESULT DETECTED!")
+
+                                            # Check task progress (primary completion indicator)
                                             task_progress = data.get("taskProgress", {})
                                             if task_progress:
                                                 total = task_progress.get("total", 0)
                                                 completed = task_progress.get("completed", 0)
 
-                                                logger.info(f"Task progress detected: {completed}/{total}")
+                                                logger.info(f"📊 Spec-workflow task progress: {completed}/{total}")
 
                                                 if total > 0 and completed == total:
-                                                    logger.info("All tasks completed - spec workflow completion detected!")
+                                                    logger.info("🎯 RELIABLE COMPLETION: All tasks completed via spec-workflow taskProgress!")
                                                     return True
 
-                                            # Also check overall status
+                                            # Check overall status (secondary completion indicator)
                                             overall_status = data.get("overallStatus")
+                                            logger.info(f"📊 Overall status: {overall_status}")
                                             if overall_status == "completed":
-                                                logger.info("Overall status completed - spec workflow completion detected!")
+                                                logger.info("🎯 RELIABLE COMPLETION: Overall status completed via spec-workflow!")
                                                 return True
-
-                                            # Check for task completion status in various data structures
-                                            if "tasks" in data:
-                                                tasks = data["tasks"]
-                                                if isinstance(tasks, list):
-                                                    completed_count = sum(1 for task in tasks if task.get("status") == "completed" or "[x]" in str(task).lower())
-                                                    total_count = len(tasks)
-                                                    if total_count > 0 and completed_count == total_count:
-                                                        logger.info(f"All tasks in task list completed: {completed_count}/{total_count}")
-                                                        return True
 
                                     except json.JSONDecodeError as e:
                                         logger.debug(f"Failed to parse tool result as JSON: {e}")
-                                        # If it's not JSON, check for enhanced text patterns
-                                        tool_content_lower = tool_result_content.lower()
-
-                                        # Enhanced patterns for tool results (simple strings)
-                                        simple_tool_patterns = [
-                                            "all tasks completed", "spec completed", "all tasks are marked as completed",
-                                            "remaining tasks: 0", "no remaining tasks",
-                                            "status: completed", "overall status: completed",
-                                            "[x] all", "✓ all", "✅ all"
-                                        ]
-
-                                        for pattern in simple_tool_patterns:
-                                            if pattern in tool_content_lower:
-                                                logger.info(f"Completion pattern '{pattern}' detected in tool result!")
-                                                return True
-
-                                        # Regex patterns for tool results (numeric completion)
-                                        tool_numeric_patterns = [
-                                            r'(\d+)/(\d+)\s*(?:completed|tasks?|finished)', # "15/15 completed", "15/15 tasks"
-                                            r'completed:\s*(\d+)/(\d+)',                    # "completed: 15/15"
-                                            r'(\d+)\s+of\s+(\d+)\s+tasks?\s+completed',     # "15 of 15 tasks completed"
-                                            r'all\s+(\d+)\s+tasks?\s+completed',            # "all 15 tasks completed"
-                                            r'(\d+)\s+tasks?\s+completed',                  # "15 tasks completed"
-                                            r'remaining\s+tasks?:\s*0',                     # "remaining tasks: 0"
-                                        ]
-
-                                        for pattern in tool_numeric_patterns:
-                                            match = re.search(pattern, tool_content_lower)
-                                            if match:
-                                                if len(match.groups()) >= 2:
-                                                    # For X/Y patterns, check if X == Y
-                                                    completed = int(match.group(1))
-                                                    total = int(match.group(2))
-                                                    if completed == total and total > 0:
-                                                        logger.info(f"Tool result completion: {completed}/{total}")
-                                                        return True
-                                                else:
-                                                    # For single number or zero patterns
-                                                    logger.info(f"Tool result completion pattern: '{match.group(0)}'")
-                                                    return True
-
-                                        # Check for markdown checkboxes in tool results
-                                        completed_tasks = len(re.findall(r'\[x\]|\[X\]|✓|✅', tool_result_content))
-                                        total_tasks = len(re.findall(r'\[[x \-]\]|\[X \-\]', tool_result_content, re.IGNORECASE))
-
-                                        if completed_tasks > 0 and total_tasks > 0 and completed_tasks == total_tasks:
-                                            logger.info(f"All markdown tasks completed in tool result: {completed_tasks}/{total_tasks}")
-                                            return True
+                                        # DISABLED: String pattern matching in tool results to prevent false positives
+                                        # Only structured JSON data from spec-workflow tools should trigger completion
 
             return False
 
@@ -618,14 +544,127 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
 
             # Enhanced logging for different event types
             if event == "stream":
-                # Log tool usage specifically
+                # Log ALL payload structure for debugging
                 payload = data.get("payload", {})
+                logger.debug(f"🔍 STREAM PAYLOAD KEYS: {list(payload.keys())}")
+
+                # Log tool usage specifically
                 content = payload.get("content", [])
                 if isinstance(content, list):
-                    for item in content:
-                        if isinstance(item, dict) and item.get("type") == "tool_use":
-                            tool_name = item.get("name", "unknown")
-                            logger.info(f"Tool used: {tool_name}")
+                    for i, item in enumerate(content):
+                        if isinstance(item, dict):
+                            item_type = item.get("type", "unknown")
+                            item_keys = list(item.keys())
+                            logger.debug(f"🔍 Content[{i}] type: {item_type}, keys: {item_keys}")
+
+                            # Detect tool use by structure (has id, name, input)
+                            if "name" in item and "input" in item and "id" in item:
+                                tool_name = item.get("name", "unknown")
+                                logger.info(f"🔧 TOOL USED: {tool_name}")
+                                if "spec-workflow" in tool_name or "spec_status" in tool_name:
+                                    logger.info(f"🎯 SPEC-WORKFLOW TOOL DETECTED: {tool_name}")
+
+                            # Detect tool result by structure (has tool_use_id, content, is_error)
+                            elif "tool_use_id" in item and "content" in item:
+                                logger.info(f"🔧 TOOL RESULT FOUND IN CONTENT[{i}]")
+                                tool_result_content = item.get("content")
+                                logger.info(f"🔧 Tool result content: {str(tool_result_content)[:200]}...")
+
+                                # Try to parse as JSON for spec-workflow data
+                                if isinstance(tool_result_content, str):
+                                    try:
+                                        result_data = json.loads(tool_result_content)
+                                        if (isinstance(result_data, dict) and
+                                            result_data.get("success") and
+                                            "data" in result_data):
+
+                                            data_obj = result_data["data"]
+                                            if "taskProgress" in data_obj:
+                                                task_progress = data_obj["taskProgress"]
+                                                total = task_progress.get("total", 0)
+                                                completed = task_progress.get("completed", 0)
+                                                logger.info(f"🎯 SPEC TOOL RESULT: {completed}/{total} tasks")
+
+                                                if total > 0 and completed == total:
+                                                    logger.info("🎯 COMPLETION DETECTED via tool result structure!")
+                                                    return True
+                                    except:
+                                        pass
+
+                                # ROBUST: Check if this is a tasks.md file with all [x] completed
+                                if isinstance(tool_result_content, str):
+                                    # Check if this looks like a tasks file (has task markers)
+                                    has_task_markers = bool(re.search(r'- \[[x ]\]', tool_result_content, re.IGNORECASE))
+
+                                    if has_task_markers:
+                                        logger.info("🔍 TASKS FILE DETECTED - Analyzing completion status...")
+
+                                        # Count [x] vs [ ] tasks in the content
+                                        completed_tasks = len(re.findall(r'- \[x\]', tool_result_content, re.IGNORECASE))
+                                        pending_tasks = len(re.findall(r'- \[ \]', tool_result_content, re.IGNORECASE))
+                                        total_tasks = completed_tasks + pending_tasks
+
+                                        logger.info(f"🔍 TASK ANALYSIS DETAILS:")
+                                        logger.info(f"   - Completed tasks [x]: {completed_tasks}")
+                                        logger.info(f"   - Pending tasks [ ]: {pending_tasks}")
+                                        logger.info(f"   - Total tasks: {total_tasks}")
+
+                                        # Show sample of found patterns for debugging
+                                        completed_matches = re.findall(r'- \[x\].*', tool_result_content, re.IGNORECASE)[:3]
+                                        pending_matches = re.findall(r'- \[ \].*', tool_result_content, re.IGNORECASE)[:3]
+
+                                        logger.info(f"🔍 Sample completed tasks: {completed_matches}")
+                                        logger.info(f"🔍 Sample pending tasks: {pending_matches}")
+
+                                        if total_tasks > 0 and pending_tasks == 0 and completed_tasks >= 3:
+                                            logger.info("🎯 *** COMPLETION DETECTED *** All tasks marked [x] in tasks file!")
+                                            logger.info("🚨 TRIGGERING IMMEDIATE SPEC COMPLETION!")
+                                            return True
+                                        else:
+                                            logger.info(f"🔍 Not complete: {pending_tasks} pending tasks remain")
+
+                                    # Also try to parse as potential spec-workflow JSON (verbose logging)
+                                    elif "{" in tool_result_content and "}" in tool_result_content:
+                                        logger.info("🔍 JSON-like content detected, attempting parse...")
+                                        try:
+                                            result_data = json.loads(tool_result_content)
+                                            logger.info(f"🔍 JSON parsed successfully, keys: {list(result_data.keys()) if isinstance(result_data, dict) else 'not dict'}")
+
+                                            if isinstance(result_data, dict):
+                                                logger.info(f"🔍 JSON structure analysis:")
+                                                logger.info(f"   - Has 'success': {result_data.get('success')}")
+                                                logger.info(f"   - Has 'data': {'data' in result_data}")
+
+                                                if result_data.get("success") and "data" in result_data:
+                                                    data_obj = result_data["data"]
+                                                    logger.info(f"🔍 Data object keys: {list(data_obj.keys()) if isinstance(data_obj, dict) else 'not dict'}")
+
+                                                    if "taskProgress" in data_obj:
+                                                        task_progress = data_obj["taskProgress"]
+                                                        total = task_progress.get("total", 0)
+                                                        completed = task_progress.get("completed", 0)
+                                                        logger.info(f"🎯 *** SPEC-WORKFLOW TOOL RESULT *** {completed}/{total} tasks")
+
+                                                        if total > 0 and completed == total:
+                                                            logger.info("🎯 *** COMPLETION DETECTED *** via spec-workflow taskProgress!")
+                                                            logger.info("🚨 TRIGGERING IMMEDIATE SPEC COMPLETION!")
+                                                            return True
+                                        except Exception as e:
+                                            logger.debug(f"🔍 JSON parse failed (not an error): {e}")
+
+                            # Legacy detection for explicit types
+                            elif item.get("type") == "tool_use":
+                                tool_name = item.get("name", "unknown")
+                                logger.info(f"🔧 TOOL USED (legacy): {tool_name}")
+
+                            elif item.get("type") == "tool_result":
+                                logger.info(f"🔧 TOOL RESULT FOUND (legacy) IN CONTENT[{i}]")
+
+                # Also check if tool results are at payload level
+                if "tool_result" in payload:
+                    logger.info(f"🔧 TOOL RESULT FOUND AT PAYLOAD LEVEL")
+                if "result" in payload:
+                    logger.info(f"🔧 RESULT FOUND AT PAYLOAD LEVEL")
 
                 # Also check result field in ResultMessage for completion patterns
                 if payload.get("message_type") == "ResultMessage" and "result" in payload:
@@ -682,6 +721,28 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                     self.session_active = False
                     return True
 
+            elif event == "tool_result":
+                # Handle tool result events directly
+                logger.info(f"🔧 DIRECT TOOL RESULT EVENT DETECTED!")
+                logger.info(f"🔧 Tool result data keys: {list(data.keys())}")
+
+                # Check if this is a spec-workflow tool result
+                tool_result = data.get("result", {})
+                if isinstance(tool_result, dict):
+                    if (tool_result.get("success") and "data" in tool_result and
+                        "taskProgress" in tool_result.get("data", {})):
+
+                        task_data = tool_result["data"]
+                        task_progress = task_data.get("taskProgress", {})
+                        total = task_progress.get("total", 0)
+                        completed = task_progress.get("completed", 0)
+
+                        logger.info(f"🎯 DIRECT TOOL RESULT - Task progress: {completed}/{total}")
+
+                        if total > 0 and completed == total:
+                            logger.info("🎯 COMPLETION DETECTED via direct tool result event!")
+                            self.spec_completed = True
+
             else:
                 # Log other events with their data
                 logger.debug(f"Event '{event}': {json.dumps(data, indent=2)}")
@@ -689,7 +750,9 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             # Check for spec workflow completion
             if self._detect_spec_workflow_completion(data):
                 self.spec_completed = True
-                logger.info("🎉 SPEC WORKFLOW COMPLETION DETECTED! Will stop after current session ends.")
+                logger.info("🎉 SPEC WORKFLOW COMPLETION DETECTED!")
+                logger.info("🚨 SETTING COMPLETION FLAG AND FORCING SESSION END!")
+                return True  # Force session end immediately
 
             return False
 
