@@ -19,15 +19,15 @@ if ! command -v python3 >/dev/null 2>&1; then
 fi
 
 # Ensure Python wrapper exists (used by test-worker.js)
-if [ ! -f scripts/claude_wrapper.py ]; then
-  echo "❌ Missing required file: scripts/claude_wrapper.py"
+if [ ! -f ../../scripts/claude_wrapper.py ]; then
+  echo "❌ Missing required file: ../../scripts/claude_wrapper.py"
   exit 1
 fi
 
 # Ensure the working directory used by test-worker.js exists
 mkdir -p ./test-workspace
 
-echo "⚡ Running: node test-worker.js"
+echo "⚡ Running: node ./test-worker.js"
 echo ""
-node test-worker.js
+node ./test-worker.js
 exit $?
