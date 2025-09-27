@@ -94,14 +94,25 @@ const EVENT_STATUS_MAP: Record<string, { status: LegacyStatus; returnCode?: numb
 const isLegacyStatus = (value: unknown): value is LegacyStatus =>
   typeof value === 'string' && (LEGACY_STATUS_VALUES as readonly string[]).includes(value);
 
-const deriveStatus = (
-  event: string,
-  data: ClaudeCodeEvent
-): { status: LegacyStatus | null; returnCode?: number } => {
-  // Prefer SSOT outcome from wrapper if provided
-  if (typeof (data as any).outcome === 'string') {
-    const outcome = String((data as any).outcome).toLowerCase();
-    switch (outcome) {
+/**
+ * Strategy pattern for deriving status from different data sources
+ */
+interface StatusDerivationStrategy {
+  derive(data: ClaudeCodeEvent, event?: string): { status: LegacyStatus | null; returnCode?: number } | null;
+}
+
+/**
+ * Derives status from SSOT outcome field (highest priority)
+ */
+class OutcomeStatusStrategy implements StatusDerivationStrategy {
+  derive(data: ClaudeCodeEvent): { status: LegacyStatus | null; returnCode?: number } | null {
+    const outcome = (data as any).outcome;
+    if (typeof outcome !== 'string') {
+      return null;
+    }
+
+    const normalizedOutcome = outcome.toLowerCase();
+    switch (normalizedOutcome) {
       case 'completed':
         return { status: 'completed', returnCode: 0 };
       case 'failed':
@@ -114,20 +125,44 @@ const deriveStatus = (
         return { status: 'error' };
       case 'running':
         return { status: 'running' };
+      default:
+        return null;
     }
   }
+}
 
-  // Event mapping fallback
-  const mapping = EVENT_STATUS_MAP[event];
-  if (mapping) {
+/**
+ * Derives status from event type mapping
+ */
+class EventStatusStrategy implements StatusDerivationStrategy {
+  derive(data: ClaudeCodeEvent, event?: string): { status: LegacyStatus | null; returnCode?: number } | null {
+    if (!event) {
+      return null;
+    }
+
+    const mapping = EVENT_STATUS_MAP[event];
+    if (!mapping) {
+      return null;
+    }
+
+    // Handle timeout override
     if (mapping.status === 'failed' && data.reason === 'timeout') {
       return { status: 'timeout', returnCode: mapping.returnCode ?? 1 };
     }
+
     return mapping;
   }
+}
 
-  // State fallback
-  if (typeof data.state === 'string') {
+/**
+ * Derives status from state field
+ */
+class StateStatusStrategy implements StatusDerivationStrategy {
+  derive(data: ClaudeCodeEvent): { status: LegacyStatus | null; returnCode?: number } | null {
+    if (typeof data.state !== 'string') {
+      return null;
+    }
+
     const normalizedState = data.state.trim().toLowerCase();
     switch (normalizedState) {
       case 'idle':
@@ -144,37 +179,97 @@ const deriveStatus = (
         return { status: 'running' };
     }
   }
+}
 
-  // Status / payload fallbacks
-  if (isLegacyStatus(data.status)) {
-    const inferredReturnCode =
-      data.status === 'completed'
-        ? 0
-        : ['failed', 'timeout', 'error'].includes(data.status)
-        ? 1
-        : undefined;
-    return { status: data.status, returnCode: inferredReturnCode };
+/**
+ * Derives status from legacy status field or payload
+ */
+class LegacyStatusStrategy implements StatusDerivationStrategy {
+  derive(data: ClaudeCodeEvent): { status: LegacyStatus | null; returnCode?: number } | null {
+    // Try direct status field
+    if (isLegacyStatus(data.status)) {
+      return {
+        status: data.status,
+        returnCode: this.inferReturnCode(data.status)
+      };
+    }
+
+    // Try payload status
+    if (data.payload && typeof data.payload === 'object') {
+      const payloadRecord = data.payload as Record<string, unknown>;
+      const payloadStatus = payloadRecord.status;
+      if (isLegacyStatus(payloadStatus)) {
+        return {
+          status: payloadStatus,
+          returnCode: this.inferReturnCode(payloadStatus)
+        };
+      }
+    }
+
+    return null;
   }
 
-  if (data.payload && typeof data.payload === 'object') {
-    const payloadRecord = data.payload as Record<string, unknown>;
-    const payloadStatus = payloadRecord.status;
-    if (isLegacyStatus(payloadStatus)) {
-      const inferredReturnCode =
-        payloadStatus === 'completed'
-          ? 0
-          : ['failed', 'timeout', 'error'].includes(payloadStatus)
-          ? 1
-          : undefined;
-      return { status: payloadStatus, returnCode: inferredReturnCode };
+  private inferReturnCode(status: LegacyStatus): number | undefined {
+    switch (status) {
+      case 'completed':
+        return 0;
+      case 'failed':
+      case 'timeout':
+      case 'error':
+        return 1;
+      default:
+        return undefined;
     }
   }
+}
 
-  if (data.reason === 'timeout') {
-    return { status: 'timeout', returnCode: 1 };
+/**
+ * Derives status from reason field (timeout fallback)
+ */
+class ReasonStatusStrategy implements StatusDerivationStrategy {
+  derive(data: ClaudeCodeEvent): { status: LegacyStatus | null; returnCode?: number } | null {
+    if (data.reason === 'timeout') {
+      return { status: 'timeout', returnCode: 1 };
+    }
+    return null;
   }
+}
 
-  return { status: null };
+/**
+ * Status derivation orchestrator using strategy pattern
+ */
+class StatusDerivationOrchestrator {
+  private strategies: StatusDerivationStrategy[] = [
+    new OutcomeStatusStrategy(),
+    new EventStatusStrategy(),
+    new StateStatusStrategy(),
+    new LegacyStatusStrategy(),
+    new ReasonStatusStrategy()
+  ];
+
+  derive(event: string, data: ClaudeCodeEvent): { status: LegacyStatus | null; returnCode?: number } {
+    for (const strategy of this.strategies) {
+      const result = strategy.derive(data, event);
+      if (result !== null) {
+        return result;
+      }
+    }
+
+    return { status: null };
+  }
+}
+
+// Create singleton instance
+const statusDerivationOrchestrator = new StatusDerivationOrchestrator();
+
+/**
+ * Simplified status derivation function using strategy pattern
+ */
+const deriveStatus = (
+  event: string,
+  data: ClaudeCodeEvent
+): { status: LegacyStatus | null; returnCode?: number } => {
+  return statusDerivationOrchestrator.derive(event, data);
 };
 
 export interface ParsedResponse {
@@ -203,12 +298,48 @@ export interface NormalizedEvent {
   returnCode?: number | null;
 }
 
+/**
+ * Enumeration of specific error codes for better error categorization and handling
+ */
+export enum ErrorCode {
+  // Validation errors
+  VALIDATION_SCHEMA_FAILED = 'VALIDATION_SCHEMA_FAILED',
+  VALIDATION_REQUIRED_FIELD = 'VALIDATION_REQUIRED_FIELD',
+  VALIDATION_INVALID_FORMAT = 'VALIDATION_INVALID_FORMAT',
+
+  // Process errors
+  PROCESS_SPAWN_FAILED = 'PROCESS_SPAWN_FAILED',
+  PROCESS_COMMUNICATION_FAILED = 'PROCESS_COMMUNICATION_FAILED',
+  PROCESS_TERMINATED_UNEXPECTEDLY = 'PROCESS_TERMINATED_UNEXPECTEDLY',
+  PROCESS_PERMISSION_DENIED = 'PROCESS_PERMISSION_DENIED',
+
+  // Timeout errors
+  TIMEOUT_EXECUTION = 'TIMEOUT_EXECUTION',
+  TIMEOUT_GRACEFUL_SHUTDOWN = 'TIMEOUT_GRACEFUL_SHUTDOWN',
+  TIMEOUT_INACTIVITY = 'TIMEOUT_INACTIVITY',
+
+  // SDK/Client errors
+  SDK_CONFIGURATION_INVALID = 'SDK_CONFIGURATION_INVALID',
+  SDK_RESPONSE_PARSE_FAILED = 'SDK_RESPONSE_PARSE_FAILED',
+  SDK_CONNECTION_FAILED = 'SDK_CONNECTION_FAILED',
+
+  // Unknown/Generic errors
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+  INTERNAL_ERROR = 'INTERNAL_ERROR'
+}
+
+/**
+ * Enhanced structured error interface with specific error codes
+ */
 export interface StructuredError {
   type: 'validation' | 'process' | 'timeout' | 'sdk' | 'unknown';
+  code: ErrorCode;
   message: string;
   details?: any;
   correlationId: string;
   timestamp: Date;
+  recoverable?: boolean;
+  retryAfter?: number;
 }
 
 @Injectable()
@@ -275,10 +406,13 @@ export class ClaudeCodeClientService {
     } catch (error) {
       const structuredError = this.handleError({
         type: 'process',
+        code: ErrorCode.PROCESS_COMMUNICATION_FAILED,
         message: error instanceof Error ? error.message : 'Unknown error sending prompt',
         details: error,
         correlationId,
         timestamp: new Date(),
+        recoverable: true,
+        retryAfter: 5000, // 5 seconds
       });
 
       this.logger.error('Failed to send prompt to Claude Code process', {
@@ -427,54 +561,48 @@ export class ClaudeCodeClientService {
     };
   }
 
+  /**
+   * Enhanced error handler with automatic error code detection
+   * @param errorData Error information
+   * @returns Structured error with appropriate code and metadata
+   */
   handleError(errorData: {
     type?: string;
+    code?: ErrorCode;
     message: string;
     details?: any;
     correlationId?: string;
     timestamp?: Date;
+    recoverable?: boolean;
+    retryAfter?: number;
   }): StructuredError {
     const correlationId = errorData.correlationId || randomUUID();
 
-    let errorType: StructuredError['type'] = 'unknown';
-
-    if (errorData.type) {
-      switch (errorData.type) {
-        case 'validation':
-        case 'process':
-        case 'timeout':
-        case 'sdk':
-          errorType = errorData.type as StructuredError['type'];
-          break;
-        default:
-          errorType = 'unknown';
-      }
-    } else {
-      const message = errorData.message.toLowerCase();
-
-      if (message.includes('validation') || message.includes('schema') || message.includes('invalid')) {
-        errorType = 'validation';
-      } else if (message.includes('timeout') || message.includes('timed out')) {
-        errorType = 'timeout';
-      } else if (message.includes('process') || message.includes('spawn') || message.includes('child')) {
-        errorType = 'process';
-      } else if (message.includes('claude') || message.includes('sdk')) {
-        errorType = 'sdk';
-      }
-    }
+    // Auto-detect error type and code if not provided
+    const { type: errorType, code: errorCode } = this.categorizeError(
+      errorData.type,
+      errorData.code,
+      errorData.message,
+      errorData.details
+    );
 
     const structuredError: StructuredError = {
       type: errorType,
+      code: errorCode,
       message: errorData.message,
       details: errorData.details,
       correlationId,
       timestamp: errorData.timestamp || new Date(),
+      recoverable: errorData.recoverable ?? this.isRecoverableError(errorCode),
+      retryAfter: errorData.retryAfter,
     };
 
     this.logger.error('Claude Code client error', {
       correlationId,
       type: structuredError.type,
+      code: structuredError.code,
       message: structuredError.message,
+      recoverable: structuredError.recoverable,
       timestamp: structuredError.timestamp,
     });
 
@@ -486,6 +614,123 @@ export class ClaudeCodeClientService {
     });
 
     return structuredError;
+  }
+
+  /**
+   * Categorize error based on type, code, message, and details
+   */
+  private categorizeError(
+    type?: string,
+    code?: ErrorCode,
+    message?: string,
+    details?: any
+  ): { type: StructuredError['type']; code: ErrorCode } {
+    // If code is provided, derive type from code
+    if (code) {
+      return {
+        type: this.getTypeFromCode(code),
+        code
+      };
+    }
+
+    // If type is provided, use it and auto-detect code
+    if (type && ['validation', 'process', 'timeout', 'sdk'].includes(type)) {
+      return {
+        type: type as StructuredError['type'],
+        code: this.detectCodeFromMessage(type as StructuredError['type'], message || '', details)
+      };
+    }
+
+    // Auto-detect both type and code from message
+    const detectedType = this.detectTypeFromMessage(message || '');
+    const detectedCode = this.detectCodeFromMessage(detectedType, message || '', details);
+
+    return { type: detectedType, code: detectedCode };
+  }
+
+  /**
+   * Get error type from error code
+   */
+  private getTypeFromCode(code: ErrorCode): StructuredError['type'] {
+    if (code.startsWith('VALIDATION_')) return 'validation';
+    if (code.startsWith('PROCESS_')) return 'process';
+    if (code.startsWith('TIMEOUT_')) return 'timeout';
+    if (code.startsWith('SDK_')) return 'sdk';
+    return 'unknown';
+  }
+
+  /**
+   * Detect error type from message content
+   */
+  private detectTypeFromMessage(message: string): StructuredError['type'] {
+    const lowerMessage = message.toLowerCase();
+
+    if (lowerMessage.includes('validation') || lowerMessage.includes('schema') || lowerMessage.includes('invalid')) {
+      return 'validation';
+    }
+    if (lowerMessage.includes('timeout') || lowerMessage.includes('timed out')) {
+      return 'timeout';
+    }
+    if (lowerMessage.includes('process') || lowerMessage.includes('spawn') || lowerMessage.includes('child')) {
+      return 'process';
+    }
+    if (lowerMessage.includes('claude') || lowerMessage.includes('sdk')) {
+      return 'sdk';
+    }
+
+    return 'unknown';
+  }
+
+  /**
+   * Detect specific error code from message and context
+   */
+  private detectCodeFromMessage(type: StructuredError['type'], message: string, details?: any): ErrorCode {
+    const lowerMessage = message.toLowerCase();
+
+    switch (type) {
+      case 'validation':
+        if (lowerMessage.includes('schema')) return ErrorCode.VALIDATION_SCHEMA_FAILED;
+        if (lowerMessage.includes('required')) return ErrorCode.VALIDATION_REQUIRED_FIELD;
+        if (lowerMessage.includes('format') || lowerMessage.includes('invalid')) return ErrorCode.VALIDATION_INVALID_FORMAT;
+        return ErrorCode.VALIDATION_SCHEMA_FAILED;
+
+      case 'process':
+        if (lowerMessage.includes('spawn') || lowerMessage.includes('failed to start')) return ErrorCode.PROCESS_SPAWN_FAILED;
+        if (lowerMessage.includes('communication') || lowerMessage.includes('stdin') || lowerMessage.includes('stdout')) return ErrorCode.PROCESS_COMMUNICATION_FAILED;
+        if (lowerMessage.includes('terminated') || lowerMessage.includes('killed')) return ErrorCode.PROCESS_TERMINATED_UNEXPECTEDLY;
+        if (lowerMessage.includes('permission') || lowerMessage.includes('eacces')) return ErrorCode.PROCESS_PERMISSION_DENIED;
+        return ErrorCode.PROCESS_SPAWN_FAILED;
+
+      case 'timeout':
+        if (lowerMessage.includes('execution')) return ErrorCode.TIMEOUT_EXECUTION;
+        if (lowerMessage.includes('graceful') || lowerMessage.includes('shutdown')) return ErrorCode.TIMEOUT_GRACEFUL_SHUTDOWN;
+        if (lowerMessage.includes('inactivity') || lowerMessage.includes('idle')) return ErrorCode.TIMEOUT_INACTIVITY;
+        return ErrorCode.TIMEOUT_EXECUTION;
+
+      case 'sdk':
+        if (lowerMessage.includes('configuration') || lowerMessage.includes('config')) return ErrorCode.SDK_CONFIGURATION_INVALID;
+        if (lowerMessage.includes('parse') || lowerMessage.includes('json')) return ErrorCode.SDK_RESPONSE_PARSE_FAILED;
+        if (lowerMessage.includes('connection') || lowerMessage.includes('connect')) return ErrorCode.SDK_CONNECTION_FAILED;
+        return ErrorCode.SDK_CONFIGURATION_INVALID;
+
+      default:
+        return ErrorCode.UNKNOWN_ERROR;
+    }
+  }
+
+  /**
+   * Determine if an error is recoverable based on its code
+   */
+  private isRecoverableError(code: ErrorCode): boolean {
+    const recoverableCodes = new Set([
+      ErrorCode.TIMEOUT_EXECUTION,
+      ErrorCode.TIMEOUT_INACTIVITY,
+      ErrorCode.PROCESS_COMMUNICATION_FAILED,
+      ErrorCode.SDK_CONNECTION_FAILED,
+      ErrorCode.PROCESS_TERMINATED_UNEXPECTEDLY
+    ]);
+
+    return recoverableCodes.has(code);
   }
 
   validateConfiguration(

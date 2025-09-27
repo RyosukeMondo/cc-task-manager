@@ -3,12 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from '@nestjs/common';
 import { ChildProcess } from 'child_process';
-import { 
-  ClaudeCodeClientService, 
-  ClaudeCodeResponse, 
-  ClaudeCodeInput, 
+import {
+  ClaudeCodeClientService,
+  ClaudeCodeEvent,
+  ClaudeCodePromptPayload,
   ParsedResponse,
-  StructuredError
+  StructuredError,
+  ErrorCode
 } from '../claude-code-client.service';
 import { WorkerConfig, ClaudeCodeOptionsSchema } from '../../config/worker.config';
 
@@ -355,6 +356,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return true for completed response with zero return code', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_completed',
         status: 'completed',
         data: {
           status: 'completed',
@@ -370,6 +372,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return true for completed response without return code', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_completed',
         status: 'completed',
         data: {
           status: 'completed',
@@ -384,6 +387,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return false for failed response', () => {
       const response: ParsedResponse = {
         success: false,
+        event: 'run_failed',
         status: 'failed',
         error: 'Something went wrong',
         correlationId: 'test-id',
@@ -395,6 +399,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return false for completed response with non-zero return code', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_completed',
         status: 'completed',
         data: {
           status: 'completed',
@@ -410,6 +415,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return false for running response', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'stream',
         status: 'running',
         data: {
           status: 'running',
@@ -426,6 +432,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return true for unsuccessful response', () => {
       const response: ParsedResponse = {
         success: false,
+        event: 'error',
         status: 'error',
         error: 'Something went wrong',
         correlationId: 'test-id',
@@ -437,6 +444,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return true for failed status', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_failed',
         status: 'failed',
         data: {
           status: 'failed',
@@ -451,6 +459,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return true for error status', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'error',
         status: 'error',
         data: {
           status: 'error',
@@ -465,6 +474,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return true for timeout status', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'timeout',
         status: 'timeout',
         data: {
           status: 'timeout',
@@ -479,6 +489,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return true for non-zero return code', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_completed',
         status: 'completed',
         data: {
           status: 'completed',
@@ -494,6 +505,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return false for successful completed response', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_completed',
         status: 'completed',
         data: {
           status: 'completed',
@@ -509,6 +521,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return false for running response', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'stream',
         status: 'running',
         data: {
           status: 'running',
@@ -525,6 +538,7 @@ describe('ClaudeCodeClientService', () => {
     it('should extract error from unsuccessful response', () => {
       const response: ParsedResponse = {
         success: false,
+        event: 'error',
         status: 'error',
         error: 'Parse error occurred',
         correlationId: 'test-id',
@@ -536,6 +550,7 @@ describe('ClaudeCodeClientService', () => {
     it('should extract error from data.error', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_failed',
         status: 'failed',
         data: {
           status: 'failed',
@@ -551,6 +566,7 @@ describe('ClaudeCodeClientService', () => {
     it('should extract error from data.error_output', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_failed',
         status: 'failed',
         data: {
           status: 'failed',
@@ -566,6 +582,7 @@ describe('ClaudeCodeClientService', () => {
     it('should extract error from failed status message', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_failed',
         status: 'failed',
         data: {
           status: 'failed',
@@ -581,6 +598,7 @@ describe('ClaudeCodeClientService', () => {
     it('should return undefined when no error information available', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_completed',
         status: 'completed',
         data: {
           status: 'completed',
@@ -595,6 +613,7 @@ describe('ClaudeCodeClientService', () => {
     it('should prioritize error over error_output', () => {
       const response: ParsedResponse = {
         success: true,
+        event: 'run_failed',
         status: 'failed',
         data: {
           status: 'failed',

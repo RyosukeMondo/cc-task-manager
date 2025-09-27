@@ -81,9 +81,50 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Execute a Claude Code task end-to-end
-   * @param request Task execution request with all parameters
-   * @returns Promise resolving to task execution result
+   * Execute a Claude Code task end-to-end with comprehensive orchestration
+   *
+   * This method coordinates the entire task execution lifecycle:
+   * 1. Validates the task request and configuration
+   * 2. Spawns a Claude Code process with secure parameters
+   * 3. Monitors the process state and file system activity
+   * 4. Handles real-time output parsing and progress tracking
+   * 5. Manages timeouts and graceful cleanup
+   *
+   * @param request - Task execution request containing:
+   *   - id: Unique task identifier
+   *   - prompt: Claude Code prompt to execute
+   *   - sessionName: Session name for logging and tracking
+   *   - workingDirectory: Working directory for process execution
+   *   - options: Claude Code configuration options
+   *   - timeoutMs: Maximum execution time in milliseconds
+   *
+   * @returns Promise resolving to TaskExecutionResult containing:
+   *   - success: Boolean indicating execution success
+   *   - state: Final task state (COMPLETED, FAILED, CANCELLED)
+   *   - output: Process output if successful
+   *   - error: Error message if failed
+   *   - correlationId: Unique correlation ID for tracking
+   *   - timing information and process metadata
+   *
+   * @throws {Error} When task validation fails or system limits exceeded
+   *
+   * @example
+   * ```typescript
+   * const result = await workerService.executeTask({
+   *   id: 'task-123',
+   *   prompt: 'Create a simple React component',
+   *   sessionName: 'web-dev-session',
+   *   workingDirectory: '/path/to/project',
+   *   options: { model: 'claude-3-sonnet', maxTokens: 4000 },
+   *   timeoutMs: 300000
+   * });
+   *
+   * if (result.success) {
+   *   console.log('Task completed:', result.output);
+   * } else {
+   *   console.error('Task failed:', result.error);
+   * }
+   * ```
    */
   async executeTask(request: TaskExecutionRequest): Promise<TaskExecutionResult> {
     // Validate request
@@ -220,9 +261,37 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Get status of a running or completed task
-   * @param taskId Task identifier
-   * @returns Current task status or undefined if not found
+   * Get comprehensive status of a running or completed task
+   *
+   * Provides real-time status information by checking both active task
+   * tracking and completed task results. For active tasks, includes
+   * process state monitoring and execution metadata.
+   *
+   * @param taskId - Unique task identifier to query
+   *
+   * @returns TaskExecutionResult with current status, or undefined if task not found.
+   *   For active tasks, includes:
+   *   - Real-time process state from StateMonitor
+   *   - Process ID and correlation information
+   *   - Start time and current execution duration
+   *
+   *   For completed tasks, includes:
+   *   - Final execution result and output
+   *   - Complete timing information
+   *   - Error details if applicable
+   *
+   * @example
+   * ```typescript
+   * const status = workerService.getTaskStatus('task-123');
+   * if (status) {
+   *   console.log(`Task ${status.taskId} is ${status.state}`);
+   *   if (status.pid) {
+   *     console.log(`Running in process ${status.pid}`);
+   *   }
+   * } else {
+   *   console.log('Task not found');
+   * }
+   * ```
    */
   getTaskStatus(taskId: string): TaskExecutionResult | undefined {
     // Check if task is active
@@ -247,9 +316,31 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Cancel a running task
-   * @param taskId Task identifier
-   * @returns Success boolean
+   * Cancel a running task with graceful cleanup
+   *
+   * Performs comprehensive task cancellation including:
+   * 1. Process termination with SIGTERM followed by SIGKILL if needed
+   * 2. State transition notification to monitoring systems
+   * 3. Resource cleanup (timers, file watchers, memory maps)
+   * 4. Result recording for audit trail
+   *
+   * @param taskId - Unique identifier of task to cancel
+   *
+   * @returns Promise resolving to boolean indicating cancellation success:
+   *   - true: Task was successfully cancelled and cleaned up
+   *   - false: Task was not found or cancellation failed
+   *
+   * @example
+   * ```typescript
+   * const cancelled = await workerService.cancelTask('task-123');
+   * if (cancelled) {
+   *   console.log('Task cancelled successfully');
+   * } else {
+   *   console.log('Task not found or cancellation failed');
+   * }
+   * ```
+   *
+   * @note This operation is idempotent - calling multiple times is safe
    */
   async cancelTask(taskId: string): Promise<boolean> {
     const context = this.activeTasks.get(taskId);
@@ -314,16 +405,47 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Get all active task IDs
-   * @returns Array of active task identifiers
+   * Get all currently active task identifiers
+   *
+   * Returns a snapshot of all tasks currently being executed by
+   * the worker service. Useful for monitoring, debugging, and
+   * capacity management.
+   *
+   * @returns Array of task ID strings for all active tasks
+   *
+   * @example
+   * ```typescript
+   * const activeTasks = workerService.getActiveTasks();
+   * console.log(`Currently executing ${activeTasks.length} tasks:`);
+   * activeTasks.forEach(taskId => console.log(`- ${taskId}`));
+   * ```
    */
   getActiveTasks(): string[] {
     return Array.from(this.activeTasks.keys());
   }
 
   /**
-   * Get health status of worker service
-   * @returns Worker health information
+   * Get comprehensive health status of worker service
+   *
+   * Provides detailed health metrics for monitoring and diagnostics:
+   * - Active task count vs configured limits
+   * - Process management status
+   * - Service uptime information
+   * - Resource utilization indicators
+   *
+   * @returns Health status object containing:
+   *   - activeTasks: Current number of executing tasks
+   *   - maxConcurrentTasks: Configured maximum task limit
+   *   - activeProcesses: Array of active process PIDs
+   *   - uptime: Service uptime in seconds
+   *
+   * @example
+   * ```typescript
+   * const health = workerService.getHealthStatus();
+   * console.log(`Health: ${health.activeTasks}/${health.maxConcurrentTasks} tasks`);
+   * console.log(`Uptime: ${health.uptime}s`);
+   * console.log(`Processes: ${health.activeProcesses.join(', ')}`);
+   * ```
    */
   getHealthStatus(): {
     activeTasks: number;
@@ -340,7 +462,32 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Handle process execution and output monitoring
+   * Handle process execution and real-time output monitoring
+   *
+   * This is the core execution handler that manages:
+   * - Real-time JSON response parsing from Claude Code process
+   * - Status detection and state transitions
+   * - Progress reporting and callback notifications
+   * - Error detection and recovery
+   * - Process lifecycle management (stdout/stderr/exit events)
+   *
+   * The method uses event-driven parsing to handle streaming JSON responses,
+   * implementing a robust parser that handles partial lines and maintains
+   * state consistency throughout execution.
+   *
+   * @param context - Task execution context containing:
+   *   - taskId: Task identifier for correlation
+   *   - process: Active ChildProcess instance
+   *   - pid: Process ID for monitoring
+   *   - callbacks: Progress and state change handlers
+   *
+   * @param options - Claude Code options for response interpretation
+   *
+   * @returns Promise resolving to TaskExecutionResult with complete execution details
+   *
+   * @throws {Error} When process communication fails or parsing errors occur
+   *
+   * @internal This method is used internally by executeTask()
    */
   private async handleProcessExecution(
     context: TaskExecutionContext,
@@ -588,7 +735,26 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Set up event listeners for cross-service coordination
+   * Set up comprehensive event listeners for cross-service coordination
+   *
+   * Establishes event-driven communication between WorkerService and:
+   * - StateMonitorService: Process state transitions and file system activity
+   * - ClaudeCodeClientService: Response parsing and communication events
+   *
+   * This enables loose coupling between services while maintaining
+   * coordinated behavior for:
+   * - Process lifecycle management
+   * - Progress reporting
+   * - Error propagation
+   * - Resource cleanup coordination
+   *
+   * Event types handled:
+   * - process.stateTransition: Process state changes (idle, active, completed, failed)
+   * - fileSystem.activity: File system changes in monitored directories
+   * - claude.response.received: Successful Claude Code responses
+   * - claude.client.error: Communication and parsing errors
+   *
+   * @private Called during module initialization
    */
   private setupEventListeners(): void {
     // Listen for state transitions from StateMonitor
@@ -613,7 +779,23 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Handle state transitions from StateMonitor
+   * Handle process state transitions from StateMonitor
+   *
+   * Processes state change notifications from the StateMonitorService
+   * and coordinates appropriate responses:
+   * - Updates task context with new state
+   * - Triggers progress callbacks if configured
+   * - Logs state transitions for audit trail
+   * - Maintains state consistency across services
+   *
+   * @param transition - State transition event containing:
+   *   - pid: Process ID that changed state
+   *   - fromState: Previous state
+   *   - toState: New state
+   *   - reason: Reason for transition
+   *   - timestamp: When transition occurred
+   *
+   * @private Event handler method
    */
   @OnEvent('process.stateTransition')
   private handleStateTransition(transition: ProcessStateTransition): void {
@@ -671,7 +853,25 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Set up task timeout
+   * Set up task execution timeout with automatic cancellation
+   *
+   * Implements a safety mechanism to prevent runaway tasks by:
+   * 1. Creating a timeout timer for the specified duration
+   * 2. Automatically triggering task cancellation when timeout expires
+   * 3. Logging timeout events for monitoring and debugging
+   * 4. Tracking timeout handles for proper cleanup
+   *
+   * The timeout is cleared automatically when:
+   * - Task completes successfully
+   * - Task fails before timeout
+   * - Task is manually cancelled
+   * - Worker service performs cleanup
+   *
+   * @param taskId - Task identifier for correlation
+   * @param timeoutMs - Timeout duration in milliseconds
+   * @param correlationId - Correlation ID for log tracking
+   *
+   * @private Used internally during task initialization
    */
   private setupTaskTimeout(taskId: string, timeoutMs: number, correlationId: string): void {
     const timeout = setTimeout(async () => {
@@ -688,7 +888,26 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Generate session logs path for file monitoring
+   * Generate unique session logs path for file system monitoring
+   *
+   * Creates a timestamped directory path structure for organizing
+   * session logs and enabling file system activity monitoring.
+   *
+   * Path format: sessions/{sessionName}/{timestamp}
+   * Where timestamp is ISO format with special characters replaced
+   * for filesystem compatibility.
+   *
+   * @param sessionName - Human-readable session name
+   *
+   * @returns Relative path string suitable for file system operations
+   *
+   * @example
+   * ```typescript
+   * const path = this.generateSessionLogsPath('web-development');
+   * // Returns: 'sessions/web-development/2024-01-15T10-30-45-123Z'
+   * ```
+   *
+   * @private Used internally for session organization
    */
   private generateSessionLogsPath(sessionName: string): string {
     // Generate a path based on session name and timestamp
@@ -697,7 +916,31 @@ export class WorkerService implements OnModuleInit {
   }
 
   /**
-   * Clean up task resources
+   * Comprehensive task resource cleanup
+   *
+   * Performs complete cleanup of task-related resources to prevent
+   * memory leaks and ensure proper system state:
+   *
+   * 1. Timeout Management:
+   *    - Clears execution timeout timers
+   *    - Cancels pending timeout callbacks
+   *
+   * 2. Process Monitoring:
+   *    - Stops StateMonitor process tracking
+   *    - Removes file system watchers
+   *    - Cleans up process metadata
+   *
+   * 3. Memory Management:
+   *    - Removes task from active tracking maps
+   *    - Clears callback references
+   *    - Releases process handles
+   *
+   * @param taskId - Unique task identifier to clean up
+   *
+   * @returns Promise that resolves when all cleanup is complete
+   *
+   * @note This method is idempotent and safe to call multiple times
+   * @private Used internally for task lifecycle management
    */
   private async cleanupTask(taskId: string): Promise<void> {
     const context = this.activeTasks.get(taskId);
