@@ -25,7 +25,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:integration": "jest --config ./jest.integration.config.js",
+    "test:integration": "pnpm --filter @cc-task-manager/worker test:integration",
     "test:contract": "jest --config ./jest.contract.config.js",
     "contract": "ts-node scripts/contract-cli.ts"
   },
