@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
+import { APP_GUARD } from '@nestjs/core';
 import { ContractRegistry } from '../../../src/contracts/ContractRegistry';
 import { ApiContractGenerator } from '../../../src/contracts/ApiContractGenerator';
 import { ContractValidationPipe } from '../../../src/contracts/ContractValidationPipe';
 import { BackendSchemaRegistry } from './schemas/schema-registry';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 /**
  * Root application module following SOLID principles
@@ -60,6 +63,9 @@ import { AppService } from './app.service';
         },
       },
     }),
+    
+    // Authentication and authorization module
+    AuthModule,
   ],
   
   controllers: [AppController],
@@ -76,6 +82,13 @@ import { AppService } from './app.service';
     // Backend-specific schema registry service
     // Extends existing contract infrastructure with backend schemas
     BackendSchemaRegistry,
+    
+    // Global JWT authentication guard
+    // Protects all endpoints by default unless marked as @Public()
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
   
   // Export contract services for other modules to use

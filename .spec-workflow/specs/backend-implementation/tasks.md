@@ -18,7 +18,7 @@
   - _Requirements: 1.1, 7.1_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Contract Architect with expertise in Zod, OpenAPI, and existing contract infrastructure | Task: Extend existing ContractRegistry with backend-specific schemas following requirements 1.1 and 7.1, reusing existing ApiContractGenerator and VersionManager for SSOT principle | Restrictions: Must use existing contract infrastructure, register new schemas in existing ContractRegistry, follow existing contract patterns and versioning, do not recreate contract validation or OpenAPI generation | Success: Backend schemas registered in existing ContractRegistry, ApiContractGenerator produces OpenAPI docs for new schemas, type safety achieved using existing infrastructure, contract versioning working_
 
-- [ ] 3. Implement authentication module with JWT and CASL authorization
+- [x] 3. Implement authentication module with JWT and CASL authorization
   - File: apps/backend/src/auth/ (authentication module with SOLID design)
   - Create JWT-based authentication using Passport.js following Interface Segregation Principle
   - Implement CASL for attribute-based access control (ABAC) with fine-grained permissions
