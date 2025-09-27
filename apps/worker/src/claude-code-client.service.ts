@@ -881,27 +881,4 @@ export class ClaudeCodeClientService {
     return undefined;
   }
 
-  /**
-   * Converts parsed Claude Code response to normalized event format
-   * This method provides a standardized event format for downstream consumers
-   */
-  toNormalizedEvent(parsed: ParsedResponse): { 
-    status: string; 
-    outcome?: string; 
-    reason?: string; 
-    tags?: string[]; 
-    message?: string; 
-  } | null {
-    if (!parsed) {
-      return null;
-    }
-
-    return {
-      status: parsed.status || 'unknown',
-      outcome: parsed.outcome,
-      reason: parsed.reason, 
-      tags: parsed.tags,
-      message: parsed.normalizedMessage || parsed.error
-    };
-  }
 }

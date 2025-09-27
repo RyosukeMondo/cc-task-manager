@@ -99,23 +99,23 @@
   - _Requirements: 2.3, 5.3_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: User Management Engineer with expertise in authorization and user operations | Task: Implement user management module with CASL authorization integration following requirements 2.3 and 5.3, applying Liskov Substitution Principle for service implementations | Restrictions: All user operations must respect CASL authorization rules, implement proper data validation with Zod, ensure user data security and privacy, follow GDPR-compliant patterns | Success: User CRUD operations implemented with CASL authorization, user profile management working, data validation with Zod schemas, privacy and security controls in place_
 
-- [ ] 12. Implement comprehensive testing strategy
-  - File: apps/backend/test/ (unit tests, integration tests, contract tests)
-  - Create comprehensive test suite including contract testing with Pact framework
-  - Implement unit tests following SOLID principles with proper mocking
-  - Purpose: Ensure code quality, reliability, and contract compliance
-  - _Leverage: Jest testing patterns, Pact framework for contract testing, NestJS testing utilities_
+- [ ] 12. Implement comprehensive testing strategy leveraging existing contract tests
+  - File: apps/backend/test/ (unit tests, integration tests, extending existing contract tests)
+  - Create comprehensive test suite extending existing contract testing infrastructure
+  - Leverage existing Pact framework and contract validation tests from src/contracts/tests/
+  - Purpose: Ensure code quality, reliability, and contract compliance using existing test foundation
+  - _Leverage: src/contracts/tests/PactTestRunner.ts, src/contracts/tests/ContractValidation.test.ts, existing Jest configuration, NestJS testing utilities_
   - _Requirements: All requirements for testing coverage_
-  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Quality Assurance Engineer with expertise in contract testing and Jest framework | Task: Implement comprehensive testing strategy including Pact contract testing, unit tests, and integration tests covering all requirements, ensuring SOLID principles in test design | Restrictions: Must achieve high test coverage for all modules, implement Pact contract testing for external integrations, use proper mocking for isolated unit tests, ensure tests follow SOLID principles | Success: Comprehensive test suite implemented with high coverage, Pact contract testing working for Claude Code SDK integration, unit and integration tests passing, test quality ensuring code reliability_
+  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Quality Assurance Engineer with expertise in extending existing contract testing infrastructure | Task: Implement comprehensive testing strategy leveraging existing Pact contract testing and contract validation tests, adding unit and integration tests covering all requirements, ensuring SOLID principles in test design | Restrictions: Must extend existing contract testing infrastructure from src/contracts/tests/, achieve high test coverage for all modules, reuse existing Pact framework setup, use proper mocking for isolated unit tests, ensure tests follow SOLID principles | Success: Comprehensive test suite implemented extending existing contract tests, high coverage achieved, existing Pact contract testing integrated with backend tests, unit and integration tests passing, test quality ensuring code reliability_
 
-- [ ] 13. Configure OpenAPI documentation and API client generation
-  - File: apps/backend/src/docs/ (OpenAPI configuration and documentation setup)
-  - Complete OpenAPI/Swagger documentation setup with automatic generation from Zod contracts
-  - Configure API client generation for frontend consumption
-  - Purpose: Provide comprehensive, always-current API documentation and type-safe clients
-  - _Leverage: nestjs-zod OpenAPI integration, Swagger configuration, contract registry_
+- [ ] 13. Configure OpenAPI documentation using existing ApiContractGenerator
+  - File: apps/backend/src/docs/ (OpenAPI configuration leveraging existing generator)
+  - Configure OpenAPI/Swagger documentation using existing ApiContractGenerator infrastructure
+  - Extend existing documentation setup for backend-specific API client generation
+  - Purpose: Provide comprehensive, always-current API documentation using existing SSOT documentation infrastructure
+  - _Leverage: src/contracts/ApiContractGenerator.ts, existing Swagger configuration from src/main.ts, src/contracts/ContractRegistry.ts, existing TypeScript generator from src/contracts/TypeScriptGenerator.ts_
   - _Requirements: 7.3, 7.4_
-  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Documentation Engineer with expertise in OpenAPI and client generation | Task: Configure comprehensive OpenAPI documentation with automatic Zod contract generation and API client setup following requirements 7.3 and 7.4, implementing SSOT for API specifications | Restrictions: Documentation must auto-generate from Zod contracts, ensure interactive Swagger UI functionality, configure client generation for TypeScript frontend, maintain documentation currency with code changes | Success: OpenAPI documentation auto-generated from Zod schemas, interactive Swagger UI functional, API client generation configured, documentation stays current with contract changes_
+  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Documentation Engineer with expertise in existing OpenAPI infrastructure | Task: Configure comprehensive OpenAPI documentation using existing ApiContractGenerator and extend for backend API client setup following requirements 7.3 and 7.4, leveraging existing SSOT documentation infrastructure | Restrictions: Must use existing ApiContractGenerator for documentation generation, extend existing Swagger setup from src/main.ts, reuse existing TypeScriptGenerator for client generation, ensure interactive Swagger UI functionality, maintain documentation currency with existing contract changes | Success: OpenAPI documentation generated using existing ApiContractGenerator, interactive Swagger UI functional extending existing setup, API client generation configured using existing TypeScriptGenerator, documentation stays current with contract registry changes_
 
 - [ ] 14. Implement health checks and monitoring endpoints
   - File: apps/backend/src/health/ (health checks and monitoring)
@@ -126,11 +126,11 @@
   - _Requirements: 7.5_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Platform Engineer with expertise in health monitoring and observability | Task: Implement comprehensive health checks and monitoring endpoints following requirement 7.5, creating readiness/liveness probes for production deployment | Restrictions: Must check all critical dependencies (database, Redis, external services), implement proper timeout handling, provide detailed health status information, ensure minimal performance impact | Success: Health check endpoints implemented for all dependencies, readiness/liveness probes working, monitoring integration ready, minimal overhead on system performance_
 
-- [ ] 15. Final integration testing and contract validation
-  - File: Complete backend application integration
-  - Perform end-to-end integration testing with contract validation
-  - Verify all SOLID principles implementation and contract-driven development
-  - Purpose: Ensure complete system integration and principle compliance
-  - _Leverage: All implemented modules, contract testing framework, integration test utilities_
+- [ ] 15. Final integration testing with existing contract validation infrastructure
+  - File: Complete backend application integration leveraging existing contract tests
+  - Perform end-to-end integration testing using existing contract validation infrastructure
+  - Verify all SOLID principles implementation and contract-driven development using existing test framework
+  - Purpose: Ensure complete system integration and principle compliance with existing SSOT validation
+  - _Leverage: src/contracts/integration/ContractIntegration.test.ts, all implemented modules, existing contract testing framework from src/contracts/tests/, integration test utilities_
   - _Requirements: All requirements validation_
-  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Integration Test Engineer with expertise in system validation and SOLID principles | Task: Perform comprehensive integration testing and contract validation covering all requirements, verifying SOLID principles implementation and contract-driven development success | Restrictions: All API contracts must be validated, SOLID principles compliance verified, integration points tested thoroughly, performance benchmarks met, security requirements validated | Success: Complete backend integration working, all contracts validated, SOLID principles properly implemented, performance targets met, security requirements satisfied, system ready for production deployment_
+  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Integration Test Engineer with expertise in existing contract validation infrastructure | Task: Perform comprehensive integration testing and contract validation covering all requirements, leveraging existing contract integration tests and verifying SOLID principles implementation using existing contract-driven infrastructure | Restrictions: Must use existing contract validation infrastructure from src/contracts/, extend existing integration tests, validate all API contracts using existing ContractRegistry, verify SOLID principles compliance, test integration points thoroughly, meet performance benchmarks, validate security requirements | Success: Complete backend integration working with existing contract infrastructure, all contracts validated using existing validation framework, SOLID principles properly implemented, performance targets met, security requirements satisfied, system ready for production deployment leveraging existing SSOT foundation_
