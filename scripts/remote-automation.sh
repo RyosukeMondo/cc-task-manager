@@ -58,7 +58,7 @@ show_usage() {
     echo "  start [app]     - Start process(es) (detached)"
     echo "  stop [app]      - Stop process(es)"
     echo "  restart [app]   - Restart process(es)"
-    echo "  logs [app]      - View logs (live tail)"
+    echo "  logs [app]      - View logs (live tail, includes both stdout & stderr)"
     echo "  status [app]    - Show process status"
     echo "  list            - List all PM2 processes"
     echo "  monitor         - Open PM2 monitor interface"
@@ -257,7 +257,8 @@ case "$COMMAND" in
             print_info "Showing logs for $TARGET_PROCESSES (Ctrl+C to exit)..."
             echo ""
             process_list=$(echo $TARGET_PROCESSES | tr ' ' ',')
-            pm2 logs $process_list --lines 50
+            # Show both stdout and stderr logs with --err flag
+            pm2 logs $process_list --lines 50 --err
         else
             process_type_desc="automation + dashboard"
             if [[ "${PROCESS_TYPE:-both}" == "automation" ]]; then
@@ -268,7 +269,8 @@ case "$COMMAND" in
             print_info "Showing logs for all $process_type_desc processes (Ctrl+C to exit)..."
             echo ""
             process_list=$(echo $TARGET_PROCESSES | tr ' ' ',')
-            pm2 logs $process_list --lines 50
+            # Show both stdout and stderr logs with --err flag
+            pm2 logs $process_list --lines 50 --err
         fi
         ;;
 
