@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { ChildProcess } from 'child_process';
 import { ProcessManagerService } from '../process-manager.service';
-import { ProcessConfig, WorkerConfig } from '../../config/worker.config';
+import { ProcessConfig, WorkerConfig } from '../../../../src/config/worker.config';
 
 // Mock child_process module
 const mockSpawn = jest.fn();

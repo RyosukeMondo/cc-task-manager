@@ -6,7 +6,7 @@ import {
   ProcessConfig, 
   WorkerConfig, 
   validateProcessConfig 
-} from '../config/worker.config';
+} from '../../../src/config/worker.config';
 
 /**
  * ProcessManagerService - Secure Claude Code process lifecycle management

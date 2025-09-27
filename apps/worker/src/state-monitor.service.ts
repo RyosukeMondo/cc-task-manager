@@ -10,7 +10,7 @@ import {
   TaskState, 
   TaskStatus, 
   validateTaskStatus 
-} from '../config/worker.config';
+} from '../../../src/config/worker.config';
 
 export interface ProcessStateTransition {
   taskId: string;

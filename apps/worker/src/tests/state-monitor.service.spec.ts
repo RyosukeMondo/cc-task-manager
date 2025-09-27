@@ -4,7 +4,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from '@nestjs/common';
 import * as chokidar from 'chokidar';
 import { StateMonitorService, ProcessStateTransition, FileSystemActivity } from '../state-monitor.service';
-import { WorkerConfig, TaskState, TaskStatus } from '../../config/worker.config';
+import { WorkerConfig, TaskState, TaskStatus } from '../../../../src/config/worker.config';
 
 // Mock chokidar
 const mockWatcher = {

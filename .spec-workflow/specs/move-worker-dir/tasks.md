@@ -18,7 +18,7 @@
   - _Requirements: 3.2, 3.3_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Developer with expertise in code organization and file system operations | Task: Move all worker source files from src/worker/ to apps/worker/src/ following requirements 3.2 and 3.3, preserving existing directory structure and file organization | Restrictions: Do not modify file contents during move, maintain exact directory structure, preserve file permissions and timestamps | Success: All worker files relocated correctly, directory structure preserved under apps/worker/src/, no files lost or corrupted_
 
-- [ ] 3. Update import paths throughout worker application
+- [x] 3. Update import paths throughout worker application
   - File: apps/worker/src/ (all TypeScript files with imports)
   - Fix all import statements to reflect new file locations and workspace packages
   - Update relative imports between worker modules

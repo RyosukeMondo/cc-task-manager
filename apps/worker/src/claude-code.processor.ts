@@ -2,7 +2,7 @@ import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job } from 'bullmq';
-import { WorkerConfig, TaskExecutionRequest, validateTaskExecutionRequest } from '../config/worker.config';
+import { WorkerConfig, TaskExecutionRequest, validateTaskExecutionRequest } from '../../../src/config/worker.config';
 import { WorkerService, TaskExecutionResult } from './worker.service';
 
 export interface ClaudeCodeJobData {

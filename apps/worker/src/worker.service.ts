@@ -11,7 +11,7 @@ import {
   validateTaskExecutionRequest, 
   ProcessConfig,
   TaskExecutionRequestSchema 
-} from '../config/worker.config';
+} from '../../../src/config/worker.config';
 import { ProcessManagerService } from './process-manager.service';
 import { StateMonitorService, ProcessStateTransition, FileSystemActivity } from './state-monitor.service';
 import { 
@@ -20,8 +20,8 @@ import {
   StructuredError, 
   ClaudeCodeOptions 
 } from './claude-code-client.service';
-import { ContractRegistry } from '../contracts/ContractRegistry';
-import { ContractValidationPipe, ContractValidationErrorDetails } from '../contracts/ContractValidationPipe';
+import { ContractRegistry } from '../../../src/contracts/ContractRegistry';
+import { ContractValidationPipe, ContractValidationErrorDetails } from '../../../src/contracts/ContractValidationPipe';
 
 export interface TaskExecutionResult {
   taskId: string;

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import workerConfig from '../config/worker.config';
+import workerConfig from '../../../src/config/worker.config';
 import { ProcessManagerService } from './process-manager.service';
 import { StateMonitorService } from './state-monitor.service';
 import { ClaudeCodeClientService } from './claude-code-client.service';
