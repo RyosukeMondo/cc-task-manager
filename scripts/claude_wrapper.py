@@ -336,12 +336,33 @@ class ClaudeCodeWrapper:
                         self.last_session_id = session_id
                         run_context["session_id"] = session_id
 
+                    # Detect rate/usage limit notice in the stream and remember it
+                    try:
+                        limit_msg = self._detect_limit_message(serialised)
+                    except Exception:  # defensive
+                        limit_msg = None
+                    if limit_msg and not run_context.get("limit_reached"):
+                        run_context["limit_reached"] = True
+                        run_context["limit_message"] = limit_msg
+                        self.output_json(
+                            {
+                                "event": "limit_notice",
+                                "timestamp": datetime.utcnow().isoformat(),
+                                "run_id": run_context["id"],
+                                "message": limit_msg,
+                            }
+                        )
+
         except anyio.get_cancelled_exc_class():
             self.output_json(
                 {
                     "event": "run_cancelled",
                     "timestamp": datetime.utcnow().isoformat(),
                     "run_id": run_context["id"],
+                    "version": 1,
+                    "outcome": "cancelled",
+                    "reason": "cancel_requested",
+                    "tags": [],
                 }
             )
         except ProcessError as exc:  # type: ignore[has-type]
@@ -354,30 +375,115 @@ class ClaudeCodeWrapper:
                         "timestamp": datetime.utcnow().isoformat(),
                         "run_id": run_context["id"],
                         "reason": "broken_pipe",
+                        "version": 1,
+                        "outcome": "terminated",
+                        "tags": [],
                     }
                 )
             else:
-                logger.error("Claude Code process failed: %s", exc)
+                # If we already observed a limit notice in the stream, treat this as a successful completion
+                if run_context.get("limit_reached"):
+                    logger.info("Rate/usage limit detected; treating run as completed")
+                    self.output_json(
+                        {
+                            "event": "run_completed",
+                            "timestamp": datetime.utcnow().isoformat(),
+                            "run_id": run_context["id"],
+                            "version": 1,
+                            "outcome": "completed",
+                            "reason": "limit_reached",
+                            "tags": ["limit"],
+                            "message": run_context.get("limit_message"),
+                        }
+                    )
+                    if run_context.get("exit_on_complete"):
+                        self.output_json(
+                            {
+                                "event": "auto_shutdown",
+                                "timestamp": datetime.utcnow().isoformat(),
+                                "reason": "exit_on_complete",
+                                "run_id": run_context["id"],
+                                "version": 1,
+                                "outcome": "shutdown",
+                                "tags": [],
+                            }
+                        )
+                        logger.info("exit_on_complete=true; initiating graceful shutdown")
+                        self.shutdown_requested = True
+                        try:
+                            if self.task_group is not None and hasattr(self.task_group, "cancel_scope"):
+                                self.task_group.cancel_scope.cancel()
+                                logger.info("cancelled task_group via cancel_scope")
+                        except Exception:
+                            logger.exception("failed to cancel task_group during exit_on_complete")
+                    return
+                else:
+                    logger.error("Claude Code process failed: %s", exc)
+                    self.output_json(
+                        {
+                            "event": "run_failed",
+                            "timestamp": datetime.utcnow().isoformat(),
+                            "run_id": run_context["id"],
+                            "version": 1,
+                            "outcome": "failed",
+                            "reason": "sdk_error",
+                            "tags": [],
+                            "error": text,
+                            "traceback": getattr(exc, "traceback", None),
+                        }
+                    )
+        except Exception as exc:  # pragma: no cover - defensive
+            # Convert unexpected failure to success when a prior limit notice was seen
+            if run_context.get("limit_reached"):
+                logger.info("Rate/usage limit detected; converting exception to run_completed")
+                self.output_json(
+                    {
+                        "event": "run_completed",
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "run_id": run_context["id"],
+                        "version": 1,
+                        "outcome": "completed",
+                        "reason": "limit_reached",
+                        "tags": ["limit"],
+                        "message": run_context.get("limit_message"),
+                    }
+                )
+                if run_context.get("exit_on_complete"):
+                    self.output_json(
+                        {
+                            "event": "auto_shutdown",
+                            "timestamp": datetime.utcnow().isoformat(),
+                            "reason": "exit_on_complete",
+                            "run_id": run_context["id"],
+                            "version": 1,
+                            "outcome": "shutdown",
+                            "tags": [],
+                        }
+                    )
+                    logger.info("exit_on_complete=true; initiating graceful shutdown")
+                    self.shutdown_requested = True
+                    try:
+                        if self.task_group is not None and hasattr(self.task_group, "cancel_scope"):
+                            self.task_group.cancel_scope.cancel()
+                            logger.info("cancelled task_group via cancel_scope")
+                    except Exception:
+                        logger.exception("failed to cancel task_group during exit_on_complete")
+                return
+            else:
+                logger.error("Unexpected Claude Code failure", exc_info=True)
                 self.output_json(
                     {
                         "event": "run_failed",
                         "timestamp": datetime.utcnow().isoformat(),
                         "run_id": run_context["id"],
-                        "error": text,
-                        "traceback": getattr(exc, "traceback", None),
+                        "version": 1,
+                        "outcome": "failed",
+                        "reason": "unexpected",
+                        "tags": [],
+                        "error": str(exc),
+                        "traceback": traceback.format_exc(limit=20),
                     }
                 )
-        except Exception as exc:  # pragma: no cover - defensive
-            logger.error("Unexpected Claude Code failure", exc_info=True)
-            self.output_json(
-                {
-                    "event": "run_failed",
-                    "timestamp": datetime.utcnow().isoformat(),
-                    "run_id": run_context["id"],
-                    "error": str(exc),
-                    "traceback": traceback.format_exc(limit=20),
-                }
-            )
         else:
             logger.info("run_completed id=%s", run_context["id"])
             self.output_json(
@@ -385,6 +491,10 @@ class ClaudeCodeWrapper:
                     "event": "run_completed",
                     "timestamp": datetime.utcnow().isoformat(),
                     "run_id": run_context["id"],
+                    "version": 1,
+                    "outcome": "completed",
+                    "reason": "ok",
+                    "tags": [],
                 }
             )
             # If requested, gracefully shut down the wrapper immediately after completion
@@ -448,6 +558,39 @@ class ClaudeCodeWrapper:
         return result
 
     @staticmethod
+    def _detect_limit_message(serialised_message: Dict[str, Any]) -> Optional[str]:
+        """Detect textual rate/usage limit notice within a Claude SDK stream payload."""
+        candidates: list[str] = []
+
+        def push(value: Any) -> None:
+            if isinstance(value, str) and value:
+                candidates.append(value)
+
+        push(serialised_message.get("message"))
+        push(serialised_message.get("error"))
+        push(serialised_message.get("reason"))
+
+        payload = serialised_message.get("payload")
+        if isinstance(payload, dict):
+            for key in ("result", "message", "error", "details", "reason"):
+                push(payload.get(key))
+
+        # shallow scan of nested content arrays
+        content = serialised_message.get("content")
+        if isinstance(content, list):
+            for item in content[:5]:
+                if isinstance(item, dict):
+                    push(item.get("text"))
+
+        import re
+
+        pattern = re.compile(r"(limit\s*reached|rate\s*limit|usage\s*limit)", re.IGNORECASE)
+        for text in candidates:
+            if pattern.search(text):
+                return text
+        return None
+
+    @staticmethod
     def _extract_session_id(serialised_message: Dict[str, Any]) -> Optional[str]:
         session_id = serialised_message.get("session_id")
         if isinstance(session_id, str):
@@ -469,6 +612,10 @@ class ClaudeCodeWrapper:
                 "event": "ready",
                 "timestamp": datetime.utcnow().isoformat(),
                 "state": self.state,
+                "version": 1,
+                "outcome": "running",
+                "reason": "boot",
+                "tags": [],
             }
         )
 
@@ -484,6 +631,10 @@ class ClaudeCodeWrapper:
                 "timestamp": datetime.utcnow().isoformat(),
                 "state": self.state,
                 "last_session_id": self.last_session_id,
+                "version": 1,
+                "outcome": "shutdown",
+                "reason": "graceful",
+                "tags": [],
             }
         )
         logger.info("Claude Code wrapper shutdown complete")

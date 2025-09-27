@@ -32,6 +32,9 @@ export const ClaudeCodeEventSchema = z
     status: z.string().optional(),
     message: z.string().optional(),
     reason: z.string().optional(),
+    outcome: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    version: z.number().optional(),
     error: z.string().optional(),
     error_output: z.string().optional(),
     payload: z.unknown().optional(),
@@ -95,6 +98,71 @@ const deriveStatus = (
   event: string,
   data: ClaudeCodeEvent
 ): { status: LegacyStatus | null; returnCode?: number } => {
+  // Prefer SSOT outcome from wrapper if provided
+  if (typeof (data as any).outcome === 'string') {
+    const outcome = String((data as any).outcome).toLowerCase();
+    switch (outcome) {
+      case 'completed':
+        return { status: 'completed', returnCode: 0 };
+      case 'failed':
+        return { status: 'failed', returnCode: 1 };
+      case 'timeout':
+        return { status: 'timeout', returnCode: 1 };
+      case 'shutdown':
+        return { status: 'shutdown' };
+      case 'terminated':
+        return { status: 'error' };
+      case 'running':
+        return { status: 'running' };
+    }
+
+  toNormalizedEvent(response: ParsedResponse): NormalizedEvent | null {
+    if (!response.success || !response.data) {
+      return null;
+    }
+    const d = response.data as any;
+    const outcome = typeof d.outcome === 'string' ? (d.outcome as string) : null;
+    const reason = typeof d.reason === 'string' ? (d.reason as string) : null;
+    const tags = Array.isArray(d.tags) ? (d.tags as string[]) : undefined;
+    const status = (response.status as LegacyStatus | null) ?? (d.status as LegacyStatus | null) ?? null;
+    const returnCode =
+      response.returnCode ?? (typeof d.return_code === 'number' ? (d.return_code as number) : undefined);
+
+    return {
+      event: (response.event as string) || (d.event as string) || 'unknown',
+      runId: (d.run_id as string) ?? null,
+      timestamp: (d.timestamp as string) ?? undefined,
+      outcome,
+      reason,
+      tags,
+      message: (d.message as string) ?? undefined,
+      status,
+      returnCode,
+    };
+  }
+
+  toNormalizedEvent(response: ParsedResponse): NormalizedEvent | null {
+    if (!response.success || !response.data) {
+      return null;
+    }
+    const d = response.data as any;
+    return {
+      event: (response.event as string) || (d.event as string) || 'unknown',
+      runId: (d.run_id as string) ?? null,
+      timestamp: (d.timestamp as string) ?? undefined,
+      outcome: typeof d.outcome === 'string' ? d.outcome : null,
+      reason: typeof d.reason === 'string' ? d.reason : null,
+      tags: Array.isArray(d.tags) ? (d.tags as string[]) : undefined,
+      message: (d.message as string) ?? undefined,
+      status: (response.status as LegacyStatus | null) ?? (d.status as LegacyStatus | null) ?? null,
+      returnCode:
+        response.returnCode ??
+        (typeof d.return_code === 'number' ? (d.return_code as number) : undefined),
+    };
+  }
+  }
+
+  // Event mapping fallback
   const mapping = EVENT_STATUS_MAP[event];
   if (mapping) {
     if (mapping.status === 'failed' && data.reason === 'timeout') {
@@ -103,6 +171,7 @@ const deriveStatus = (
     return mapping;
   }
 
+  // State fallback
   if (typeof data.state === 'string') {
     const normalizedState = data.state.trim().toLowerCase();
     switch (normalizedState) {
@@ -121,6 +190,7 @@ const deriveStatus = (
     }
   }
 
+  // Status / payload fallbacks
   if (isLegacyStatus(data.status)) {
     const inferredReturnCode =
       data.status === 'completed'
@@ -162,6 +232,18 @@ export interface ParsedResponse {
   error?: string;
   correlationId: string;
   runId?: string | null;
+  status?: LegacyStatus | null;
+  returnCode?: number | null;
+}
+
+export interface NormalizedEvent {
+  event: string;
+  runId: string | null;
+  timestamp?: string;
+  outcome?: string | null;
+  reason?: string | null;
+  tags?: string[];
+  message?: string;
   status?: LegacyStatus | null;
   returnCode?: number | null;
 }
@@ -311,6 +393,20 @@ export class ClaudeCodeClientService {
         enrichedData.return_code = normalizedReturnCode;
       }
 
+      // Ensure SSOT fields are present in data for consumers
+      if (typeof (validatedData as any).outcome === 'string') {
+        (enrichedData as any).outcome = (validatedData as any).outcome;
+      }
+      if (typeof (validatedData as any).reason === 'string') {
+        (enrichedData as any).reason = (validatedData as any).reason;
+      }
+      if (Array.isArray((validatedData as any).tags)) {
+        (enrichedData as any).tags = (validatedData as any).tags as string[];
+      }
+      if (typeof (validatedData as any).version === 'number') {
+        (enrichedData as any).version = (validatedData as any).version as number;
+      }
+
       this.logger.debug('Parsed Claude Code response', {
         correlationId,
         event: validatedData.event,
@@ -354,6 +450,26 @@ export class ClaudeCodeClientService {
         returnCode: null,
       };
     }
+  }
+
+  // Convert a parsed response into a single, stable SSOT event
+  toNormalizedEvent(response: ParsedResponse): NormalizedEvent | null {
+    if (!response.success || !response.data) {
+      return null;
+    }
+    const d = response.data as any;
+    return {
+      event: (response.event as string) || (d.event as string) || 'unknown',
+      runId: (d.run_id as string) ?? null,
+      timestamp: (d.timestamp as string) ?? undefined,
+      outcome: typeof d.outcome === 'string' ? (d.outcome as string) : null,
+      reason: typeof d.reason === 'string' ? (d.reason as string) : null,
+      tags: Array.isArray(d.tags) ? (d.tags as string[]) : undefined,
+      message: (d.message as string) ?? undefined,
+      status: (response.status as LegacyStatus | null) ?? (d.status as LegacyStatus | null) ?? null,
+      returnCode:
+        response.returnCode ?? (typeof d.return_code === 'number' ? (d.return_code as number) : undefined),
+    };
   }
 
   handleError(errorData: {
@@ -458,6 +574,12 @@ export class ClaudeCodeClientService {
       return false;
     }
 
+    // Prefer SSOT outcome
+    const outcome = (response.data as any)?.outcome;
+    if (typeof outcome === 'string') {
+      return outcome === 'completed' || outcome === 'shutdown';
+    }
+
     if ((response.status ?? response.data?.status) !== 'completed') {
       return false;
     }
@@ -473,6 +595,12 @@ export class ClaudeCodeClientService {
   isFailureResponse(response: ParsedResponse): boolean {
     if (!response.success) {
       return true;
+    }
+
+    // Prefer SSOT outcome
+    const outcome = (response.data as any)?.outcome;
+    if (typeof outcome === 'string') {
+      return ['failed', 'timeout', 'terminated'].includes(outcome);
     }
 
     const status = response.status ?? response.data?.status ?? null;

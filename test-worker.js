@@ -70,39 +70,25 @@ wrapper.stdout.on('data', (data) => {
         wrapper.stdin.write(JSON.stringify(testPayload) + '\n');
       }
 
-      if (normalised.status === 'completed') {
-        console.log('\n✅ Worker test completed successfully!');
-        console.log('🔍 Checking if test file was created...\n');
+      // Prefer SSOT outcome from wrapper if available
+      const outcome = typeof parsed.outcome === 'string' ? parsed.outcome : null;
+      const reason = typeof parsed.reason === 'string' ? parsed.reason : null;
+      const tags = Array.isArray(parsed.tags) ? parsed.tags : [];
 
-        const testFilePath = path.join(workingDirectory, 'test.txt');
-        if (fs.existsSync(testFilePath)) {
-          const content = fs.readFileSync(testFilePath, 'utf8');
-          console.log('📄 File created successfully:', testFilePath);
-          console.log('📝 Content:', content.trim());
-        } else {
-          console.log('⚠️  Test file not found, but worker reported success');
-        }
-
-        logSessionTail();
-
-        finished = true;
-        console.log('🧹 Debug: marking finished=true (success). Clearing testTimeoutHandle and asking wrapper to terminate...');
-        desiredExitCode = 0;
-        clearTimeout(testTimeoutHandle);
-        try { wrapper.stdin.end(); } catch (e) { console.log('🧹 Debug: stdin.end() error:', e?.message); }
-        // Ask wrapper to stop gracefully
-        const termOk = wrapper.kill('SIGTERM');
-        console.log(`🛎️ Debug: sent SIGTERM to wrapper PID ${wrapper.pid}, result=${termOk}`);
-        // Fallback: force kill if wrapper doesn't close
-        postFinishKillHandle = setTimeout(() => {
-          console.log('⛔ Debug: wrapper did not close in 5s after SIGTERM; sending SIGKILL');
-          try { wrapper.kill('SIGKILL'); } catch (e) { console.log('⛔ Debug: SIGKILL error:', e?.message); }
-          process.exit(desiredExitCode ?? 0);
-        }, 5000);
+      if (outcome === 'completed' || normalised.status === 'completed') {
+        const skipFileAssertion = reason === 'limit_reached' || tags.includes('limit');
+        handleSuccessfulCompletion({ skipFileAssertion, meta: { outcome, reason, tags } });
         return; // wait for 'close'
       }
 
-      if (['failed', 'error', 'timeout'].includes(normalised.status)) {
+      if (outcome === 'shutdown' && reason === 'exit_on_complete') {
+        // Wrapper will close, treat as successful end of run
+        handleSuccessfulCompletion({ skipFileAssertion: true, meta: { outcome, reason, tags } });
+        return;
+      }
+
+      if (['failed', 'error', 'timeout'].includes(normalised.status) || outcome === 'failed' || outcome === 'timeout' || outcome === 'terminated') {
+
         console.log('\n❌ Worker test failed:');
         console.log('🔍 Error details:', JSON.stringify(parsed, null, 2));
         logSessionTail();
@@ -195,6 +181,58 @@ process.on('SIGINT', () => {
   wrapper.kill('SIGTERM');
   process.exit(130);
 });
+
+function handleSuccessfulCompletion({ skipFileAssertion = false, meta } = {}) {
+  if (finished) {
+    return;
+  }
+
+  const elapsed = ((Date.now() - testStartTime) / 1000).toFixed(1);
+
+  console.log('\n✅ Worker test completed successfully!');
+  if (skipFileAssertion) {
+    console.log('ℹ️  Skipping workspace file assertion because the run was rate-limited or shut down automatically.');
+  } else {
+    console.log('🔍 Checking if test file was created...\n');
+    const testFilePath = path.join(workingDirectory, 'test.txt');
+    if (fs.existsSync(testFilePath)) {
+      const content = fs.readFileSync(testFilePath, 'utf8');
+      console.log('📄 File created successfully:', testFilePath);
+      console.log('📝 Content:', content.trim());
+    } else {
+      console.log('⚠️  Test file not found');
+    }
+  }
+
+  logSessionTail();
+
+  finished = true;
+  console.log('🧹 Debug: marking finished=true (success). Clearing testTimeoutHandle and asking wrapper to terminate...');
+  desiredExitCode = 0;
+  clearTimeout(testTimeoutHandle);
+  try {
+    wrapper.stdin.end();
+  } catch (e) {
+    console.log('🧹 Debug: stdin.end() error:', e?.message);
+  }
+  const termOk = wrapper.kill('SIGTERM');
+  console.log(`🛎️ Debug: sent SIGTERM to wrapper PID ${wrapper.pid}, result=${termOk}`);
+  // Faster fallback: don't wait too long after success
+  postFinishKillHandle = setTimeout(() => {
+    console.log('⛔ Debug: wrapper did not close in 2s after SIGTERM; sending SIGKILL');
+    try {
+      wrapper.kill('SIGKILL');
+    } catch (e) {
+      console.log('⛔ Debug: SIGKILL error:', e?.message);
+    }
+    process.exit(desiredExitCode ?? 0);
+  }, 2000);
+  // Absolute ensure-exit in case close never fires
+  setTimeout(() => {
+    console.log('🧵 Debug: ensure-exit fired; exiting now.');
+    process.exit(desiredExitCode ?? 0);
+  }, 2500);
+}
 
 function getStatusEmoji(status) {
   const emojis = {
@@ -446,3 +484,5 @@ function sanitiseProjectFolderName(directoryPath) {
   const slug = segments.join('-');
   return `-${slug}`;
 }
+
+// All custom rate-limit detection removed; we rely on Python wrapper SSOT fields

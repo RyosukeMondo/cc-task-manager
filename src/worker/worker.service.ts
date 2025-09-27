@@ -30,6 +30,11 @@ export interface TaskExecutionResult {
   startTime: Date;
   endTime?: Date;
   pid?: number;
+  // SSOT normalized fields from wrapper
+  outcome?: string;
+  reason?: string;
+  tags?: string[];
+  normalizedMessage?: string;
 }
 
 export interface TaskExecutionContext {
@@ -350,6 +355,14 @@ export class WorkerService implements OnModuleInit {
     return new Promise((resolve, reject) => {
       let outputBuffer = '';
       let hasResolved = false;
+      let lastNormalized: {
+        event?: string;
+        outcome?: string | null;
+        reason?: string | null;
+        tags?: string[];
+        message?: string;
+        status?: string | null;
+      } | null = null;
 
       const resolveOnce = (result: TaskExecutionResult) => {
         if (!hasResolved) {
@@ -381,6 +394,34 @@ export class WorkerService implements OnModuleInit {
           }
 
           const parsed = this.claudeCodeClient.parseResponse(trimmedLine, correlationId);
+
+          // Emit normalized SSOT event for downstream consumers (queue/UI/metrics)
+          const normalized = this.claudeCodeClient.toNormalizedEvent(parsed);
+          if (normalized) {
+            this.eventEmitter.emit('worker.normalized', {
+              ...normalized,
+              correlationId,
+              taskId,
+              pid,
+            });
+
+            // Track last terminal normalized event for final result enrichment
+            const termOutcomes = new Set(['completed', 'failed', 'timeout', 'shutdown']);
+            const termStatuses = new Set(['completed', 'failed', 'timeout', 'shutdown']);
+            if (
+              (normalized.outcome && termOutcomes.has(normalized.outcome)) ||
+              (normalized.status && termStatuses.has(normalized.status))
+            ) {
+              lastNormalized = {
+                event: normalized.event,
+                outcome: normalized.outcome ?? null,
+                reason: normalized.reason ?? null,
+                tags: normalized.tags,
+                message: normalized.message,
+                status: normalized.status ?? null,
+              };
+            }
+          }
           const status = parsed.status ?? parsed.data?.status ?? null;
           const returnCode =
             parsed.returnCode ??
@@ -419,6 +460,10 @@ export class WorkerService implements OnModuleInit {
                   startTime: context.startTime,
                   endTime: new Date(),
                   pid,
+                  outcome: lastNormalized?.outcome ?? undefined,
+                  reason: lastNormalized?.reason ?? undefined,
+                  tags: lastNormalized?.tags ?? undefined,
+                  normalizedMessage: lastNormalized?.message ?? parsed.data?.message,
                 });
               } else {
                 resolveOnce({
@@ -430,6 +475,10 @@ export class WorkerService implements OnModuleInit {
                   startTime: context.startTime,
                   endTime: new Date(),
                   pid,
+                  outcome: lastNormalized?.outcome ?? 'failed',
+                  reason: lastNormalized?.reason ?? undefined,
+                  tags: lastNormalized?.tags ?? undefined,
+                  normalizedMessage: lastNormalized?.message ?? undefined,
                 });
               }
               break;
@@ -446,6 +495,10 @@ export class WorkerService implements OnModuleInit {
                 startTime: context.startTime,
                 endTime: new Date(),
                 pid,
+                outcome: lastNormalized?.outcome ?? 'failed',
+                reason: lastNormalized?.reason ?? undefined,
+                tags: lastNormalized?.tags ?? undefined,
+                normalizedMessage: lastNormalized?.message ?? undefined,
               });
               break;
 
@@ -512,6 +565,10 @@ export class WorkerService implements OnModuleInit {
             startTime: context.startTime,
             endTime: new Date(),
             pid,
+            outcome: lastNormalized?.outcome ?? (success ? 'completed' : 'failed'),
+            reason: lastNormalized?.reason ?? undefined,
+            tags: lastNormalized?.tags ?? undefined,
+            normalizedMessage: lastNormalized?.message ?? undefined,
           });
         }
       });

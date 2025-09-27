@@ -51,6 +51,8 @@ sudo systemctl start redis-server
 docker run -d -p 6379:6379 redis:latest
 ```
 
+> 💡 The `test-bullmq-worker.js` script now checks for Redis automatically. If Redis is not available but Docker is installed, it will start (or reuse) a local container named `claude-redis` based on `redis:7-alpine` before running the test.
+
 ### Starting the Application
 ```bash
 # Development mode
