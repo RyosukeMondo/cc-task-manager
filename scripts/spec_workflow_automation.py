@@ -539,7 +539,8 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             # Check if we should stop
             if self.spec_completed:
                 logger.info("Spec workflow automation completed successfully!")
-                return True
+                logger.info("All tasks completed. Exiting automation.")
+                sys.exit(0)  # Clean exit stops PM2 process
 
             if self.shutdown_requested:
                 logger.info("Shutdown requested, stopping automation")
