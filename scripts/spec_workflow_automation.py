@@ -31,6 +31,7 @@ import argparse
 import asyncio
 import json
 import logging
+import re
 import subprocess
 import sys
 import signal
@@ -38,7 +39,6 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional, List
-import re
 
 # Configure logging
 logging.basicConfig(
@@ -206,6 +206,102 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             self.session_active = False
             self.current_run_id = None
 
+    def _check_text_for_completion_patterns(self, text_content: str) -> bool:
+        """Check a text string for completion patterns."""
+        if not text_content or len(text_content.strip()) == 0:
+            return False
+
+        text_lower = text_content.lower()
+        logger.debug(f"🔍 Pattern checking on text ({len(text_content)} chars): {text_lower[:100]}...")
+
+        # Simple string-based completion patterns (case insensitive)
+        simple_patterns = [
+            "all tasks completed", "spec completed",
+            "all tasks in the spec have been finished",
+            "all tasks in the backend-implementation spec have been finished",
+            "no remaining tasks", "0 remaining tasks", "0 tasks remaining",
+            "[x] all tasks", "✓ all tasks", "✅ all tasks",
+            "status: completed", "overall status: completed",
+            "all tasks status: completed",
+            "all tasks are marked as completed",
+            "all tasks have been completed successfully",
+            "backend-implementation spec has been fully completed",
+            "spec has been fully completed",
+            "end session", "check remaining task count",
+            "✅ all 15 tasks completed",
+            "since there are no remaining tasks to work on",
+            "specification is fully implemented",
+            "15/15 tasks completed (100%)",
+            "all 15 tasks are completed",
+
+            # Additional patterns from latest logs
+            "all 15 tasks have already been completed",
+            "all 15 tasks in the backend-implementation spec have been completed",
+            "remaining task count: 0",
+            "0 pending tasks",
+            "all tasks marked as [x]",
+            "specification is fully complete",
+            "backend-implementation specification is fully complete",
+            "since all 15 tasks have already been completed",
+            "since there are no pending tasks"
+        ]
+
+        for pattern in simple_patterns:
+            if pattern in text_lower:
+                logger.info(f"🎯 COMPLETION PATTERN DETECTED: '{pattern}' in text!")
+                logger.info(f"🔍 Text excerpt: {text_content[:300]}...")
+                return True
+
+        # Debug: Log some key patterns that should match to see why they don't
+        key_patterns_to_check = [
+            "all 15 tasks have already been completed",
+            "0 pending tasks",
+            "specification is fully complete"
+        ]
+
+        for key_pattern in key_patterns_to_check:
+            if key_pattern in text_lower:
+                logger.debug(f"🔍 Found key pattern '{key_pattern}' but no match triggered - check logic!")
+            else:
+                logger.debug(f"🔍 Key pattern '{key_pattern}' NOT found in text")
+
+        # Regex-based patterns for numeric completion (X/X format)
+        numeric_patterns = [
+            r'(\d+)/(\d+)\s+completed',        # "15/15 completed"
+            r'(\d+)/(\d+)\s+tasks?\s+(?:completed|finished)', # "5/5 tasks finished"
+            r'task\s+progress:\s*(\d+)/(\d+)', # "Task progress: 15/15"
+            r'completed:\s*(\d+)/(\d+)',       # "completed: 15/15"
+            r'(\d+)\s+of\s+(\d+)\s+tasks?\s+completed', # "15 of 15 tasks completed"
+            r'all\s+(\d+)\s+tasks?\s+(?:are\s+)?(?:marked\s+as\s+)?completed', # "All 15 tasks completed"
+            r'(\d+)\s+tasks?\s+completed',     # "15 tasks completed"
+            r'remaining\s+tasks?:\s*\*?\*?0\*?\*?', # "Remaining tasks: 0" or "**0**"
+        ]
+
+        for pattern in numeric_patterns:
+            match = re.search(pattern, text_lower)
+            if match:
+                if len(match.groups()) >= 2:
+                    # For X/Y patterns, check if X == Y
+                    completed = int(match.group(1))
+                    total = int(match.group(2))
+                    if completed == total and total > 0:
+                        logger.info(f"🎯 NUMERIC COMPLETION PATTERN DETECTED: {completed}/{total}")
+                        return True
+                else:
+                    # For remaining tasks = 0 patterns or single number patterns
+                    logger.info(f"🎯 COMPLETION PATTERN DETECTED: '{match.group(0)}'")
+                    return True
+
+        # Check for markdown checkbox completion patterns - count [x] vs total tasks
+        completed_tasks = len(re.findall(r'\[x\]|\[X\]|✓|✅', text_content))
+        total_tasks = len(re.findall(r'\[[x \-]\]|\[X \-\]', text_content, re.IGNORECASE))
+
+        if completed_tasks > 0 and total_tasks > 0 and completed_tasks == total_tasks:
+            logger.info(f"🎯 ALL MARKDOWN TASKS COMPLETED: {completed_tasks}/{total_tasks}")
+            return True
+
+        return False
+
     def _detect_spec_workflow_completion(self, output_data: Dict[str, Any]) -> bool:
         """Detect if spec-workflow indicates completion."""
         try:
@@ -221,14 +317,15 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                             # Check text content for completion patterns
                             if item.get("type") == "text":
                                 text_content = item.get("text", "")
-                                if ("15/15 completed" in text_content or
-                                    "Task progress: 15/15" in text_content or
-                                    "All 15 tasks are marked as completed" in text_content or
-                                    "All 15 tasks have been completed successfully" in text_content or
-                                    "Remaining tasks: **0**" in text_content or
-                                    "all tasks in the backend-implementation spec have been finished" in text_content):
-                                    logger.info("Completion pattern detected in text content!")
+
+                                # Debug: Log ALL text content being examined for completion patterns
+                                if len(text_content.strip()) > 10:  # Only log substantial content
+                                    logger.debug(f"🔍 Examining text for completion patterns: {text_content[:200]}...")
+
+                                # Use helper function to check for completion patterns
+                                if self._check_text_for_completion_patterns(text_content):
                                     return True
+
 
                             # Check tool results
                             elif item.get("type") == "tool_result":
@@ -271,13 +368,65 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                                                 logger.info("Overall status completed - spec workflow completion detected!")
                                                 return True
 
+                                            # Check for task completion status in various data structures
+                                            if "tasks" in data:
+                                                tasks = data["tasks"]
+                                                if isinstance(tasks, list):
+                                                    completed_count = sum(1 for task in tasks if task.get("status") == "completed" or "[x]" in str(task).lower())
+                                                    total_count = len(tasks)
+                                                    if total_count > 0 and completed_count == total_count:
+                                                        logger.info(f"All tasks in task list completed: {completed_count}/{total_count}")
+                                                        return True
+
                                     except json.JSONDecodeError as e:
                                         logger.debug(f"Failed to parse tool result as JSON: {e}")
-                                        # If it's not JSON, check for text patterns
-                                        if ("All tasks completed" in tool_result_content or
-                                            "15/15" in tool_result_content or
-                                            "completed: 15" in tool_result_content):
-                                            logger.info("Completion pattern detected in tool result!")
+                                        # If it's not JSON, check for enhanced text patterns
+                                        tool_content_lower = tool_result_content.lower()
+
+                                        # Enhanced patterns for tool results (simple strings)
+                                        simple_tool_patterns = [
+                                            "all tasks completed", "spec completed", "all tasks are marked as completed",
+                                            "remaining tasks: 0", "no remaining tasks",
+                                            "status: completed", "overall status: completed",
+                                            "[x] all", "✓ all", "✅ all"
+                                        ]
+
+                                        for pattern in simple_tool_patterns:
+                                            if pattern in tool_content_lower:
+                                                logger.info(f"Completion pattern '{pattern}' detected in tool result!")
+                                                return True
+
+                                        # Regex patterns for tool results (numeric completion)
+                                        tool_numeric_patterns = [
+                                            r'(\d+)/(\d+)\s*(?:completed|tasks?|finished)', # "15/15 completed", "15/15 tasks"
+                                            r'completed:\s*(\d+)/(\d+)',                    # "completed: 15/15"
+                                            r'(\d+)\s+of\s+(\d+)\s+tasks?\s+completed',     # "15 of 15 tasks completed"
+                                            r'all\s+(\d+)\s+tasks?\s+completed',            # "all 15 tasks completed"
+                                            r'(\d+)\s+tasks?\s+completed',                  # "15 tasks completed"
+                                            r'remaining\s+tasks?:\s*0',                     # "remaining tasks: 0"
+                                        ]
+
+                                        for pattern in tool_numeric_patterns:
+                                            match = re.search(pattern, tool_content_lower)
+                                            if match:
+                                                if len(match.groups()) >= 2:
+                                                    # For X/Y patterns, check if X == Y
+                                                    completed = int(match.group(1))
+                                                    total = int(match.group(2))
+                                                    if completed == total and total > 0:
+                                                        logger.info(f"Tool result completion: {completed}/{total}")
+                                                        return True
+                                                else:
+                                                    # For single number or zero patterns
+                                                    logger.info(f"Tool result completion pattern: '{match.group(0)}'")
+                                                    return True
+
+                                        # Check for markdown checkboxes in tool results
+                                        completed_tasks = len(re.findall(r'\[x\]|\[X\]|✓|✅', tool_result_content))
+                                        total_tasks = len(re.findall(r'\[[x \-]\]|\[X \-\]', tool_result_content, re.IGNORECASE))
+
+                                        if completed_tasks > 0 and total_tasks > 0 and completed_tasks == total_tasks:
+                                            logger.info(f"All markdown tasks completed in tool result: {completed_tasks}/{total_tasks}")
                                             return True
 
             return False
@@ -478,6 +627,18 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                             tool_name = item.get("name", "unknown")
                             logger.info(f"Tool used: {tool_name}")
 
+                # Also check result field in ResultMessage for completion patterns
+                if payload.get("message_type") == "ResultMessage" and "result" in payload:
+                    result_text = payload["result"]
+                    if isinstance(result_text, str) and len(result_text.strip()) > 10:
+                        logger.debug(f"🔍 Examining ResultMessage result for completion patterns: {result_text[:200]}...")
+                        # Check for completion patterns in result text
+                        if self._check_text_for_completion_patterns(result_text):
+                            self.spec_completed = True
+                            logger.info("🎉 COMPLETION DETECTED in ResultMessage result field!")
+                        else:
+                            logger.debug("❌ No completion patterns found in ResultMessage result field")
+
             elif event == "run_started":
                 self.current_run_id = data.get("run_id")
                 logger.info(f"Run started: {self.current_run_id}")
@@ -485,6 +646,11 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             elif event == "run_completed":
                 logger.info("Run completed successfully")
                 self.session_active = False
+
+                # If we detected completion during this run, exit immediately
+                if self.spec_completed:
+                    logger.info("🚀 SPEC COMPLETION DETECTED DURING THIS RUN - TRIGGERING IMMEDIATE EXIT!")
+
                 return True
 
             elif event == "run_failed":
@@ -523,7 +689,7 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             # Check for spec workflow completion
             if self._detect_spec_workflow_completion(data):
                 self.spec_completed = True
-                logger.info("Spec workflow completed - will stop after next idle state")
+                logger.info("🎉 SPEC WORKFLOW COMPLETION DETECTED! Will stop after current session ends.")
 
             return False
 
@@ -564,9 +730,15 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             while (self.session_active and
                    not self.shutdown_requested and
                    not session_ended and
+                   not self.spec_completed and  # Exit immediately if completion detected
                    time.time() - monitoring_start < max_session_time):
 
                 session_ended = self._monitor_claude_output()
+
+                # Check for immediate exit if completion was detected during monitoring
+                if self.spec_completed:
+                    logger.info("🚀 COMPLETION DETECTED DURING MONITORING - BREAKING OUT OF LOOP!")
+                    break
 
                 if not session_ended:
                     time.sleep(0.1)  # Small delay to prevent busy waiting
@@ -575,10 +747,11 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             if self.claude_process:
                 self._shutdown_claude_session()
 
-            # Check if we should stop
+            # Check if we should stop immediately after session ends
             if self.spec_completed:
-                logger.info("Spec workflow automation completed successfully!")
-                logger.info("All tasks completed. Exiting automation.")
+                logger.info("🎉 SPEC WORKFLOW AUTOMATION COMPLETED SUCCESSFULLY!")
+                logger.info("✅ ALL TASKS COMPLETED. EXITING AUTOMATION.")
+                logger.info("🛑 Calling sys.exit(0) to stop PM2 process...")
                 sys.exit(0)  # Clean exit stops PM2 process
 
             if self.shutdown_requested:
