@@ -570,7 +570,7 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                                 tool_result_content = item.get("content")
                                 logger.info(f"🔧 Tool result content: {str(tool_result_content)[:200]}...")
 
-                                # Try to parse as JSON for spec-workflow data
+                                # PRIORITY 1: Try to parse as JSON for spec-workflow data (MOST RELIABLE)
                                 if isinstance(tool_result_content, str):
                                     try:
                                         result_data = json.loads(tool_result_content)
@@ -583,31 +583,40 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                                                 task_progress = data_obj["taskProgress"]
                                                 total = task_progress.get("total", 0)
                                                 completed = task_progress.get("completed", 0)
-                                                logger.info(f"🎯 SPEC TOOL RESULT: {completed}/{total} tasks")
+                                                pending = task_progress.get("pending", 0)
 
-                                                if total > 0 and completed == total:
-                                                    logger.info("🎯 COMPLETION DETECTED via tool result structure!")
+                                                logger.info(f"🎯 *** AUTHORITATIVE SPEC-WORKFLOW RESULT *** {completed}/{total} tasks, {pending} pending")
+
+                                                if total > 0 and completed == total and pending == 0:
+                                                    logger.info("🎯 *** RELIABLE COMPLETION *** via spec-workflow taskProgress!")
+                                                    logger.info("🚨 TRIGGERING IMMEDIATE SPEC COMPLETION!")
+                                                    self.spec_completed = True
+                                                    logger.info("🎉 SPEC COMPLETION FLAG SET!")
                                                     return True
+                                                else:
+                                                    logger.info(f"🔍 SPEC NOT COMPLETE: {pending} tasks still pending")
+                                                    # If we have authoritative spec data, don't check tasks file
+                                                    return False
                                     except:
                                         pass
 
-                                # ROBUST: Check if this is a tasks.md file with all [x] completed
+                                # FALLBACK: Check if this is a tasks.md file (LESS RELIABLE - may be truncated)
                                 if isinstance(tool_result_content, str):
                                     # Check if this looks like a tasks file (has task markers)
                                     has_task_markers = bool(re.search(r'- \[[x ]\]', tool_result_content, re.IGNORECASE))
 
                                     if has_task_markers:
-                                        logger.info("🔍 TASKS FILE DETECTED - Analyzing completion status...")
+                                        logger.info("🔍 TASKS FILE DETECTED (fallback analysis) - May be truncated!")
 
                                         # Count [x] vs [ ] tasks in the content
                                         completed_tasks = len(re.findall(r'- \[x\]', tool_result_content, re.IGNORECASE))
                                         pending_tasks = len(re.findall(r'- \[ \]', tool_result_content, re.IGNORECASE))
                                         total_tasks = completed_tasks + pending_tasks
 
-                                        logger.info(f"🔍 TASK ANALYSIS DETAILS:")
+                                        logger.info(f"🔍 FALLBACK TASK ANALYSIS (may be incomplete):")
                                         logger.info(f"   - Completed tasks [x]: {completed_tasks}")
                                         logger.info(f"   - Pending tasks [ ]: {pending_tasks}")
-                                        logger.info(f"   - Total tasks: {total_tasks}")
+                                        logger.info(f"   - Total visible tasks: {total_tasks}")
 
                                         # Show sample of found patterns for debugging
                                         completed_matches = re.findall(r'- \[x\].*', tool_result_content, re.IGNORECASE)[:3]
@@ -616,15 +625,18 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                                         logger.info(f"🔍 Sample completed tasks: {completed_matches}")
                                         logger.info(f"🔍 Sample pending tasks: {pending_matches}")
 
-                                        if total_tasks > 0 and pending_tasks == 0 and completed_tasks >= 3:
-                                            logger.info("🎯 *** COMPLETION DETECTED *** All tasks marked [x] in tasks file!")
-                                            logger.info("🚨 TRIGGERING IMMEDIATE SPEC COMPLETION!")
-                                            # Set completion flag immediately
+                                        # CONSERVATIVE: Only trigger if we see a reasonable number of completed tasks
+                                        # and no pending tasks, but warn about potential truncation
+                                        if total_tasks >= 10 and pending_tasks == 0 and completed_tasks >= 10:
+                                            logger.info("🎯 *** FALLBACK COMPLETION DETECTED *** All visible tasks marked [x]!")
+                                            logger.warning("⚠️ WARNING: This is based on potentially truncated tasks file")
+                                            logger.info("🚨 TRIGGERING SPEC COMPLETION (with caution)!")
                                             self.spec_completed = True
                                             logger.info("🎉 SPEC COMPLETION FLAG SET!")
                                             return True
                                         else:
-                                            logger.info(f"🔍 Not complete: {pending_tasks} pending tasks remain")
+                                            logger.info(f"🔍 FALLBACK: Not enough evidence for completion ({total_tasks} visible tasks, {pending_tasks} pending)")
+                                            logger.info(f"🔍 Need authoritative spec-workflow tool result for reliable detection")
 
                                     # Also try to parse as potential spec-workflow JSON (verbose logging)
                                     elif "{" in tool_result_content and "}" in tool_result_content:
