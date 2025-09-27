@@ -7,6 +7,7 @@ import { ContractValidationPipe } from '@contracts/ContractValidationPipe';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SchemaRegistryService } from './schemas/schema-registry.service';
+import { AuthModule } from './auth/auth.module';
 
 /**
  * Root application module following SOLID principles
@@ -30,13 +31,13 @@ import { SchemaRegistryService } from './schemas/schema-registry.service';
       envFilePath: ['.env.local', '.env'],
       expandVariables: true,
     }),
-    
+
     // Structured logging with Pino
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-        transport: process.env.NODE_ENV === 'production' 
-          ? undefined 
+        transport: process.env.NODE_ENV === 'production'
+          ? undefined
           : {
               target: 'pino-pretty',
               options: {
@@ -60,6 +61,9 @@ import { SchemaRegistryService } from './schemas/schema-registry.service';
         },
       },
     }),
+
+    // Authentication module with JWT and CASL authorization
+    AuthModule,
   ],
   
   controllers: [AppController],
