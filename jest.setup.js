@@ -31,3 +31,9 @@ jest.mock('chokidar', () => ({
 jest.mock('child_process', () => ({
   spawn: jest.fn(),
 }));
+
+// Mock os module for tmpdir functionality
+jest.mock('os', () => ({
+  ...jest.requireActual('os'),
+  tmpdir: jest.fn(() => '/tmp'),
+}));
