@@ -186,4 +186,11 @@ export class WebSocketService {
       }
     }
   }
+
+  /**
+   * Helper method to generate user-specific room names
+   */
+  private getUserRoom(userId: string): string {
+    return `user:${userId}`;
+  }
 }

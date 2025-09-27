@@ -45,7 +45,7 @@
   - _Requirements: 4.1, 4.2_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Real-time Communication Engineer with expertise in Socket.IO and WebSocket architecture | Task: Implement WebSocket gateway with JWT authentication and Zod event validation following requirements 4.1 and 4.2, applying SOLID principles with clean event handling separation | Restrictions: Must authenticate WebSocket connections with JWT, implement room-based user targeting, validate all events with Zod schemas, ensure proper connection state management | Success: WebSocket gateway functional with JWT auth, real-time events working with room targeting, Zod event validation implemented, connection state properly managed_
 
-- [ ] 6. Create database integration with Prisma and contract-aligned repository pattern
+- [-] 6. Create database integration with Prisma and contract-aligned repository pattern
   - File: apps/backend/src/database/ (Prisma integration with contract synchronization)
   - Implement type-safe database operations using Prisma ORM with repository pattern aligned to existing contracts
   - Create Zod schemas that mirror Prisma models for database SSOT synchronization
