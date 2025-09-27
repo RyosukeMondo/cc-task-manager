@@ -243,13 +243,28 @@ if __name__ == "__main__":
         }
       );
 
-      expect(registrationResult.success).toBe(true);
-      expect(registrationResult.contract).toBeDefined();
-      expect(registrationResult.contract!.metadata.name).toBe('TaskExecution');
-      expect(registrationResult.contract!.metadata.version).toBe('1.0.0');
+      expect(registrationResult).toBe(true);
+      
+      // Retrieve the registered contract
+      const contract = await contractRegistry.getContract('TaskExecution', '1.0.0');
+      expect(contract).toBeDefined();
+      expect(contract!.metadata.name).toBe('TaskExecution');
+      expect(contract!.metadata.version).toBe('1.0.0');
 
       // Step 2: Generate OpenAPI documentation
-      const openApiSpec = await apiContractGenerator.generateOpenAPISpec();
+      const endpoints = [{
+        path: '/api/tasks',
+        method: 'POST',
+        contractName: 'TaskExecution',
+        contractVersion: '1.0.0',
+        description: 'Create a new task'
+      }];
+      const options = {
+        title: 'Contract API',
+        version: '1.0.0',
+        description: 'API documentation generated from contracts'
+      };
+      const openApiSpec = apiContractGenerator.generateOpenAPISpec(endpoints, options);
       expect(openApiSpec).toBeDefined();
       expect(openApiSpec.paths).toBeDefined();
       expect(openApiSpec.components?.schemas).toBeDefined();
@@ -259,10 +274,11 @@ if __name__ == "__main__":
       expect(Object.keys(schemas)).toContain('TaskExecution_1_0_0');
 
       // Step 3: Generate TypeScript types
-      const typeDefinitions = await typeScriptGenerator.generateTypes();
-      expect(typeDefinitions).toContain('export interface TaskExecution_1_0_0');
-      expect(typeDefinitions).toContain('task: string');
-      expect(typeDefinitions).toContain('options?: {');
+      const typeResult = typeScriptGenerator.generateContractTypes('TaskExecution', '1.0.0');
+      expect(typeResult).toBeDefined();
+      expect(typeResult!.code).toContain('export interface TaskExecution_1_0_0');
+      expect(typeResult!.code).toContain('task: string');
+      expect(typeResult!.code).toContain('options?: {');
 
       // Step 4: Test contract validation
       const validRequest = {

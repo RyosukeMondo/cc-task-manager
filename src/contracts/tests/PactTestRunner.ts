@@ -115,7 +115,6 @@ export class PactTestRunner {
       provider: this.config.provider,
       port: this.config.port,
       dir: this.config.dir,
-      log: path.join(this.config.logDir, 'pact.log'),
       spec: this.config.spec,
     });
 
@@ -174,7 +173,7 @@ export class PactTestRunner {
         .given('default state')
         .expectsToReceive(description)
         .withContent(await handler())
-        .verify();
+        .verify(handler);
     } catch (err: any) {
       const formatted = this.formatPactError(err, description);
       throw new Error(formatted);
