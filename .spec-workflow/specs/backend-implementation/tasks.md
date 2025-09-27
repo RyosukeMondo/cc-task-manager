@@ -45,7 +45,7 @@
   - _Requirements: 4.1, 4.2_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Real-time Communication Engineer with expertise in Socket.IO and WebSocket architecture | Task: Implement WebSocket gateway with JWT authentication and Zod event validation following requirements 4.1 and 4.2, applying SOLID principles with clean event handling separation | Restrictions: Must authenticate WebSocket connections with JWT, implement room-based user targeting, validate all events with Zod schemas, ensure proper connection state management | Success: WebSocket gateway functional with JWT auth, real-time events working with room targeting, Zod event validation implemented, connection state properly managed_
 
-- [-] 6. Create database integration with Prisma and contract-aligned repository pattern
+- [x] 6. Create database integration with Prisma and contract-aligned repository pattern
   - File: apps/backend/src/database/ (Prisma integration with contract synchronization)
   - Implement type-safe database operations using Prisma ORM with repository pattern aligned to existing contracts
   - Create Zod schemas that mirror Prisma models for database SSOT synchronization
@@ -54,7 +54,7 @@
   - _Requirements: 5.1, 5.2_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Database Engineer with expertise in Prisma ORM and contract synchronization | Task: Create database integration with Prisma and repository pattern following requirements 5.1 and 5.2, implementing Dependency Inversion Principle with contract-aligned abstractions, ensuring Prisma models and Zod contracts stay synchronized | Restrictions: Must use Prisma for type-safe database access, create Zod schemas that mirror Prisma models, register database schemas in existing ContractRegistry, implement repository pattern for data access abstraction, ensure proper transaction handling | Success: Prisma integration working with repository pattern, Zod schemas aligned with Prisma models, database contracts registered in ContractRegistry, type-safe database operations, contract-database synchronization achieved_
 
-- [ ] 7. Implement configuration management with validation
+- [-] 7. Implement configuration management with validation
   - File: apps/backend/src/config/ (environment configuration with Zod validation)
   - Create centralized configuration using @nestjs/config with Zod schema validation
   - Follow SSOT principle with single configuration schema for all environment variables
