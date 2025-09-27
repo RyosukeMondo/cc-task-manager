@@ -9,14 +9,14 @@ import { join, resolve } from 'path';
 import { tmpdir } from 'os';
 import { randomUUID } from 'crypto';
 
-import workerConfig from '../../src/config/worker.config';
-import { WorkerModule } from '../../src/worker/worker.module';
-import { WorkerService } from '../../src/worker/worker.service';
-import { ClaudeCodeProcessor, ClaudeCodeJobData } from '../../src/worker/claude-code.processor';
-import { ProcessManagerService } from '../../src/worker/process-manager.service';
-import { StateMonitorService } from '../../src/worker/state-monitor.service';
-import { ClaudeCodeClientService } from '../../src/worker/claude-code-client.service';
-import { TaskState } from '../../src/config/worker.config';
+import { workerConfig } from '@cc-task-manager/schemas';
+import { WorkerModule } from '../../apps/worker/src/worker.module';
+import { WorkerService } from '../../apps/worker/src/worker.service';
+import { ClaudeCodeProcessor, ClaudeCodeJobData } from '../../apps/worker/src/claude-code.processor';
+import { ProcessManagerService } from '../../apps/worker/src/process-manager.service';
+import { StateMonitorService } from '../../apps/worker/src/state-monitor.service';
+import { ClaudeCodeClientService } from '../../apps/worker/src/claude-code-client.service';
+import { TaskState } from '@cc-task-manager/types';
 
 describe('Claude Code Worker Integration', () => {
   let app: TestingModule;

@@ -10,7 +10,7 @@ import {
   ClaudeCodeOptionsSchema,
   TaskStatusSchema,
   WorkerConfigSchema
-} from './config/worker.config';
+} from '@cc-task-manager/schemas';
 
 /**
  * Set up contract-driven API documentation with Swagger

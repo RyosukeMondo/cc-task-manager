@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
-import workerConfig from './config/worker.config';
-import { WorkerModule } from './worker/worker.module';
+import { workerConfig } from '@cc-task-manager/schemas';
 
 @Module({
   imports: [
@@ -58,9 +57,6 @@ import { WorkerModule } from './worker/worker.module';
       },
       inject: [ConfigService],
     }),
-    
-    // Worker module with all Claude Code task processing logic
-    WorkerModule,
   ],
   providers: [],
 })

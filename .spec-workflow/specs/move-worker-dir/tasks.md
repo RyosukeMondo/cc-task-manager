@@ -72,7 +72,7 @@
   - _Requirements: 2.1_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Build Engineer with expertise in TypeScript compilation and NestJS CLI | Task: Configure build system for independent worker compilation following requirement 2.1, setting up TypeScript and NestJS CLI for standalone builds | Restrictions: Do not break existing build processes, ensure compatibility with workspace packages, maintain build performance | Success: Worker compiles independently, build artifacts generated correctly, no circular dependencies_
 
-- [ ] 9. Remove old src/worker directory and update references
+- [x] 9. Remove old src/worker directory and update references
   - File: src/worker/ (delete), src/app.module.ts, other files importing WorkerModule
   - Remove the old worker directory after successful migration
   - Update any remaining references to old worker location
