@@ -6,7 +6,8 @@ module.exports = {
       'scripts/spec_workflow_automation.py',
       '--spec-name', 'backend-implementation',
       '--project', '.',
-      '--session-log', 'logs/spec-workflow.jsonl'
+      '--session-log', 'logs/spec-workflow.jsonl',
+      '--debug-all'
     ],
     cwd: '/home/rmondo/repos/cc-task-manager',
     instances: 1,
