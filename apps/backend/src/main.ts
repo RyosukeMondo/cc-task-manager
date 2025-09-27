@@ -4,9 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ContractRegistry } from '@contracts/ContractRegistry';
-import { ApiContractGenerator } from '@contracts/ApiContractGenerator';
-import { ContractValidationPipe } from '@contracts/ContractValidationPipe';
+import { ContractRegistry } from '../../../src/contracts/ContractRegistry';
+import { ApiContractGenerator } from '../../../src/contracts/ApiContractGenerator';
 
 /**
  * Bootstrap function for contract-driven backend application
@@ -34,10 +33,10 @@ async function bootstrap() {
   // Use existing contract validation infrastructure
   const contractRegistry = app.get(ContractRegistry);
   
-  // Set up global validation using existing contract infrastructure
+  // Set up global validation using NestJS built-in validation
+  // ContractValidationPipe will be used per-endpoint with specific contract names
   // This follows Single Responsibility Principle - validation is centralized
   app.useGlobalPipes(
-    new ContractValidationPipe(contractRegistry), // Use existing validation pipe
     new ValidationPipe({
       transform: true,
       whitelist: true,

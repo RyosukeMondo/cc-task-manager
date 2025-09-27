@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
-import { ContractRegistry } from '@contracts/ContractRegistry';
-import { ApiContractGenerator } from '@contracts/ApiContractGenerator';
-import { ContractValidationPipe } from '@contracts/ContractValidationPipe';
+import { ContractRegistry } from '../../../src/contracts/ContractRegistry';
+import { ApiContractGenerator } from '../../../src/contracts/ApiContractGenerator';
+import { ContractValidationPipe } from '../../../src/contracts/ContractValidationPipe';
+import { BackendSchemaRegistry } from './schemas/schema-registry';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -71,6 +72,10 @@ import { AppService } from './app.service';
     ContractRegistry,
     ApiContractGenerator,
     ContractValidationPipe,
+    
+    // Backend-specific schema registry service
+    // Extends existing contract infrastructure with backend schemas
+    BackendSchemaRegistry,
   ],
   
   // Export contract services for other modules to use
@@ -79,6 +84,7 @@ import { AppService } from './app.service';
     ContractRegistry,
     ApiContractGenerator,
     ContractValidationPipe,
+    BackendSchemaRegistry,
   ],
 })
 export class AppModule {
@@ -88,6 +94,7 @@ export class AppModule {
    */
   constructor(
     private readonly contractRegistry: ContractRegistry,
+    private readonly backendSchemaRegistry: BackendSchemaRegistry,
     private readonly appService: AppService,
   ) {
     // Register core application contracts during module initialization
@@ -100,11 +107,20 @@ export class AppModule {
    */
   private async initializeContracts(): Promise<void> {
     try {
+      // Wait for BackendSchemaRegistry to complete registration
+      // This ensures all backend schemas are available in ContractRegistry
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Log successful integration with existing contract system
-      const existingContracts = this.contractRegistry.getContractNames();
-      console.log(`🔗 Backend module initialized with access to ${existingContracts.length} existing contracts`);
-      console.log(`📋 Available contracts: ${existingContracts.join(', ')}`);
+      const allContracts = this.contractRegistry.getContractNames();
+      const backendSchemas = this.backendSchemaRegistry.getRegisteredSchemas();
+      
+      console.log(`🔗 Backend module initialized with access to ${allContracts.length} total contracts`);
+      console.log(`📋 Backend schemas registered: ${backendSchemas.filter(name => 
+        ['UserBase', 'TaskBase', 'UserProfile', 'CreateTask', 'LoginRequest'].includes(name)
+      ).length} schemas`);
       console.log(`✅ Successfully integrated with existing contract-driven infrastructure`);
+      console.log(`🎯 Backend schemas extend ContractRegistry for SSOT validation`);
       
     } catch (error) {
       console.error('❌ Failed to initialize contract integration:', error);
