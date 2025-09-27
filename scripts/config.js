@@ -9,10 +9,10 @@ const CONFIG = {
 
   // Projects configuration - just add your projects here
   projects: [
-    { name: 'cc-task-manager', path: '.', spec: 'frontend-implementation' },
-    { name: 'warps', path: '../warps', spec: 'improving-critical-errors' },
-    { name: 'mind', path: '../mind-training', spec: 'contract-driven-type-safety' },
-    { name: 'wa-tools', path: '../wa-tools', spec: 'todo-refactoring' }
+     { available: false, name: 'cc-task-manager', path: '.', spec: 'frontend-implementation' }
+    ,{ available: true, name: 'warps', path: '../warps', spec: 'fix-tsc-type-error-following-contract-driven' }
+    ,{ available: false, name: 'mind', path: '../mind-training', spec: 'contract-driven-type-safety' }
+    ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'todo-refactoring' }
   ],
 
   // Dashboard port assignments
@@ -60,6 +60,11 @@ const CONFIG = {
 
 // Computed properties
 CONFIG.computed = {
+  // Available projects only
+  get availableProjects() {
+    return CONFIG.projects.filter(p => p.available);
+  },
+
   // Expected process names
   expectedAutomationProcesses: CONFIG.projects.map(p => CONFIG.naming.automationPrefix + p.name),
   expectedDashboardProcesses: CONFIG.projects.map(p => CONFIG.naming.dashboardPrefix + p.name),
@@ -85,7 +90,10 @@ if (require.main === module) {
 
   switch (action) {
     case 'projects':
-      console.log(CONFIG.projects.map(p => p.name).join(' '));
+      console.log(CONFIG.computed.availableProjects.map(p => p.name).join(' '));
+      break;
+    case 'available-projects':
+      console.log(CONFIG.computed.availableProjects.map(p => p.name).join(' '));
       break;
     case 'expected-automation':
       console.log(CONFIG.computed.expectedAutomationProcesses.join(' '));

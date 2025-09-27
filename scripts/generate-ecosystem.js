@@ -7,7 +7,7 @@ function generateEcosystemConfig() {
   const apps = [];
 
   // Generate automation apps
-  CONFIG.projects.forEach(project => {
+  CONFIG.computed.availableProjects.forEach(project => {
     apps.push({
       name: CONFIG.naming.automationPrefix + project.name,
       script: '/usr/bin/python3',
@@ -26,7 +26,7 @@ function generateEcosystemConfig() {
   });
 
   // Generate dashboard apps
-  CONFIG.projects.forEach(project => {
+  CONFIG.computed.availableProjects.forEach(project => {
     const projectPath = project.path === '.' ? CONFIG.baseCwd : project.path;
     apps.push({
       name: CONFIG.naming.dashboardPrefix + project.name,
