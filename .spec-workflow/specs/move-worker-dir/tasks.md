@@ -90,7 +90,7 @@
   - _Requirements: 2.3_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Documentation Engineer with expertise in technical writing and development workflows | Task: Update documentation and scripts following requirement 2.3, reflecting new worker application structure and independent operation | Restrictions: Maintain existing script functionality, ensure documentation accuracy, preserve development workflow efficiency | Success: Documentation updated correctly, scripts work with new structure, development workflow uninterrupted_
 
-- [ ] 11. Verify worker functionality and run integration tests
+- [x] 11. Verify worker functionality and run integration tests
   - File: All worker-related functionality
   - Test worker startup, job processing, and queue integration
   - Verify all existing functionality works in new structure

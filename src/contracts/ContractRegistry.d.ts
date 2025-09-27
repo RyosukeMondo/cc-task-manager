@@ -10,8 +10,8 @@ export declare const ContractMetadataSchema: z.ZodObject<{
     lastModified: z.ZodDefault<z.ZodDate>;
 }, "strip", z.ZodTypeAny, {
     version?: string;
-    name?: string;
     description?: string;
+    name?: string;
     deprecated?: boolean;
     deprecationDate?: Date;
     compatibleVersions?: string[];
@@ -19,8 +19,8 @@ export declare const ContractMetadataSchema: z.ZodObject<{
     lastModified?: Date;
 }, {
     version?: string;
-    name?: string;
     description?: string;
+    name?: string;
     deprecated?: boolean;
     deprecationDate?: Date;
     compatibleVersions?: string[];
@@ -39,8 +39,8 @@ export declare const ContractRegistrationSchema: z.ZodObject<{
         lastModified: z.ZodDefault<z.ZodDate>;
     }, "strip", z.ZodTypeAny, {
         version?: string;
-        name?: string;
         description?: string;
+        name?: string;
         deprecated?: boolean;
         deprecationDate?: Date;
         compatibleVersions?: string[];
@@ -48,8 +48,8 @@ export declare const ContractRegistrationSchema: z.ZodObject<{
         lastModified?: Date;
     }, {
         version?: string;
-        name?: string;
         description?: string;
+        name?: string;
         deprecated?: boolean;
         deprecationDate?: Date;
         compatibleVersions?: string[];
@@ -62,8 +62,8 @@ export declare const ContractRegistrationSchema: z.ZodObject<{
     schema?: any;
     metadata?: {
         version?: string;
-        name?: string;
         description?: string;
+        name?: string;
         deprecated?: boolean;
         deprecationDate?: Date;
         compatibleVersions?: string[];
@@ -75,8 +75,8 @@ export declare const ContractRegistrationSchema: z.ZodObject<{
     schema?: any;
     metadata?: {
         version?: string;
-        name?: string;
         description?: string;
+        name?: string;
         deprecated?: boolean;
         deprecationDate?: Date;
         compatibleVersions?: string[];

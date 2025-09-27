@@ -1,4 +1,13 @@
 import { z } from 'zod';
+export declare enum TaskState {
+    PENDING = "pending",
+    RUNNING = "running",
+    ACTIVE = "active",
+    IDLE = "idle",
+    COMPLETED = "completed",
+    FAILED = "failed",
+    CANCELLED = "cancelled"
+}
 export declare const ProcessConfigSchema: z.ZodObject<{
     jobId: z.ZodString;
     sessionName: z.ZodString;
@@ -152,7 +161,7 @@ export declare const WorkerConfigSchema: z.ZodObject<{
 }>;
 export declare const TaskStatusSchema: z.ZodObject<{
     taskId: z.ZodString;
-    state: z.ZodEnum<["pending", "running", "active", "idle", "completed", "failed", "cancelled"]>;
+    state: z.ZodNativeEnum<typeof TaskState>;
     pid: z.ZodOptional<z.ZodNumber>;
     progress: z.ZodOptional<z.ZodString>;
     lastActivity: z.ZodDate;
@@ -161,7 +170,7 @@ export declare const TaskStatusSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     error?: string;
     taskId?: string;
-    state?: "pending" | "running" | "active" | "idle" | "completed" | "failed" | "cancelled";
+    state?: TaskState;
     pid?: number;
     progress?: string;
     lastActivity?: Date;
@@ -169,7 +178,7 @@ export declare const TaskStatusSchema: z.ZodObject<{
 }, {
     error?: string;
     taskId?: string;
-    state?: "pending" | "running" | "active" | "idle" | "completed" | "failed" | "cancelled";
+    state?: TaskState;
     pid?: number;
     progress?: string;
     lastActivity?: Date;
@@ -227,7 +236,7 @@ export declare const validateWorkerConfig: (data: unknown) => {
 export declare const validateTaskStatus: (data: unknown) => {
     error?: string;
     taskId?: string;
-    state?: "pending" | "running" | "active" | "idle" | "completed" | "failed" | "cancelled";
+    state?: TaskState;
     pid?: number;
     progress?: string;
     lastActivity?: Date;

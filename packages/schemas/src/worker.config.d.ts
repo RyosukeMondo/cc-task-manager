@@ -17,7 +17,7 @@ declare const _default: (() => {
     sessionLogsDir?: string;
     awaitWriteFinish?: boolean;
     awaitWriteFinishMs?: number;
-}) & import("@nestjs/config").ConfigFactoryKeyHost<{
+}) & import("node_modules/@nestjs/config").ConfigFactoryKeyHost<{
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;

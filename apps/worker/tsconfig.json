@@ -2,13 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "../../",
     "baseUrl": "./",
     "paths": {
       "@cc-task-manager/schemas": ["../../packages/schemas/src"],
       "@cc-task-manager/types": ["../../packages/types/src"]
     }
   },
-  "include": ["src/**/*", "../../src/contracts/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/*.test.ts", "../../src/worker/**/*", "../../src/contracts/integration/**/*", "../../src/contracts/tests/**/*"]
 }

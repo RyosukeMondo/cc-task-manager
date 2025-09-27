@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Claude Code Task Manager - Worker system for Claude Code SDK integration",
   "main": "dist/main.js",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
     "build": "nest build",
     "build:worker": "pnpm --filter @cc-task-manager/worker build",

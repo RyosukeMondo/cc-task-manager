@@ -1,7 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateTaskStatus = exports.validateWorkerConfig = exports.validateClaudeCodeOptions = exports.validateTaskExecutionRequest = exports.validateProcessConfig = exports.TaskStatusSchema = exports.WorkerConfigSchema = exports.TaskExecutionRequestSchema = exports.ClaudeCodeOptionsSchema = exports.ProcessConfigSchema = void 0;
+exports.validateTaskStatus = exports.validateWorkerConfig = exports.validateClaudeCodeOptions = exports.validateTaskExecutionRequest = exports.validateProcessConfig = exports.TaskStatusSchema = exports.WorkerConfigSchema = exports.TaskExecutionRequestSchema = exports.ClaudeCodeOptionsSchema = exports.ProcessConfigSchema = exports.TaskState = void 0;
 const zod_1 = require("zod");
+var TaskState;
+(function (TaskState) {
+    TaskState["PENDING"] = "pending";
+    TaskState["RUNNING"] = "running";
+    TaskState["ACTIVE"] = "active";
+    TaskState["IDLE"] = "idle";
+    TaskState["COMPLETED"] = "completed";
+    TaskState["FAILED"] = "failed";
+    TaskState["CANCELLED"] = "cancelled";
+})(TaskState || (exports.TaskState = TaskState = {}));
 exports.ProcessConfigSchema = zod_1.z.object({
     jobId: zod_1.z.string().min(1, 'Job ID is required'),
     sessionName: zod_1.z.string().min(1, 'Session name is required'),
@@ -49,7 +59,7 @@ exports.WorkerConfigSchema = zod_1.z.object({
 });
 exports.TaskStatusSchema = zod_1.z.object({
     taskId: zod_1.z.string(),
-    state: zod_1.z.enum(['pending', 'running', 'active', 'idle', 'completed', 'failed', 'cancelled']),
+    state: zod_1.z.nativeEnum(TaskState),
     pid: zod_1.z.number().optional(),
     progress: zod_1.z.string().optional(),
     lastActivity: zod_1.z.date(),

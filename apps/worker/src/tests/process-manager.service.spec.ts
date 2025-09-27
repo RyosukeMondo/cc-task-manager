@@ -1,16 +1,16 @@
+// Mock child_process module before any imports
+const mockSpawn = jest.fn();
+
+jest.mock('child_process', () => ({
+  spawn: mockSpawn,
+}));
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { ChildProcess } from 'child_process';
 import { ProcessManagerService } from '../process-manager.service';
 import { ProcessConfig, WorkerConfig } from '../../../../packages/types/src';
-
-// Mock child_process module
-const mockSpawn = jest.fn();
-
-jest.mock('child_process', () => ({
-  spawn: mockSpawn,
-}));
 
 const mockChildProcess = {
   pid: 12345,
