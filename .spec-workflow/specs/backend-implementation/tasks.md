@@ -1,22 +1,22 @@
 # Tasks Document
 
-- [ ] 1. Create backend application structure and contract foundation
+- [ ] 1. Create backend application structure with existing contract foundation
   - File: apps/backend/package.json, apps/backend/src/main.ts, apps/backend/tsconfig.json
-  - Set up NestJS backend application with contract-driven development foundation
-  - Configure Zod schemas as single source of truth (SSOT) for API contracts
-  - Purpose: Establish contract-driven backend application with SOLID principles
-  - _Leverage: Existing NestJS patterns, workspace configuration, Zod schema patterns_
+  - Set up NestJS backend application leveraging existing contract-driven infrastructure from src/contracts/
+  - Integrate with existing ContractRegistry, ContractValidationPipe, and ApiContractGenerator
+  - Purpose: Establish contract-driven backend application with SOLID principles using existing SSOT foundation
+  - _Leverage: src/contracts/ContractRegistry.ts, src/contracts/ContractValidationPipe.ts, src/contracts/ApiContractGenerator.ts, existing NestJS patterns from src/main.ts_
   - _Requirements: 6.1, 1.1_
-  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Architect specializing in NestJS and contract-driven development | Task: Create apps/backend application structure with package.json, main.ts entry point, and TypeScript configuration following requirements 6.1 and 1.1, establishing contract-driven foundation with Zod schemas as SSOT | Restrictions: Follow SOLID principles (SRP, OCP, LSP, ISP, DIP), maintain KISS principle, ensure proper dependency injection setup | Success: Backend application structure created, Zod contract foundation established, TypeScript compilation succeeds, SOLID principles implemented_
+  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Architect specializing in NestJS and contract-driven development | Task: Create apps/backend application structure with package.json, main.ts entry point, and TypeScript configuration following requirements 6.1 and 1.1, LEVERAGING existing contract infrastructure from src/contracts/ as SSOT foundation | Restrictions: Must reuse existing ContractRegistry, ContractValidationPipe, ApiContractGenerator - do not recreate contract infrastructure, follow SOLID principles (SRP, OCP, LSP, ISP, DIP), maintain KISS principle | Success: Backend application structure created using existing contract foundation, ContractRegistry properly imported and configured, TypeScript compilation succeeds, SOLID principles implemented_
 
-- [ ] 2. Implement Zod schema contracts and OpenAPI integration
-  - File: apps/backend/src/contracts/ (schema definitions and registry)
-  - Create comprehensive Zod schemas for all API contracts serving as single source of truth
-  - Integrate nestjs-zod for automatic OpenAPI/Swagger documentation generation
-  - Purpose: Establish contract-driven API with automatic documentation and type safety
-  - _Leverage: @cc-task-manager/schemas patterns, contract-driven documentation from docs/contract-driven.md_
+- [ ] 2. Extend existing contract registry with backend-specific schemas
+  - File: apps/backend/src/schemas/ (backend-specific schema extensions)
+  - Extend existing ContractRegistry with backend application schemas (auth, tasks, users, etc.)
+  - Reuse existing ApiContractGenerator for automatic OpenAPI documentation
+  - Purpose: Add backend-specific contracts to existing SSOT contract infrastructure
+  - _Leverage: src/contracts/ContractRegistry.ts, src/contracts/ApiContractGenerator.ts, @cc-task-manager/schemas patterns, existing contract versioning from src/contracts/VersionManager.ts_
   - _Requirements: 1.1, 7.1_
-  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Contract Architect with expertise in Zod, OpenAPI, and type-safe API design | Task: Create comprehensive Zod schema contracts and integrate nestjs-zod for automatic OpenAPI/Swagger generation following requirements 1.1 and 7.1, implementing SSOT principle with contract registry | Restrictions: All API contracts must use Zod schemas, ensure complete OpenAPI documentation generation, follow contract-driven patterns from technical research | Success: All API contracts defined with Zod, Swagger documentation auto-generated, type safety achieved across frontend/backend, contract registry implemented_
+  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Contract Architect with expertise in Zod, OpenAPI, and existing contract infrastructure | Task: Extend existing ContractRegistry with backend-specific schemas following requirements 1.1 and 7.1, reusing existing ApiContractGenerator and VersionManager for SSOT principle | Restrictions: Must use existing contract infrastructure, register new schemas in existing ContractRegistry, follow existing contract patterns and versioning, do not recreate contract validation or OpenAPI generation | Success: Backend schemas registered in existing ContractRegistry, ApiContractGenerator produces OpenAPI docs for new schemas, type safety achieved using existing infrastructure, contract versioning working_
 
 - [ ] 3. Implement authentication module with JWT and CASL authorization
   - File: apps/backend/src/auth/ (authentication module with SOLID design)
@@ -27,14 +27,14 @@
   - _Requirements: 2.1, 2.2_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Security Engineer with expertise in JWT authentication and CASL authorization | Task: Implement authentication module with Passport.js JWT and CASL ABAC following requirements 2.1 and 2.2, applying SOLID principles especially Interface Segregation and Dependency Inversion | Restrictions: Must use industry-standard JWT tokens, implement proper CASL attribute-based permissions, follow security best practices, ensure guard-based protection | Success: JWT authentication working correctly, CASL authorization implemented with fine-grained permissions, authentication guards protect all endpoints, security principles enforced_
 
-- [ ] 4. Create task management module with contract validation
-  - File: apps/backend/src/tasks/ (task CRUD operations with Zod validation)
-  - Implement comprehensive task management API using contract-driven validation
+- [ ] 4. Create task management module with existing contract validation infrastructure
+  - File: apps/backend/src/tasks/ (task CRUD operations using existing validation)
+  - Implement comprehensive task management API using existing ContractValidationPipe
   - Apply Single Responsibility Principle with separate controller, service, and repository layers
-  - Purpose: Provide type-safe task management operations with automatic validation
-  - _Leverage: Zod schemas from task 2, repository patterns, BullMQ integration patterns_
+  - Purpose: Provide type-safe task management operations with automatic validation using existing SSOT
+  - _Leverage: src/contracts/ContractValidationPipe.ts, existing Zod schemas from @cc-task-manager/schemas, src/contracts/ContractRegistry.ts, repository patterns, BullMQ integration patterns_
   - _Requirements: 3.1, 3.2_
-  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Developer specializing in NestJS modules and contract-driven APIs | Task: Create task management module with Zod-validated CRUD operations following requirements 3.1 and 3.2, implementing SRP with layered architecture (controller/service/repository) | Restrictions: All endpoints must use Zod contract validation, implement proper error handling with structured responses, follow REST conventions, ensure database transaction integrity | Success: Task CRUD endpoints implemented with Zod validation, SRP applied to layered architecture, BullMQ job creation integrated, contract-based error responses working_
+  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Developer specializing in NestJS modules and contract-driven APIs | Task: Create task management module with existing ContractValidationPipe for CRUD operations following requirements 3.1 and 3.2, implementing SRP with layered architecture leveraging existing contract infrastructure | Restrictions: Must use existing ContractValidationPipe for validation, register task schemas in existing ContractRegistry, implement proper error handling with existing structured responses, follow REST conventions, ensure database transaction integrity | Success: Task CRUD endpoints implemented using existing validation infrastructure, SRP applied to layered architecture, BullMQ job creation integrated, existing contract-based error responses working_
 
 - [ ] 5. Implement WebSocket gateway for real-time communication
   - File: apps/backend/src/websocket/ (real-time gateway with type-safe events)
@@ -45,14 +45,14 @@
   - _Requirements: 4.1, 4.2_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Real-time Communication Engineer with expertise in Socket.IO and WebSocket architecture | Task: Implement WebSocket gateway with JWT authentication and Zod event validation following requirements 4.1 and 4.2, applying SOLID principles with clean event handling separation | Restrictions: Must authenticate WebSocket connections with JWT, implement room-based user targeting, validate all events with Zod schemas, ensure proper connection state management | Success: WebSocket gateway functional with JWT auth, real-time events working with room targeting, Zod event validation implemented, connection state properly managed_
 
-- [ ] 6. Create database integration with Prisma and repository pattern
-  - File: apps/backend/src/database/ (Prisma integration and repositories)
-  - Implement type-safe database operations using Prisma ORM with repository pattern
-  - Apply Dependency Inversion Principle with repository abstractions
-  - Purpose: Provide reliable, type-safe database access with clean architecture
-  - _Leverage: Existing Prisma schema, repository patterns, database configuration from shared packages_
+- [ ] 6. Create database integration with Prisma and contract-aligned repository pattern
+  - File: apps/backend/src/database/ (Prisma integration with contract synchronization)
+  - Implement type-safe database operations using Prisma ORM with repository pattern aligned to existing contracts
+  - Create Zod schemas that mirror Prisma models for database SSOT synchronization
+  - Purpose: Provide reliable, type-safe database access with contract-database alignment
+  - _Leverage: Existing Prisma schema, src/contracts/ContractRegistry.ts, repository patterns, database configuration from shared packages_
   - _Requirements: 5.1, 5.2_
-  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Database Engineer with expertise in Prisma ORM and repository patterns | Task: Create database integration with Prisma and repository pattern following requirements 5.1 and 5.2, implementing Dependency Inversion Principle with clean abstractions | Restrictions: Must use Prisma for type-safe database access, implement repository pattern for data access abstraction, ensure proper transaction handling, follow SOLID principles especially DIP | Success: Prisma integration working with repository pattern, type-safe database operations, transaction support implemented, dependency injection configured for repositories_
+  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Database Engineer with expertise in Prisma ORM and contract synchronization | Task: Create database integration with Prisma and repository pattern following requirements 5.1 and 5.2, implementing Dependency Inversion Principle with contract-aligned abstractions, ensuring Prisma models and Zod contracts stay synchronized | Restrictions: Must use Prisma for type-safe database access, create Zod schemas that mirror Prisma models, register database schemas in existing ContractRegistry, implement repository pattern for data access abstraction, ensure proper transaction handling | Success: Prisma integration working with repository pattern, Zod schemas aligned with Prisma models, database contracts registered in ContractRegistry, type-safe database operations, contract-database synchronization achieved_
 
 - [ ] 7. Implement configuration management with validation
   - File: apps/backend/src/config/ (environment configuration with Zod validation)
@@ -81,14 +81,14 @@
   - _Requirements: 3.1, 3.3_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Queue Architecture Engineer with expertise in BullMQ and job processing | Task: Implement BullMQ integration for job scheduling and worker coordination following requirements 3.1 and 3.3, applying Open/Closed Principle for extensible job management | Restrictions: Must use BullMQ for reliable job processing, implement proper error handling and retry logic, validate job data with Zod schemas, ensure worker communication via Redis | Success: BullMQ integration functional for job scheduling, queue monitoring implemented, job validation with Zod schemas, worker coordination established_
 
-- [ ] 10. Create comprehensive error handling and global filters
-  - File: apps/backend/src/common/ (global exception filters and error handling)
-  - Implement global exception filter with contract-based error responses
-  - Use Zod schemas for consistent error response formats following SSOT principle
-  - Purpose: Ensure consistent, secure error handling across all API endpoints
-  - _Leverage: NestJS exception filter patterns, Zod error schemas, structured error responses_
+- [ ] 10. Extend existing error handling with backend-specific global filters
+  - File: apps/backend/src/common/ (global exception filters extending existing patterns)
+  - Extend existing contract-based error handling from src/contracts/ with backend-specific global filters
+  - Reuse existing structured error response patterns and enhance for backend application
+  - Purpose: Ensure consistent, secure error handling using existing SSOT error infrastructure
+  - _Leverage: src/contracts/ContractValidationPipe.ts error handling, src/contracts/DevValidationMiddleware.ts patterns, NestJS exception filter patterns, existing Zod error schemas_
   - _Requirements: 1.3, 1.4_
-  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Reliability Engineer with expertise in error handling and exception management | Task: Create comprehensive error handling with global exception filters and Zod error schemas following requirements 1.3 and 1.4, ensuring SSOT for error response formats | Restrictions: All errors must use consistent Zod-validated response format, implement security-safe error messages, provide correlation IDs for tracking, ensure proper HTTP status codes | Success: Global exception filter implemented with Zod error schemas, consistent error responses across all endpoints, security-safe error handling, correlation ID tracking for debugging_
+  - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API Reliability Engineer with expertise in error handling and existing contract infrastructure | Task: Extend existing error handling infrastructure with backend-specific global exception filters following requirements 1.3 and 1.4, leveraging existing SSOT error response formats from contract infrastructure | Restrictions: Must reuse existing error handling patterns from src/contracts/, extend existing Zod error schemas, implement security-safe error messages, provide correlation IDs for tracking, ensure proper HTTP status codes, do not recreate error handling infrastructure | Success: Global exception filter implemented extending existing error infrastructure, consistent error responses using existing patterns, security-safe error handling, correlation ID tracking for debugging_
 
 - [ ] 11. Setup user management module with CASL integration
   - File: apps/backend/src/users/ (user CRUD with authorization integration)

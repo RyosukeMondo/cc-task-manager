@@ -7,7 +7,7 @@ import { WorkerService, TaskExecutionResult, TaskExecutionContext } from '../wor
 import { ProcessManagerService } from '../process-manager.service';
 import { StateMonitorService, ProcessStateTransition, FileSystemActivity } from '../state-monitor.service';
 import { ClaudeCodeClientService, ParsedResponse } from '../claude-code-client.service';
-import { WorkerConfig, TaskExecutionRequest, TaskState } from '../../../../packages/types/src';
+import { WorkerConfig, TaskExecutionRequest, TaskState } from '@cc-task-manager/types';
 import { EventEmitter } from 'events';
 import { ContractRegistry } from '../../../../src/contracts/ContractRegistry';
 

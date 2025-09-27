@@ -8,6 +8,7 @@ import { StateMonitorService } from './state-monitor.service';
 import { ClaudeCodeClientService } from './claude-code-client.service';
 import { WorkerService } from './worker.service';
 import { ClaudeCodeProcessor } from './claude-code.processor';
+import { ContractRegistry } from '../../../src/contracts/ContractRegistry';
 
 @Module({
   imports: [
@@ -56,6 +57,9 @@ import { ClaudeCodeProcessor } from './claude-code.processor';
     
     // BullMQ processor
     ClaudeCodeProcessor,
+    
+    // Contract validation
+    ContractRegistry,
   ],
   exports: [
     // Export services that might be used by other modules

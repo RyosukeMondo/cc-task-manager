@@ -16,7 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { ChildProcess } from 'child_process';
 import { ProcessManagerService } from '../process-manager.service';
-import { ProcessConfig, WorkerConfig } from '../../../../packages/types/src';
+import { ProcessConfig, WorkerConfig } from '@cc-task-manager/types';
 
 const mockChildProcess = {
   pid: 12345,

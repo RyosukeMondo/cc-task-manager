@@ -5,7 +5,8 @@
     "baseUrl": "./",
     "paths": {
       "@cc-task-manager/schemas": ["../../packages/schemas/src"],
-      "@cc-task-manager/types": ["../../packages/types/src"]
+      "@cc-task-manager/types": ["../../packages/types/src"],
+      "@cc-task-manager/contracts": ["../../src/contracts"]
     }
   },
   "include": ["src/**/*"],

@@ -11,8 +11,8 @@ import {
   StructuredError,
   ErrorCode
 } from '../claude-code-client.service';
-import { WorkerConfig } from '../../../../packages/types/src';
-import { ClaudeCodeOptionsSchema } from '../../../../packages/schemas/src';
+import { WorkerConfig } from '@cc-task-manager/types';
+import { ClaudeCodeOptionsSchema } from '@cc-task-manager/schemas';
 
 
 describe('ClaudeCodeClientService', () => {
