@@ -1,6 +1,6 @@
 # Tasks Document
 
-- [-] 1. Create frontend application structure with existing contract foundation integration
+- [x] 1. Create frontend application structure with existing contract foundation integration
   - File: apps/frontend/package.json, apps/frontend/src/app/layout.tsx, apps/frontend/tsconfig.json
   - Set up Next.js 14+ frontend application leveraging existing contract-driven infrastructure from both src/contracts/ and packages/
   - Integrate with existing ContractRegistry, TypeScriptGenerator, and new @cc-task-manager/schemas and @cc-task-manager/types packages
@@ -54,7 +54,7 @@
   - _Requirements: 3.1, 3.2_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Dashboard Engineer with expertise in data visualization and responsive design | Task: Create dashboard and monitoring interface with Chart.js integration following requirements 3.1 and 3.2, applying Open/Closed Principle for extensible components | Restrictions: Must use Chart.js for visualizations, implement responsive design with Tailwind CSS, ensure real-time metric updates, follow accessibility guidelines for charts and data displays | Success: Dashboard components implemented with Chart.js visualizations, responsive design working across devices, real-time metrics updating, accessibility compliance achieved
 
-- [ ] 7. Implement theme system and user preferences
+- [-] 7. Implement theme system and user preferences
   - File: apps/frontend/src/lib/theme/ (theme context and configuration)
   - Create comprehensive theme system using CSS variables and Tailwind CSS following SSOT principle
   - Implement user preference persistence with local storage and system preference detection
