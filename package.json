@@ -25,6 +25,7 @@
     "@nestjs/config": "^3.0.0",
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.4.2",
     "bullmq": "^4.0.0",
     "chokidar": "^3.5.3",
     "class-transformer": "^0.5.1",
@@ -36,6 +37,7 @@
     "pino-http": "^10.5.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "swagger-ui-express": "^5.0.1",
     "zod": "^3.22.0"
   },
   "devDependencies": {

@@ -90,7 +90,7 @@
   - _Requirements: 7.2, 5.1, 6.3_
   - _Prompt: Implement the task for spec contract-driven, first run spec-workflow-guide to get the workflow guide then implement the task: Role: CLI tool developer with expertise in Node.js command-line interfaces and developer tooling | Task: Build comprehensive contract CLI following requirements 7.2, 5.1, and 6.3, providing validation, documentation generation, and compatibility checking commands | Restrictions: Must provide clear help text, handle errors gracefully, integrate with existing build process, follow CLI best practices | _Leverage: existing script patterns in scripts/ directory, Node.js CLI frameworks | _Requirements: 7.2 (actionable error messages), 5.1 (automatic validation), 6.3 (compatibility guarantees) | Success: CLI provides all contract management operations, clear documentation, integrates with development workflow | Instructions: Mark in-progress when starting, complete when CLI is fully functional and documented_
 
-- [ ] 11. Add contract documentation to NestJS Swagger setup in src/main.ts
+- [x] 11. Add contract documentation to NestJS Swagger setup in src/main.ts
   - File: src/main.ts (modify existing)
   - Integrate contract-generated OpenAPI with NestJS Swagger
   - Add interactive API documentation with contract validation
