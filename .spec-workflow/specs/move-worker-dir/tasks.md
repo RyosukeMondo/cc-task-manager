@@ -54,7 +54,7 @@
   - _Requirements: 1.5_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with expertise in Jest testing and test migration | Task: Move worker tests and update configuration following requirement 1.5, ensuring all tests work in new application structure | Restrictions: Do not modify test logic, only update imports and configuration, maintain test coverage, preserve test isolation | Success: All worker tests relocated and working, import paths updated correctly, test coverage maintained_
 
-- [ ] 7. Create worker application main.ts entry point
+- [x] 7. Create worker application main.ts entry point
   - File: apps/worker/src/main.ts
   - Implement standalone NestJS application bootstrap
   - Configure application-specific settings and graceful shutdown
