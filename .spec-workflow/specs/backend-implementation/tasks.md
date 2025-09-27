@@ -9,7 +9,7 @@
   - _Requirements: 6.1, 1.1_
   - _Prompt: Implement the task for spec backend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Architect specializing in NestJS and contract-driven development | Task: Create apps/backend application structure with package.json, main.ts entry point, and TypeScript configuration following requirements 6.1 and 1.1, LEVERAGING existing contract infrastructure from src/contracts/ as SSOT foundation | Restrictions: Must reuse existing ContractRegistry, ContractValidationPipe, ApiContractGenerator - do not recreate contract infrastructure, follow SOLID principles (SRP, OCP, LSP, ISP, DIP), maintain KISS principle | Success: Backend application structure created using existing contract foundation, ContractRegistry properly imported and configured, TypeScript compilation succeeds, SOLID principles implemented_
 
-- [ ] 2. Extend existing contract registry with backend-specific schemas
+- [x] 2. Extend existing contract registry with backend-specific schemas
   - File: apps/backend/src/schemas/ (backend-specific schema extensions)
   - Extend existing ContractRegistry with backend application schemas (auth, tasks, users, etc.)
   - Reuse existing ApiContractGenerator for automatic OpenAPI documentation

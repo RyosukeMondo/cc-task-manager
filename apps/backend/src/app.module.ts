@@ -6,6 +6,7 @@ import { ApiContractGenerator } from '@contracts/ApiContractGenerator';
 import { ContractValidationPipe } from '@contracts/ContractValidationPipe';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { SchemaRegistryService } from './schemas/schema-registry.service';
 
 /**
  * Root application module following SOLID principles
@@ -65,12 +66,16 @@ import { AppService } from './app.service';
   
   providers: [
     AppService,
-    
+
     // Existing contract infrastructure providers
     // Following Dependency Inversion Principle - depend on abstractions
     ContractRegistry,
     ApiContractGenerator,
     ContractValidationPipe,
+
+    // Backend-specific schema registry service
+    // Extends existing contract infrastructure with backend schemas
+    SchemaRegistryService,
   ],
   
   // Export contract services for other modules to use
@@ -79,6 +84,7 @@ import { AppService } from './app.service';
     ContractRegistry,
     ApiContractGenerator,
     ContractValidationPipe,
+    SchemaRegistryService,
   ],
 })
 export class AppModule {
@@ -88,6 +94,7 @@ export class AppModule {
    */
   constructor(
     private readonly contractRegistry: ContractRegistry,
+    private readonly schemaRegistryService: SchemaRegistryService,
     private readonly appService: AppService,
   ) {
     // Register core application contracts during module initialization
@@ -100,12 +107,17 @@ export class AppModule {
    */
   private async initializeContracts(): Promise<void> {
     try {
-      // Log successful integration with existing contract system
-      const existingContracts = this.contractRegistry.getContractNames();
-      console.log(`🔗 Backend module initialized with access to ${existingContracts.length} existing contracts`);
-      console.log(`📋 Available contracts: ${existingContracts.join(', ')}`);
-      console.log(`✅ Successfully integrated with existing contract-driven infrastructure`);
-      
+      // Wait a bit for SchemaRegistryService to initialize via OnModuleInit
+      setTimeout(() => {
+        const allContracts = this.contractRegistry.getContractNames();
+        const backendContracts = this.schemaRegistryService.getRegisteredSchemas();
+
+        console.log(`🔗 Backend module initialized with ${allContracts.length} total contracts`);
+        console.log(`📋 Backend-specific contracts: ${backendContracts.length}`);
+        console.log(`✅ Successfully extended existing contract-driven infrastructure with backend schemas`);
+        console.log(`📊 Available backend schemas: ${backendContracts.join(', ')}`);
+      }, 1000);
+
     } catch (error) {
       console.error('❌ Failed to initialize contract integration:', error);
       // Graceful degradation - don't fail application startup
