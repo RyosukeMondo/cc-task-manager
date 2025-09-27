@@ -7,7 +7,7 @@ const path = require('path');
 
 const QUEUE_NAME = 'claude-code-queue';
 const REDIS_CONFIG = { host: 'localhost', port: 6379 };
-const WRAPPER_SCRIPT = path.resolve(__dirname, '../../scripts/claude_wrapper.py');
+const WRAPPER_SCRIPT = path.resolve(__dirname, '../../../scripts/claude_wrapper.py');
 const DEFAULT_TASK_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
 async function ensureRedis() {

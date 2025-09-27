@@ -25,7 +25,7 @@ const testPayload = {
 console.log('📝 Test Command:', testPayload);
 console.log('\n⚡ Starting Python wrapper...\n');
 
-const wrapper = spawn('python3', [require('path').resolve(__dirname, '../../scripts/claude_wrapper.py')], {
+const wrapper = spawn('python3', [require('path').resolve(__dirname, '../../../scripts/claude_wrapper.py')], {
   cwd: process.cwd(),
   stdio: ['pipe', 'pipe', 'pipe'],
 });
