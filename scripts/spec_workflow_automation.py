@@ -220,10 +220,16 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                         if isinstance(item, dict) and item.get("type") == "tool_result":
                             tool_result_content = item.get("content")
 
+                            # Log the raw tool result for debugging
+                            logger.debug(f"Tool result found: {tool_result_content}")
+
                             # Parse the tool result content if it's a string
                             if isinstance(tool_result_content, str):
                                 try:
                                     result_data = json.loads(tool_result_content)
+
+                                    # Log parsed result data
+                                    logger.debug(f"Parsed tool result: {result_data}")
 
                                     # Check if this is a spec-status result
                                     if (isinstance(result_data, dict) and
@@ -231,6 +237,7 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                                         "data" in result_data):
 
                                         data = result_data["data"]
+                                        logger.debug(f"Tool result data: {data}")
 
                                         # Check task progress
                                         task_progress = data.get("taskProgress", {})
@@ -250,7 +257,8 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                                             logger.info("Overall status completed - spec workflow completion detected!")
                                             return True
 
-                                except json.JSONDecodeError:
+                                except json.JSONDecodeError as e:
+                                    logger.debug(f"Failed to parse tool result as JSON: {e}")
                                     # If it's not JSON, check for text patterns
                                     if ("All tasks completed" in tool_result_content or
                                         "15/15" in tool_result_content or
