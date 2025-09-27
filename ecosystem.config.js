@@ -79,6 +79,32 @@ module.exports = {
       "time": true
     },
     {
+      "name": "spec-workflow-automation-wa-tools",
+      "script": "/usr/bin/python3",
+      "args": [
+        "scripts/spec_workflow_automation.py",
+        "--spec-name",
+        "todo-refactoring",
+        "--project",
+        "../wa-tools",
+        "--session-log",
+        "logs/spec-workflow-wa-tools.jsonl"
+      ],
+      "cwd": "/home/rmondo/repos/cc-task-manager",
+      "autorestart": false,
+      "error_file": "logs/pm2-spec-workflow-wa-tools-error.log",
+      "out_file": "logs/pm2-spec-workflow-wa-tools-out.log",
+      "instances": 1,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "merge_logs": true,
+      "time": true
+    },
+    {
       "name": "spec-workflow-dashboard-cc-task-manager",
       "script": "npx",
       "args": [
@@ -143,6 +169,31 @@ module.exports = {
       "autorestart": true,
       "error_file": "logs/pm2-dashboard-mind-error.log",
       "out_file": "logs/pm2-dashboard-mind-out.log",
+      "instances": 1,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "merge_logs": true,
+      "time": true
+    },
+    {
+      "name": "spec-workflow-dashboard-wa-tools",
+      "script": "npx",
+      "args": [
+        "-y",
+        "@pimzino/spec-workflow-mcp@latest",
+        "../wa-tools",
+        "--dashboard",
+        "--port",
+        "3404"
+      ],
+      "cwd": "/home/rmondo/repos/cc-task-manager",
+      "autorestart": true,
+      "error_file": "logs/pm2-dashboard-wa-tools-error.log",
+      "out_file": "logs/pm2-dashboard-wa-tools-out.log",
       "instances": 1,
       "watch": false,
       "max_memory_restart": "1G",

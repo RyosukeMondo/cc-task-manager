@@ -11,14 +11,16 @@ const CONFIG = {
   projects: [
     { name: 'cc-task-manager', path: '.', spec: 'frontend-implementation' },
     { name: 'warps', path: '../warps', spec: 'improving-critical-errors' },
-    { name: 'mind', path: '../mind-training', spec: 'contract-driven-type-safety' }
+    { name: 'mind', path: '../mind-training', spec: 'contract-driven-type-safety' },
+    { name: 'wa-tools', path: '../wa-tools', spec: 'todo-refactoring' }
   ],
 
   // Dashboard port assignments
   dashboardPorts: {
     'cc-task-manager': 3401,
     'warps': 3402,
-    'mind': 3403
+    'mind': 3403,
+    'wa-tools': 3404
   },
 
   // Static services
@@ -35,13 +37,6 @@ const CONFIG = {
   naming: {
     automationPrefix: 'spec-workflow-automation-',
     dashboardPrefix: 'spec-workflow-dashboard-',
-
-    // Legacy/orphaned process names to clean up
-    orphanedProcesses: [
-      'spec-workflow-automation-main',
-      'spec-workflow-dashboard',
-      'spec-workflow-cc-task-manager'
-    ]
   },
 
   // Common PM2 settings
@@ -102,7 +97,9 @@ if (require.main === module) {
       console.log(CONFIG.computed.allExpectedProcesses.join(' '));
       break;
     case 'orphaned':
-      console.log(CONFIG.naming.orphanedProcesses.join(' '));
+      // Return empty array since we don't predefine orphaned processes
+      // They are detected dynamically by comparing against expected processes
+      console.log('');
       break;
     case 'project-details':
       const projectName = process.argv[3];
