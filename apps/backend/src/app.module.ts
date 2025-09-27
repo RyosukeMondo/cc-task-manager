@@ -1,6 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { LoggerModule } from 'nestjs-pino';
 import { APP_GUARD } from '@nestjs/core';
 import { ContractRegistry } from '../../../src/contracts/ContractRegistry';
 import { ApiContractGenerator } from '../../../src/contracts/ApiContractGenerator';
@@ -13,6 +12,8 @@ import { TasksModule } from './tasks/tasks.module';
 import { WebSocketModule } from './websocket/websocket.module';
 import { DatabaseModule } from './database/database.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { EnhancedLoggingModule } from './logging/enhanced-logging.module';
+import { RequestLoggingMiddleware } from './logging/request-logging.middleware';
 
 /**
  * Root application module following SOLID principles
@@ -37,35 +38,8 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
       expandVariables: true,
     }),
     
-    // Structured logging with Pino
-    LoggerModule.forRoot({
-      pinoHttp: {
-        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-        transport: process.env.NODE_ENV === 'production' 
-          ? undefined 
-          : {
-              target: 'pino-pretty',
-              options: {
-                colorize: true,
-                translateTime: true,
-                ignore: 'pid,hostname',
-              },
-            },
-        serializers: {
-          req: (req) => ({
-            method: req.method,
-            url: req.url,
-            headers: {
-              'user-agent': req.headers['user-agent'],
-              'content-type': req.headers['content-type'],
-            },
-          }),
-          res: (res) => ({
-            statusCode: res.statusCode,
-          }),
-        },
-      },
-    }),
+    // Enhanced structured logging with Pino and correlation tracking
+    EnhancedLoggingModule,
     
     // Database module with Prisma integration
     DatabaseModule,
@@ -112,7 +86,17 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     BackendSchemaRegistry,
   ],
 })
-export class AppModule {
+export class AppModule implements NestModule {
+  /**
+   * Configure middleware for correlation tracking and structured logging
+   * Implements Single Level of Abstraction Principle (SLAP)
+   */
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestLoggingMiddleware)
+      .forRoutes('*'); // Apply to all routes for comprehensive request tracking
+  }
+
   /**
    * Module initialization demonstrating existing contract integration
    * Shows how the backend leverages existing SSOT infrastructure
