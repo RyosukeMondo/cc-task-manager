@@ -1,8 +1,8 @@
 module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
-  // Point to the repo-level integration tests that target the worker
-  testMatch: ['<rootDir>/../../tests/integration/**/*.spec.ts'],
+  // Point to the in-package integration tests for the worker
+  testMatch: ['<rootDir>/tests/integration/**/*.spec.ts'],
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },

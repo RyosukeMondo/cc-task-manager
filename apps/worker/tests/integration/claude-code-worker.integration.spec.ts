@@ -10,12 +10,12 @@ import { tmpdir } from 'os';
 import { randomUUID } from 'crypto';
 
 import { workerConfig } from '@cc-task-manager/schemas';
-import { WorkerModule } from '../../apps/worker/src/worker.module';
-import { WorkerService } from '../../apps/worker/src/worker.service';
-import { ClaudeCodeProcessor, ClaudeCodeJobData } from '../../apps/worker/src/claude-code.processor';
-import { ProcessManagerService } from '../../apps/worker/src/process-manager.service';
-import { StateMonitorService } from '../../apps/worker/src/state-monitor.service';
-import { ClaudeCodeClientService } from '../../apps/worker/src/claude-code-client.service';
+import { WorkerModule } from '../../src/worker.module';
+import { WorkerService } from '../../src/worker.service';
+import { ClaudeCodeProcessor, ClaudeCodeJobData } from '../../src/claude-code.processor';
+import { ProcessManagerService } from '../../src/process-manager.service';
+import { StateMonitorService } from '../../src/state-monitor.service';
+import { ClaudeCodeClientService } from '../../src/claude-code-client.service';
 import { TaskState } from '@cc-task-manager/types';
 
 describe('Claude Code Worker Integration', () => {
@@ -40,8 +40,8 @@ describe('Claude Code Worker Integration', () => {
     testSessionsDir = join(testWorkingDir, 'sessions');
     await fs.mkdir(testSessionsDir, { recursive: true });
 
-    // Resolve Python wrapper script path
-    pythonWrapperPath = resolve(process.cwd(), 'scripts/claude_wrapper.py');
+    // Resolve Python wrapper script path from repository root
+    pythonWrapperPath = resolve(__dirname, '../../../../scripts/claude_wrapper.py');
     
     // Verify Python wrapper exists
     if (!existsSync(pythonWrapperPath)) {
