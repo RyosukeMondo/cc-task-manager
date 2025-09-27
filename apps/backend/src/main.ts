@@ -116,19 +116,36 @@ async function setupApiDocumentation(app: any, contractRegistry: ContractRegistr
 
     // Generate OpenAPI document using existing infrastructure
     const document = SwaggerModule.createDocument(app, config);
-    
-    // Enhance with contract schemas from existing registry
-    if (apiGenerator && typeof apiGenerator.generateOpenApiDocument === 'function') {
-      const contractDocument = await apiGenerator.generateOpenApiDocument(contractRegistry);
-      
-      // Merge existing contract schemas with backend-specific documentation
+
+    // Get the OpenAPI documentation service to enhance the spec
+    const { OpenApiDocumentationService } = await import('./docs/openapi.service');
+    const openApiService = app.get(OpenApiDocumentationService);
+
+    // Get the generated OpenAPI spec from our service
+    const generatedSpec = openApiService.getOpenApiSpec();
+
+    // Merge the generated spec with Swagger's auto-generated document
+    if (generatedSpec) {
+      // Merge paths from our custom specification
+      document.paths = {
+        ...document.paths,
+        ...generatedSpec.paths,
+      };
+
+      // Merge components including all contract schemas
       document.components = {
         ...document.components,
         schemas: {
           ...document.components?.schemas,
-          ...contractDocument.components?.schemas,
+          ...generatedSpec.components?.schemas,
         },
+        securitySchemes: generatedSpec.components?.securitySchemes,
       };
+
+      // Use our enhanced tags with descriptions
+      if (generatedSpec.tags) {
+        document.tags = generatedSpec.tags;
+      }
     }
 
     // Set up Swagger UI with enhanced configuration

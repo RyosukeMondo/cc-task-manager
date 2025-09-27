@@ -45,5 +45,22 @@ module.exports = {
     out_file: 'logs/pm2-dashboard-out.log',
     merge_logs: true,
     time: true
+  }, {
+    name: 'claude-code-viewer',
+    script: 'server.js',
+    cwd: '/home/rmondo/repos/claude-code-viewer/dist/standalone',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production',
+      PORT: '3400'
+    },
+    log_date_format: 'YYYY-MM-DD HH:mm:ss',
+    error_file: 'logs/pm2-claude-code-viewer-error.log',
+    out_file: 'logs/pm2-claude-code-viewer-out.log',
+    merge_logs: true,
+    time: true
   }]
 };
