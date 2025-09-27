@@ -115,51 +115,6 @@ const deriveStatus = (
       case 'running':
         return { status: 'running' };
     }
-
-  toNormalizedEvent(response: ParsedResponse): NormalizedEvent | null {
-    if (!response.success || !response.data) {
-      return null;
-    }
-    const d = response.data as any;
-    const outcome = typeof d.outcome === 'string' ? (d.outcome as string) : null;
-    const reason = typeof d.reason === 'string' ? (d.reason as string) : null;
-    const tags = Array.isArray(d.tags) ? (d.tags as string[]) : undefined;
-    const status = (response.status as LegacyStatus | null) ?? (d.status as LegacyStatus | null) ?? null;
-    const returnCode =
-      response.returnCode ?? (typeof d.return_code === 'number' ? (d.return_code as number) : undefined);
-
-    return {
-      event: (response.event as string) || (d.event as string) || 'unknown',
-      runId: (d.run_id as string) ?? null,
-      timestamp: (d.timestamp as string) ?? undefined,
-      outcome,
-      reason,
-      tags,
-      message: (d.message as string) ?? undefined,
-      status,
-      returnCode,
-    };
-  }
-
-  toNormalizedEvent(response: ParsedResponse): NormalizedEvent | null {
-    if (!response.success || !response.data) {
-      return null;
-    }
-    const d = response.data as any;
-    return {
-      event: (response.event as string) || (d.event as string) || 'unknown',
-      runId: (d.run_id as string) ?? null,
-      timestamp: (d.timestamp as string) ?? undefined,
-      outcome: typeof d.outcome === 'string' ? d.outcome : null,
-      reason: typeof d.reason === 'string' ? d.reason : null,
-      tags: Array.isArray(d.tags) ? (d.tags as string[]) : undefined,
-      message: (d.message as string) ?? undefined,
-      status: (response.status as LegacyStatus | null) ?? (d.status as LegacyStatus | null) ?? null,
-      returnCode:
-        response.returnCode ??
-        (typeof d.return_code === 'number' ? (d.return_code as number) : undefined),
-    };
-  }
   }
 
   // Event mapping fallback
