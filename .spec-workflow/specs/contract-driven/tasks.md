@@ -18,7 +18,7 @@
   - _Requirements: 1.1, 1.3_
   - _Prompt: Implement the task for spec contract-driven, first run spec-workflow-guide to get the workflow guide then implement the task: Role: API documentation specialist with expertise in OpenAPI and Zod-to-schema conversion | Task: Build ApiContractGenerator service that transforms Zod schemas into OpenAPI 3.0 specifications following requirements 1.1 and 1.3, integrating with existing NestJS decorator patterns | Restrictions: Must generate valid OpenAPI specs, maintain compatibility with Swagger UI, do not break existing API patterns | _Leverage: existing Zod schemas from worker.config.ts, NestJS architecture | _Requirements: 1.1 (auto-generated documentation), 1.3 (interactive testing) | Success: Service generates complete OpenAPI specs from Zod schemas, includes endpoint metadata, supports Swagger UI integration | Instructions: Mark as in-progress when starting, complete when OpenAPI generation works end-to-end_
 
-- [ ] 3. Create TypeScript type generation service in src/contracts/TypeScriptGenerator.ts
+- [x] 3. Create TypeScript type generation service in src/contracts/TypeScriptGenerator.ts
   - File: src/contracts/TypeScriptGenerator.ts
   - Implement automated TypeScript type generation from contracts
   - Add client code generation capabilities
