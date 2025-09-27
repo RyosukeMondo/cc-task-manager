@@ -254,7 +254,7 @@ if __name__ == "__main__":
       // Step 2: Generate OpenAPI documentation
       const endpoints = [{
         path: '/api/tasks',
-        method: 'POST',
+        method: 'POST' as const,
         contractName: 'TaskExecution',
         contractVersion: '1.0.0',
         description: 'Create a new task'
@@ -276,9 +276,9 @@ if __name__ == "__main__":
       // Step 3: Generate TypeScript types
       const typeResult = typeScriptGenerator.generateContractTypes('TaskExecution', '1.0.0');
       expect(typeResult).toBeDefined();
-      expect(typeResult!.code).toContain('export interface TaskExecution_1_0_0');
-      expect(typeResult!.code).toContain('task: string');
-      expect(typeResult!.code).toContain('options?: {');
+      expect(typeResult!.types).toContain('export interface TaskExecution_1_0_0');
+      expect(typeResult!.types).toContain('task: string');
+      expect(typeResult!.types).toContain('options?: {');
 
       // Step 4: Test contract validation
       const validRequest = {
@@ -295,7 +295,10 @@ if __name__ == "__main__":
         },
       };
 
-      const validationPipe = new ContractValidationPipe(contractRegistry, 'TaskExecution', '1.0.0');
+      const validationPipe = new ContractValidationPipe(contractRegistry, {
+        contractName: 'TaskExecution',
+        version: '1.0.0'
+      });
       const validatedRequest = await validationPipe.transform(validRequest, {
         type: 'body',
         metatype: Object,
@@ -341,7 +344,7 @@ if __name__ == "__main__":
       );
 
       // Test version manager compatibility checking
-      const compatibilityResult = await versionManager.checkCompatibility(
+      const compatibilityResult = versionManager.isUpgradeCompatible(
         'TaskExecution',
         '1.0.0',
         '2.0.0'
@@ -357,7 +360,10 @@ if __name__ == "__main__":
         options: { timeout: 20000 },
       };
 
-      const v2ValidationPipe = new ContractValidationPipe(contractRegistry, 'TaskExecution', '2.0.0');
+      const v2ValidationPipe = new ContractValidationPipe(contractRegistry, {
+        contractName: 'TaskExecution',
+        version: '2.0.0'
+      });
       const validatedV1Request = await v2ValidationPipe.transform(v1Request, {
         type: 'body',
         metatype: Object,
@@ -372,7 +378,7 @@ if __name__ == "__main__":
         task: 'Advanced test task',
         options: { timeout: 25000 },
         config: {
-          enableDetailedLogs: true,
+          // enableDetailedLogs: true, // Property doesn't exist in ClaudeCodeOptionsSchema
           workingDirectory: '/tmp/test',
           environmentVariables: { TEST_MODE: 'true' },
         },
@@ -404,7 +410,7 @@ if __name__ == "__main__":
         task: 'console.log("Hello from contract-validated task");',
         options: {
           timeout: 10000,
-          enableDetailedLogs: true,
+          // enableDetailedLogs: true, // Property doesn't exist in ClaudeCodeOptionsSchema
         },
       };
 
@@ -417,8 +423,8 @@ if __name__ == "__main__":
         kill: jest.fn(),
       } as any;
 
-      jest.spyOn(processManager, 'spawnWorkerProcess').mockResolvedValue(mockProcess);
-      jest.spyOn(claudeCodeClient, 'parseResponse').mockResolvedValue({
+      jest.spyOn(processManager as any, 'spawnWorkerProcess').mockResolvedValue(mockProcess);
+      jest.spyOn(claudeCodeClient as any, 'parseResponse').mockResolvedValue({
         success: true,
         output: 'Hello from contract-validated task',
         outcome: 'completed',
@@ -483,7 +489,7 @@ if __name__ == "__main__":
       const startTime = Date.now();
       
       // Mock successful execution
-      jest.spyOn(processManager, 'spawnWorkerProcess').mockResolvedValue({
+      jest.spyOn(processManager as any, 'spawnWorkerProcess').mockResolvedValue({
         pid: 12345,
         stdout: { on: jest.fn() },
         stderr: { on: jest.fn() },
@@ -491,7 +497,7 @@ if __name__ == "__main__":
         kill: jest.fn(),
       } as any);
 
-      jest.spyOn(claudeCodeClient, 'parseResponse').mockResolvedValue({
+      jest.spyOn(claudeCodeClient as any, 'parseResponse').mockResolvedValue({
         success: true,
         output: 'Metrics test',
         outcome: 'completed',
@@ -715,7 +721,7 @@ if __name__ == "__main__":
       );
 
       // Verify breaking change detection
-      const compatibilityCheck = await versionManager.checkCompatibility(
+      const compatibilityCheck = versionManager.isUpgradeCompatible(
         'TaskRequest',
         '1.0.0',
         '2.0.0'
@@ -740,7 +746,10 @@ if __name__ == "__main__":
         { description: 'Performance testing schema' }
       );
 
-      const validationPipe = new ContractValidationPipe(contractRegistry, 'PerformanceTest', '1.0.0');
+      const validationPipe = new ContractValidationPipe(contractRegistry, {
+        contractName: 'PerformanceTest',
+        version: '1.0.0'
+      });
       
       // Prepare test requests
       const testRequests = Array.from({ length: 100 }, (_, i) => ({
@@ -778,7 +787,10 @@ if __name__ == "__main__":
         { description: 'Cache performance test' }
       );
 
-      const validationPipe = new ContractValidationPipe(contractRegistry, 'CacheTest', '1.0.0');
+      const validationPipe = new ContractValidationPipe(contractRegistry, {
+        contractName: 'CacheTest',
+        version: '1.0.0'
+      });
       const testRequest = {
         task: 'Cache test task',
         options: { timeout: 30000 },
@@ -819,13 +831,14 @@ if __name__ == "__main__":
         { description: 'This should fail' }
       );
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-      expect(result.contract).toBeUndefined();
+      expect(result).toBe(false); // registerContract returns boolean
     });
 
     it('should handle missing contract gracefully', async () => {
-      const validationPipe = new ContractValidationPipe(contractRegistry, 'NonExistentContract', '1.0.0');
+      const validationPipe = new ContractValidationPipe(contractRegistry, {
+        contractName: 'NonExistentContract',
+        version: '1.0.0'
+      });
       const testRequest = { data: 'test' };
 
       await expect(validationPipe.transform(testRequest, {
@@ -852,7 +865,10 @@ if __name__ == "__main__":
         { description: 'Strict validation schema' }
       );
 
-      const validationPipe = new ContractValidationPipe(contractRegistry, 'StrictContract', '1.0.0');
+      const validationPipe = new ContractValidationPipe(contractRegistry, {
+        contractName: 'StrictContract',
+        version: '1.0.0'
+      });
       const invalidRequest = {
         requiredField: 'abc', // Too short
         numberField: -5, // Negative
@@ -887,7 +903,7 @@ if __name__ == "__main__":
       };
 
       // Mock successful execution
-      jest.spyOn(processManager, 'spawnWorkerProcess').mockResolvedValue({
+      jest.spyOn(processManager as any, 'spawnWorkerProcess').mockResolvedValue({
         pid: 12345,
         stdout: { on: jest.fn() },
         stderr: { on: jest.fn() },
@@ -895,7 +911,7 @@ if __name__ == "__main__":
         kill: jest.fn(),
       } as any);
 
-      jest.spyOn(claudeCodeClient, 'parseResponse').mockResolvedValue({
+      jest.spyOn(claudeCodeClient as any, 'parseResponse').mockResolvedValue({
         success: true,
         output: 'Legacy execution',
         outcome: 'completed',
@@ -922,11 +938,14 @@ if __name__ == "__main__":
         task: 'Existing API test',
         options: {
           timeout: 30000,
-          enableDetailedLogs: false,
+          // enableDetailedLogs: false, // Property doesn't exist in ClaudeCodeOptionsSchema
         },
       };
 
-      const validationPipe = new ContractValidationPipe(contractRegistry, 'TaskExecutionRequest', '1.0.0');
+      const validationPipe = new ContractValidationPipe(contractRegistry, {
+        contractName: 'TaskExecutionRequest',
+        version: '1.0.0'
+      });
       const validatedRequest = await validationPipe.transform(existingApiRequest, {
         type: 'body',
         metatype: Object,
