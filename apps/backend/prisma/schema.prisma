@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model aligned with existing auth schemas
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  role      UserRole @default(USER)
+  status    UserStatus @default(ACTIVE)
+  
+  // Password and security
+  passwordHash String @map("password_hash")
+  
+  // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  lastLoginAt   DateTime? @map("last_login_at")
+  
+  // Relationships
+  createdTasks  Task[] @relation("TaskCreator")
+  assignedTasks Task[] @relation("TaskAssignee")
+  sessions      UserSession[]
+  
+  @@map("users")
+}
+
+// User role enumeration matching auth schemas
+enum UserRole {
+  ADMIN
+  USER
+  MODERATOR
+  
+  @@map("user_role")
+}
+
+// User status enumeration matching auth schemas
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+  
+  @@map("user_status")
+}
+
+// Task model aligned with existing task schemas
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  
+  // Relationships
+  createdById String @map("created_by_id")
+  createdBy   User   @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  
+  assigneeId  String? @map("assignee_id")
+  assignee    User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  
+  projectId   String? @map("project_id")
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  // Metadata
+  tags        String[]
+  dueDate     DateTime? @map("due_date")
+  completedAt DateTime? @map("completed_at")
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("tasks")
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+  @@index([assigneeId])
+  @@index([projectId])
+}
+
+// Task status enumeration
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  CANCELLED
+  
+  @@map("task_status")
+}
+
+// Task priority enumeration
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+  
+  @@map("task_priority")
+}
+
+// Project model for task organization
+model Project {
+  id          String @id @default(uuid())
+  name        String
+  description String?
+  
+  // Relationships
+  tasks       Task[]
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("projects")
+}
+
+// User session model for authentication
+model UserSession {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Session data
+  deviceInfo   String? @map("device_info")
+  ipAddress    String? @map("ip_address")
+  userAgent    String? @map("user_agent")
+  isActive     Boolean @default(true) @map("is_active")
+  
+  // Timestamps
+  createdAt       DateTime @default(now()) @map("created_at")
+  expiresAt       DateTime @map("expires_at")
+  lastActivityAt  DateTime @default(now()) @map("last_activity_at")
+  
+  @@map("user_sessions")
+  @@index([userId])
+  @@index([isActive])
+  @@index([expiresAt])
+}

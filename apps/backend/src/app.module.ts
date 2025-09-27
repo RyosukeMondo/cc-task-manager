@@ -11,6 +11,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { WebSocketModule } from './websocket/websocket.module';
+import { DatabaseModule } from './database/database.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 /**
@@ -65,6 +66,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
         },
       },
     }),
+    
+    // Database module with Prisma integration
+    DatabaseModule,
     
     // Authentication and authorization module
     AuthModule,
