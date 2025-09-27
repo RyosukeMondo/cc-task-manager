@@ -209,37 +209,54 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
     def _detect_spec_workflow_completion(self, output_data: Dict[str, Any]) -> bool:
         """Detect if spec-workflow indicates completion."""
         try:
-            # Check for tool use in stream events
+            # Check for tool results in stream events
             if output_data.get("event") == "stream":
                 payload = output_data.get("payload", {})
+                content = payload.get("content", [])
 
-                # Look for mcp__spec-workflow__spec-status tool results
-                if "mcp__spec-workflow__spec-status" in str(payload):
-                    # Check for completion indicators in the payload
-                    payload_str = json.dumps(payload)
+                # Look through content items for tool results
+                if isinstance(content, list):
+                    for item in content:
+                        if isinstance(item, dict) and item.get("type") == "tool_result":
+                            tool_result_content = item.get("content")
 
-                    # Look for task progress completion
-                    if '"taskProgress"' in payload_str:
-                        # Try to extract and parse task progress
-                        if '"total"' in payload_str and '"completed"' in payload_str:
-                            # Use regex to extract numbers
-                            total_match = re.search(r'"total":\s*(\d+)', payload_str)
-                            completed_match = re.search(r'"completed":\s*(\d+)', payload_str)
+                            # Parse the tool result content if it's a string
+                            if isinstance(tool_result_content, str):
+                                try:
+                                    result_data = json.loads(tool_result_content)
 
-                            if total_match and completed_match:
-                                total = int(total_match.group(1))
-                                completed = int(completed_match.group(1))
+                                    # Check if this is a spec-status result
+                                    if (isinstance(result_data, dict) and
+                                        result_data.get("success") and
+                                        "data" in result_data):
 
-                                logger.info(f"Task progress: {completed}/{total}")
+                                        data = result_data["data"]
 
-                                if total > 0 and completed == total:
-                                    logger.info("Spec workflow completion detected!")
-                                    return True
+                                        # Check task progress
+                                        task_progress = data.get("taskProgress", {})
+                                        if task_progress:
+                                            total = task_progress.get("total", 0)
+                                            completed = task_progress.get("completed", 0)
 
-                    # Also check for overall status completion
-                    if '"overallStatus": "completed"' in payload_str:
-                        logger.info("Overall spec status is completed!")
-                        return True
+                                            logger.info(f"Task progress detected: {completed}/{total}")
+
+                                            if total > 0 and completed == total:
+                                                logger.info("All tasks completed - spec workflow completion detected!")
+                                                return True
+
+                                        # Also check overall status
+                                        overall_status = data.get("overallStatus")
+                                        if overall_status == "completed":
+                                            logger.info("Overall status completed - spec workflow completion detected!")
+                                            return True
+
+                                except json.JSONDecodeError:
+                                    # If it's not JSON, check for text patterns
+                                    if ("All tasks completed" in tool_result_content or
+                                        "15/15" in tool_result_content or
+                                        "completed: 15" in tool_result_content):
+                                        logger.info("Completion pattern detected in tool result!")
+                                        return True
 
             return False
 
