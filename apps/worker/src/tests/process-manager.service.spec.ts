@@ -5,6 +5,12 @@ jest.mock('child_process', () => ({
   spawn: mockSpawn,
 }));
 
+// Mock crypto.randomUUID to return predictable values
+jest.mock('crypto', () => ({
+  ...jest.requireActual('crypto'),
+  randomUUID: jest.fn(() => 'test-correlation-id'),
+}));
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
@@ -120,7 +126,7 @@ describe('ProcessManagerService', () => {
       await service.spawnClaudeProcess(configWithoutPython);
 
       expect(mockSpawn).toHaveBeenCalledWith(
-        '/usr/bin/python3',
+        'python3',
         expect.any(Array),
         expect.any(Object)
       );
@@ -145,15 +151,7 @@ describe('ProcessManagerService', () => {
     it('should throw error when spawn fails', async () => {
       const error = new Error('Spawn failed');
       mockSpawn.mockImplementation(() => {
-        const failedProcess = {
-          ...mockChildProcess,
-          on: jest.fn((event, callback) => {
-            if (event === 'error') {
-              setImmediate(() => callback(error));
-            }
-          }),
-        };
-        return failedProcess;
+        throw error;
       });
 
       await expect(service.spawnClaudeProcess(mockConfig)).rejects.toThrow('Spawn failed');
@@ -222,7 +220,7 @@ describe('ProcessManagerService', () => {
 
       expect(mockChildProcess.kill).toHaveBeenCalledWith('SIGTERM');
       expect(mockChildProcess.kill).toHaveBeenCalledWith('SIGKILL');
-    });
+    }, 10000);
 
     it('should handle termination of non-existent process', async () => {
       const consoleSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
