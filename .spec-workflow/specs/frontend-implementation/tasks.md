@@ -36,7 +36,7 @@
   - _Requirements: 2.1, 2.2_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Frontend Developer specializing in React components and existing contract infrastructure | Task: Create task management components using generated types from existing TypeScriptGenerator following requirements 2.1 and 2.2, implementing SRP with component composition leveraging existing contract validation | Restrictions: Must use types generated from existing TypeScriptGenerator, leverage existing contract validation patterns, implement proper error handling with user-friendly feedback, follow Shadcn/ui patterns, ensure real-time update capability | Success: Task CRUD components implemented using existing generated types, SRP applied to component design, real-time updates working, existing contract-based validation functional
 
-- [ ] 5. Implement WebSocket client for real-time communication
+- [x] 5. Implement WebSocket client for real-time communication
   - File: apps/frontend/src/lib/websocket/ (WebSocket client with type-safe events)
   - Create Socket.IO WebSocket client with JWT authentication and room-based subscriptions
   - Use existing Zod schemas from packages/schemas for WebSocket event validation following SSOT principle
@@ -45,7 +45,7 @@
   - _Requirements: 2.3, 5.1_
   - _Prompt: Implement the task for spec frontend-implementation, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Real-time Communication Engineer with expertise in Socket.IO and WebSocket architecture | Task: Implement WebSocket client with JWT authentication and Zod event validation following requirements 2.3 and 5.1, applying SOLID principles with clean event handling separation | Restrictions: Must authenticate WebSocket connections with JWT, implement automatic reconnection with exponential backoff, validate all events with Zod schemas, ensure proper connection state management | Success: WebSocket client functional with JWT auth, real-time events working with type validation, automatic reconnection implemented, connection state properly managed
 
-- [ ] 6. Create dashboard and monitoring interface with responsive design
+- [x] 6. Create dashboard and monitoring interface with responsive design
   - File: apps/frontend/src/components/dashboard/ (dashboard components and charts)
   - Implement responsive dashboard using Chart.js for data visualization and real-time metrics
   - Apply Open/Closed Principle for extensible chart components and metric displays
