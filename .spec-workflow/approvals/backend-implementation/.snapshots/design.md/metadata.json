@@ -1,12 +1,20 @@
 {
   "filePath": ".spec-workflow/specs/backend-implementation/design.md",
-  "currentVersion": 1,
+  "currentVersion": 2,
   "snapshots": [
     {
       "version": 1,
       "filename": "snapshot-001.json",
       "timestamp": "2025-09-27T09:59:54.336Z",
       "trigger": "initial",
+      "approvalId": "approval_1758967194328_z2vfp42kz",
+      "approvalTitle": "Contract-driven backend design with SOLID principles, Zod, OpenAPI, and Swagger"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-27T10:02:12.536Z",
+      "trigger": "approved",
       "approvalId": "approval_1758967194328_z2vfp42kz",
       "approvalTitle": "Contract-driven backend design with SOLID principles, Zod, OpenAPI, and Swagger"
     }

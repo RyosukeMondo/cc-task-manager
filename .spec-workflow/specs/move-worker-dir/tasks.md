@@ -27,7 +27,7 @@
   - _Requirements: 1.3, 2.2_
   - _Prompt: Implement the task for spec move-worker-dir, first run spec-workflow-guide to get the workflow guide then implement the task: Role: TypeScript Developer with expertise in module systems and import resolution | Task: Update all import paths in worker application following requirements 1.3 and 2.2, fixing relative imports and configuring workspace package imports | Restrictions: Do not change functionality, only update import paths, ensure all imports resolve correctly, maintain type safety | Success: All imports resolve without errors, TypeScript compilation succeeds, no broken dependencies_
 
-- [ ] 4. Configure worker as workspace package in root package.json
+- [x] 4. Configure worker as workspace package in root package.json
   - File: package.json (root), apps/worker/package.json
   - Add worker to workspaces configuration in root package.json
   - Configure proper workspace dependencies and scripts

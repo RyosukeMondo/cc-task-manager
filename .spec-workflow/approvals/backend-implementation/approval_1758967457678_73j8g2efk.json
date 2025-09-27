@@ -1,0 +1,10 @@
+{
+  "id": "approval_1758967457678_73j8g2efk",
+  "title": "Implementation tasks for contract-driven backend with SOLID principles, Zod, OpenAPI, and Swagger",
+  "filePath": ".spec-workflow/specs/backend-implementation/tasks.md",
+  "type": "document",
+  "status": "pending",
+  "createdAt": "2025-09-27T10:04:17.678Z",
+  "category": "spec",
+  "categoryName": "backend-implementation"
+}

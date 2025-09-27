@@ -1,3 +1,6 @@
+packages:
+  - 'apps/*'
+
 ignoredBuiltDependencies:
   - '@nestjs/core'
   - msgpackr-extract
