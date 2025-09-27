@@ -6,10 +6,23 @@
 
 set -e
 
-# Configuration
+# Load unified configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_FILE="$SCRIPT_DIR/config.js"
+
+# Configuration from unified config
 PROJECT_DIR="/home/rmondo/repos/cc-task-manager"
-APP_NAME="spec-workflow-automation"
+APP_PATTERN="spec-workflow-automation-*"
 ECOSYSTEM_FILE="ecosystem.config.js"
+
+# Project list - from unified config
+PROJECTS=($(node "$CONFIG_FILE" projects))
+
+# Expected processes from unified config
+EXPECTED_AUTOMATION_PROCESSES=($(node "$CONFIG_FILE" expected-automation))
+EXPECTED_DASHBOARD_PROCESSES=($(node "$CONFIG_FILE" expected-dashboard))
+ALL_EXPECTED_PROCESSES=($(node "$CONFIG_FILE" all-expected))
+ORPHANED_PROCESSES=($(node "$CONFIG_FILE" orphaned))
 
 # Color codes for output
 RED='\033[0;31m'
@@ -37,85 +50,198 @@ print_warning() {
 
 # Function to show usage
 show_usage() {
-    echo -e "${GREEN}PM2 Command Center${NC}"
-    echo "Usage: $0 [command] [options]"
+    echo -e "${GREEN}PM2 Command Center for Spec Workflow Automation${NC}"
+    echo "Usage: $0 [command] [app_name] [options]"
     echo ""
     echo "Commands:"
-    echo "  start       - Start the automation process (detached)"
-    echo "  stop        - Stop the automation process"
-    echo "  restart     - Restart the automation process"
-    echo "  logs        - View logs (live tail)"
-    echo "  status      - Show process status"
-    echo "  list        - List all PM2 processes"
-    echo "  monitor     - Open PM2 monitor interface"
-    echo "  save        - Save PM2 process list"
-    echo "  startup     - Generate startup script"
-    echo "  delete      - Remove process from PM2"
-    echo "  flush       - Flush all log files"
+    echo "  start [app]     - Start automation process(es) (detached)"
+    echo "  stop [app]      - Stop automation process(es)"
+    echo "  restart [app]   - Restart automation process(es)"
+    echo "  logs [app]      - View logs (live tail)"
+    echo "  status [app]    - Show process status"
+    echo "  list            - List all PM2 processes"
+    echo "  monitor         - Open PM2 monitor interface"
+    echo "  save            - Save PM2 process list"
+    echo "  startup         - Generate startup script"
+    echo "  delete [app]    - Remove process(es) from PM2"
+    echo "  flush [app]     - Flush log files"
+    echo "  cleanup         - Remove orphaned spec-workflow processes"
+    echo ""
+    echo "App names (optional - defaults to all):"
+    echo "  cc-task-manager - spec-workflow-automation-cc-task-manager"
+    echo "  warps           - spec-workflow-automation-warps"
+    echo "  mind            - spec-workflow-automation-mind"
     echo ""
     echo "Examples:"
-    echo "  $0 start              # Start automation in background"
-    echo "  $0 logs               # View live logs"
-    echo "  $0 status             # Check process status"
-    echo "  $0 list               # List all PM2 processes"
+    echo "  $0 start              # Start all automation processes"
+    echo "  $0 start cc-task-manager # Start only cc-task-manager process"
+    echo "  $0 logs warps         # View warps logs"
+    echo "  $0 status             # Check all process status"
 }
 
 # Change to project directory
 cd "$PROJECT_DIR"
 
-# Get command
+# Get command and app name
 COMMAND="${1:-}"
+APP_NAME="${2:-}"
+
+# Function to get target processes
+get_target_processes() {
+    case "$1" in
+        "")
+            echo "${EXPECTED_AUTOMATION_PROCESSES[@]}"
+            ;;
+        *)
+            # Check if it's a known project name
+            for project in "${PROJECTS[@]}"; do
+                if [[ "$1" == "$project" ]]; then
+                    echo "spec-workflow-automation-$project"
+                    return
+                fi
+            done
+            # Otherwise return as-is
+            echo "$1"
+            ;;
+    esac
+}
+
+TARGET_PROCESSES=$(get_target_processes "$APP_NAME")
+
+# Function to cleanup orphaned processes
+cleanup_orphaned_processes() {
+    print_info "Checking for orphaned spec-workflow processes..."
+
+    local orphaned_found=false
+
+    # Check for known orphaned processes from unified config
+    for process in "${ORPHANED_PROCESSES[@]}"; do
+        if pm2 describe "$process" &>/dev/null; then
+            print_warning "Found orphaned process: $process"
+            pm2 delete "$process" 2>/dev/null || true
+            print_success "Removed orphaned process: $process"
+            orphaned_found=true
+        fi
+    done
+
+    # Use unified expected processes list
+
+    # Get list of all PM2 processes with spec-workflow prefix
+    local all_processes=$(pm2 list | grep -E "spec-workflow|claude-code" | awk '{print $4}' | grep -v "│" | grep -v "name" | grep -v "─" | sort | uniq)
+
+    for process in $all_processes; do
+        if [[ -n "$process" && "$process" != "name" ]]; then
+            local is_expected=false
+            for expected in "${ALL_EXPECTED_PROCESSES[@]}"; do
+                if [[ "$process" == "$expected" ]]; then
+                    is_expected=true
+                    break
+                fi
+            done
+
+            if [[ "$is_expected" == false ]]; then
+                print_warning "Found unexpected process: $process"
+                read -p "Remove process '$process'? (y/N) " -n 1 -r
+                echo
+                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                    pm2 delete "$process" 2>/dev/null || true
+                    print_success "Removed process: $process"
+                    orphaned_found=true
+                fi
+            fi
+        fi
+    done
+
+    if [[ "$orphaned_found" == false ]]; then
+        print_success "No orphaned processes found"
+    fi
+}
 
 # Handle commands
 case "$COMMAND" in
     start)
-        print_info "Starting $APP_NAME..."
+        print_info "Starting processes: $TARGET_PROCESSES"
+
+        # Auto-cleanup orphaned processes before starting
+        cleanup_orphaned_processes
+        echo ""
 
         # Ensure logs directory exists
         mkdir -p "$PROJECT_DIR/logs"
 
-        # Check if process is already running
-        if pm2 describe "$APP_NAME" &>/dev/null; then
-            print_warning "Process $APP_NAME is already managed by PM2"
-            pm2 reload "$ECOSYSTEM_FILE" --update-env
-            print_success "Process reloaded with updated configuration"
+        if [ -n "$APP_NAME" ]; then
+            # Start specific process
+            for process in $TARGET_PROCESSES; do
+                if pm2 describe "$process" &>/dev/null; then
+                    print_warning "Process $process is already managed by PM2"
+                    pm2 restart "$process"
+                    print_success "Process $process restarted"
+                else
+                    pm2 start "$ECOSYSTEM_FILE" --only "$process"
+                    print_success "Process $process started"
+                fi
+            done
         else
-            pm2 start "$ECOSYSTEM_FILE"
-            print_success "Process started successfully"
+            # Start all spec-workflow-automation processes
+            pm2 start "$ECOSYSTEM_FILE" --only "spec-workflow-automation-cc-task-manager,spec-workflow-automation-warps,spec-workflow-automation-mind"
+            print_success "All automation processes started"
         fi
 
         # Show status
         sleep 2
-        pm2 status "$APP_NAME"
+        for process in $TARGET_PROCESSES; do
+            pm2 status "$process" 2>/dev/null || true
+        done
 
-        print_info "Process is running in background (SSH disconnect safe)"
-        print_info "Use '$0 logs' to view logs"
+        print_info "Processes running in background (SSH disconnect safe)"
+        print_info "Use '$0 logs [app]' to view logs"
         ;;
 
     stop)
-        print_info "Stopping $APP_NAME..."
-        pm2 stop "$APP_NAME"
-        print_success "Process stopped"
+        print_info "Stopping processes: $TARGET_PROCESSES"
+        for process in $TARGET_PROCESSES; do
+            if pm2 describe "$process" &>/dev/null; then
+                pm2 stop "$process"
+                print_success "Process $process stopped"
+            fi
+        done
         ;;
 
     restart)
-        print_info "Restarting $APP_NAME..."
-        pm2 restart "$APP_NAME"
-        print_success "Process restarted"
-        pm2 status "$APP_NAME"
+        print_info "Restarting processes: $TARGET_PROCESSES"
+        for process in $TARGET_PROCESSES; do
+            if pm2 describe "$process" &>/dev/null; then
+                pm2 restart "$process"
+                print_success "Process $process restarted"
+            fi
+        done
+        for process in $TARGET_PROCESSES; do
+            pm2 status "$process" 2>/dev/null || true
+        done
         ;;
 
     logs)
-        print_info "Showing logs for $APP_NAME (Ctrl+C to exit)..."
-        echo ""
-        pm2 logs "$APP_NAME" --lines 50
+        if [ -n "$APP_NAME" ] && [ "$APP_NAME" != "spec-workflow-automation-main spec-workflow-automation-warps spec-workflow-automation-mind" ]; then
+            print_info "Showing logs for $TARGET_PROCESSES (Ctrl+C to exit)..."
+            echo ""
+            pm2 logs $TARGET_PROCESSES --lines 50
+        else
+            print_info "Showing logs for all automation processes (Ctrl+C to exit)..."
+            echo ""
+            pm2 logs spec-workflow-automation-cc-task-manager,spec-workflow-automation-warps,spec-workflow-automation-mind --lines 50
+        fi
         ;;
 
     status)
-        print_info "Process status for $APP_NAME:"
-        pm2 describe "$APP_NAME" || print_error "Process not found"
+        print_info "Process status for: $TARGET_PROCESSES"
+        for process in $TARGET_PROCESSES; do
+            echo ""
+            pm2 describe "$process" 2>/dev/null || print_error "Process $process not found"
+        done
         echo ""
-        pm2 status "$APP_NAME"
+        for process in $TARGET_PROCESSES; do
+            pm2 status "$process" 2>/dev/null || true
+        done
         ;;
 
     list)
@@ -142,28 +268,52 @@ case "$COMMAND" in
         ;;
 
     delete)
-        print_warning "Removing $APP_NAME from PM2..."
+        print_warning "Removing processes: $TARGET_PROCESSES from PM2..."
         read -p "Are you sure? (y/N) " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            pm2 delete "$APP_NAME"
-            print_success "Process removed from PM2"
+            for process in $TARGET_PROCESSES; do
+                if pm2 describe "$process" &>/dev/null; then
+                    pm2 delete "$process"
+                    print_success "Process $process removed from PM2"
+                fi
+            done
         else
             print_info "Operation cancelled"
         fi
         ;;
 
     flush)
-        print_info "Flushing logs for $APP_NAME..."
-        pm2 flush "$APP_NAME"
-        print_success "Logs flushed"
+        print_info "Flushing logs for: $TARGET_PROCESSES"
+        for process in $TARGET_PROCESSES; do
+            if pm2 describe "$process" &>/dev/null; then
+                pm2 flush "$process"
+                print_success "Logs flushed for $process"
+            fi
+        done
+        ;;
+
+    cleanup)
+        print_info "Manual cleanup of orphaned spec-workflow processes"
+        cleanup_orphaned_processes
+        echo ""
+        print_info "Cleanup complete. Current processes:"
+        pm2 list
         ;;
 
     "")
         # Default behavior - show status and usage
-        if pm2 describe "$APP_NAME" &>/dev/null; then
+        any_running=false
+        for process in spec-workflow-automation-cc-task-manager spec-workflow-automation-warps spec-workflow-automation-mind; do
+            if pm2 describe "$process" &>/dev/null; then
+                any_running=true
+                break
+            fi
+        done
+
+        if [ "$any_running" = true ]; then
             print_info "Current status:"
-            pm2 status "$APP_NAME"
+            pm2 status spec-workflow-automation-cc-task-manager,spec-workflow-automation-warps,spec-workflow-automation-mind 2>/dev/null || true
             echo ""
         fi
         show_usage

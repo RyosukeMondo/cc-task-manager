@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme colors */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+
+    /* Theme-specific variables */
+    --theme-background-primary: 0 0% 100%;
+    --theme-background-secondary: 210 40% 98%;
+    --theme-background-tertiary: 210 40% 96%;
+    --theme-text-primary: 222.2 84% 4.9%;
+    --theme-text-secondary: 215.4 16.3% 46.9%;
+    --theme-text-muted: 215.4 16.3% 65%;
+    --theme-border-subtle: 214.3 31.8% 91.4%;
+    --theme-border-strong: 214.3 31.8% 81.4%;
+    --theme-shadow: 0 0% 0%;
+    --theme-success: 142.1 76.2% 36.3%;
+    --theme-warning: 47.9 95.8% 53.1%;
+    --theme-error: 0 84.2% 60.2%;
+    --theme-info: 204.4 83.7% 51.8%;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+
+    /* Dark theme-specific variables */
+    --theme-background-primary: 222.2 84% 4.9%;
+    --theme-background-secondary: 217.2 32.6% 10%;
+    --theme-background-tertiary: 217.2 32.6% 17.5%;
+    --theme-text-primary: 210 40% 98%;
+    --theme-text-secondary: 215 20.2% 65.1%;
+    --theme-text-muted: 215 20.2% 50%;
+    --theme-border-subtle: 217.2 32.6% 17.5%;
+    --theme-border-strong: 217.2 32.6% 25%;
+    --theme-shadow: 0 0% 0%;
+    --theme-success: 142.1 70.6% 45.3%;
+    --theme-warning: 47.9 95.8% 53.1%;
+    --theme-error: 0 72.2% 50.6%;
+    --theme-info: 204.4 83.7% 61.8%;
+  }
+
+  /* High contrast theme for accessibility */
+  .high-contrast {
+    --theme-background-primary: 0 0% 100%;
+    --theme-background-secondary: 0 0% 95%;
+    --theme-background-tertiary: 0 0% 90%;
+    --theme-text-primary: 0 0% 0%;
+    --theme-text-secondary: 0 0% 20%;
+    --theme-text-muted: 0 0% 40%;
+    --theme-border-subtle: 0 0% 70%;
+    --theme-border-strong: 0 0% 50%;
+  }
+
+  .high-contrast.dark {
+    --theme-background-primary: 0 0% 0%;
+    --theme-background-secondary: 0 0% 5%;
+    --theme-background-tertiary: 0 0% 10%;
+    --theme-text-primary: 0 0% 100%;
+    --theme-text-secondary: 0 0% 80%;
+    --theme-text-muted: 0 0% 60%;
+    --theme-border-subtle: 0 0% 30%;
+    --theme-border-strong: 0 0% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Focus indicators for accessibility */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  /* Custom theme utilities */
+  .theme-bg-primary {
+    background-color: hsl(var(--theme-background-primary));
+  }
+
+  .theme-bg-secondary {
+    background-color: hsl(var(--theme-background-secondary));
+  }
+
+  .theme-bg-tertiary {
+    background-color: hsl(var(--theme-background-tertiary));
+  }
+
+  .theme-text-primary {
+    color: hsl(var(--theme-text-primary));
+  }
+
+  .theme-text-secondary {
+    color: hsl(var(--theme-text-secondary));
+  }
+
+  .theme-text-muted {
+    color: hsl(var(--theme-text-muted));
+  }
+
+  .theme-border-subtle {
+    border-color: hsl(var(--theme-border-subtle));
+  }
+
+  .theme-border-strong {
+    border-color: hsl(var(--theme-border-strong));
+  }
+}
