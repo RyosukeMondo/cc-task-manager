@@ -1,0 +1,44 @@
+{
+  "name": "@claude-code-wrapper-specs/schemas",
+  "version": "1.0.0",
+  "description": "Protocol specification schemas for Claude Code wrapper development",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "*.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "claude-code",
+    "wrapper",
+    "specifications",
+    "json-schema",
+    "typescript",
+    "validation"
+  ],
+  "author": "Claude Code Wrapper Specs",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.3",
+    "@types/node": "^20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/claude-code/wrapper-specs.git",
+    "directory": "schemas"
+  },
+  "bugs": {
+    "url": "https://github.com/claude-code/wrapper-specs/issues"
+  },
+  "homepage": "https://github.com/claude-code/wrapper-specs#readme"
+}

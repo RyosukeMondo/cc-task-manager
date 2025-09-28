@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://claude-code-wrapper-specs.dev/schemas/states.json",
+  "title": "Claude Code State Schema",
+  "description": "JSON Schema for Claude Code wrapper state management and transitions",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/$defs/WrapperStateDefinition" },
+    { "$ref": "#/$defs/SessionStateDefinition" },
+    { "$ref": "#/$defs/RunStateDefinition" },
+    { "$ref": "#/$defs/StateTransition" }
+  ],
+  "$defs": {
+    "WrapperStateDefinition": {
+      "type": "object",
+      "description": "Overall wrapper state definition",
+      "properties": {
+        "type": { "const": "wrapper_state" },
+        "state": { "$ref": "#/$defs/WrapperState" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "current_run_id": { "type": ["string", "null"] },
+            "last_session_id": { "type": ["string", "null"] },
+            "shutdown_requested": { "type": "boolean" },
+            "process_id": { "type": ["integer", "null"] }
+          }
+        }
+      },
+      "required": ["type", "state", "timestamp"]
+    },
+    "SessionStateDefinition": {
+      "type": "object",
+      "description": "Claude Code session state",
+      "properties": {
+        "type": { "const": "session_state" },
+        "session_id": { "type": ["string", "null"] },
+        "state": { "$ref": "#/$defs/SessionState" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "working_directory": { "type": ["string", "null"] },
+            "model": { "type": ["string", "null"] },
+            "permission_mode": { "type": ["string", "null"] },
+            "auto_shutdown": { "type": "boolean" }
+          }
+        }
+      },
+      "required": ["type", "state", "timestamp"]
+    },
+    "RunStateDefinition": {
+      "type": "object",
+      "description": "Individual run execution state",
+      "properties": {
+        "type": { "const": "run_state" },
+        "run_id": { "type": "string" },
+        "state": { "$ref": "#/$defs/RunState" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "prompt": { "type": "string" },
+            "session_id": { "type": ["string", "null"] },
+            "start_time": { "type": "string", "format": "date-time" },
+            "end_time": { "type": ["string", "null"], "format": "date-time" },
+            "cancel_scope": { "type": ["object", "null"] },
+            "outcome": { "type": ["string", "null"] },
+            "reason": { "type": ["string", "null"] },
+            "error": { "type": ["string", "null"] },
+            "tags": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      },
+      "required": ["type", "run_id", "state", "timestamp"]
+    },
+    "StateTransition": {
+      "type": "object",
+      "description": "State transition definition with triggers and conditions",
+      "properties": {
+        "type": { "const": "state_transition" },
+        "transition_id": { "type": "string" },
+        "from_state": { "type": "string" },
+        "to_state": { "type": "string" },
+        "trigger": { "$ref": "#/$defs/TransitionTrigger" },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/TransitionCondition" }
+        },
+        "actions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/TransitionAction" }
+        },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "transition_id", "from_state", "to_state", "trigger", "timestamp"]
+    },
+    "WrapperState": {
+      "type": "string",
+      "enum": ["idle", "executing", "terminating"],
+      "description": "Primary wrapper states"
+    },
+    "SessionState": {
+      "type": "string",
+      "enum": ["none", "initializing", "active", "completing", "terminated"],
+      "description": "Claude Code session lifecycle states"
+    },
+    "RunState": {
+      "type": "string",
+      "enum": ["pending", "starting", "running", "streaming", "cancelling", "completed", "failed", "cancelled", "terminated"],
+      "description": "Individual run execution states"
+    },
+    "TransitionTrigger": {
+      "type": "object",
+      "description": "Event or condition that triggers a state transition",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["command", "event", "timeout", "error", "signal", "completion"]
+        },
+        "value": { "type": ["string", "integer", "object"] },
+        "source": { "type": "string" }
+      },
+      "required": ["type"]
+    },
+    "TransitionCondition": {
+      "type": "object",
+      "description": "Conditions that must be met for transition to occur",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["state_check", "variable_check", "timeout_check", "resource_check"]
+        },
+        "field": { "type": "string" },
+        "operator": {
+          "type": "string",
+          "enum": ["equals", "not_equals", "greater_than", "less_than", "exists", "not_exists"]
+        },
+        "value": { "type": ["string", "integer", "boolean", "null"] }
+      },
+      "required": ["type", "operator"]
+    },
+    "TransitionAction": {
+      "type": "object",
+      "description": "Actions to perform during state transition",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["emit_event", "update_variable", "start_timer", "stop_timer", "cleanup", "notify"]
+        },
+        "target": { "type": "string" },
+        "value": { "type": ["string", "integer", "object", "null"] },
+        "metadata": { "type": "object" }
+      },
+      "required": ["type"]
+    },
+    "StateMachine": {
+      "type": "object",
+      "description": "Complete state machine definition for Claude Code wrapper",
+      "properties": {
+        "version": { "type": "string" },
+        "description": { "type": "string" },
+        "initial_state": { "type": "string" },
+        "states": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-zA-Z_][a-zA-Z0-9_]*$": { "$ref": "#/$defs/StateDefinition" }
+          }
+        },
+        "transitions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StateTransition" }
+        }
+      },
+      "required": ["version", "initial_state", "states", "transitions"]
+    },
+    "StateDefinition": {
+      "type": "object",
+      "description": "Definition of an individual state",
+      "properties": {
+        "name": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["wrapper", "session", "run"]
+        },
+        "description": { "type": "string" },
+        "entry_actions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/TransitionAction" }
+        },
+        "exit_actions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/TransitionAction" }
+        },
+        "timeouts": {
+          "type": "object",
+          "properties": {
+            "inactivity": { "type": "integer" },
+            "maximum": { "type": "integer" }
+          }
+        },
+        "allowed_transitions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["name", "type"]
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://claude-code-wrapper-specs.dev/schemas/commands.json",
+  "title": "Claude Code Command Schema",
+  "description": "JSON Schema for all Claude Code wrapper command structures",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/$defs/PromptCommand" },
+    { "$ref": "#/$defs/CancelCommand" },
+    { "$ref": "#/$defs/StatusCommand" },
+    { "$ref": "#/$defs/ShutdownCommand" },
+    { "$ref": "#/$defs/LegacyCommand" }
+  ],
+  "$defs": {
+    "PromptCommand": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "const": "prompt"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The prompt to send to Claude Code"
+        },
+        "options": {
+          "$ref": "#/$defs/ClaudeCodeOptions"
+        }
+      },
+      "required": ["action", "prompt"],
+      "additionalProperties": false
+    },
+    "CancelCommand": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "const": "cancel"
+        }
+      },
+      "required": ["action"],
+      "additionalProperties": false
+    },
+    "StatusCommand": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "const": "status"
+        }
+      },
+      "required": ["action"],
+      "additionalProperties": false
+    },
+    "ShutdownCommand": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "const": "shutdown"
+        }
+      },
+      "required": ["action"],
+      "additionalProperties": false
+    },
+    "LegacyCommand": {
+      "type": "object",
+      "description": "Legacy command format for backward compatibility",
+      "properties": {
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Legacy command field (maps to prompt)"
+        },
+        "working_directory": {
+          "type": "string",
+          "description": "Legacy working directory field (maps to options.cwd)"
+        },
+        "options": {
+          "$ref": "#/$defs/ClaudeCodeOptions"
+        }
+      },
+      "required": ["command"],
+      "additionalProperties": true
+    },
+    "ClaudeCodeOptions": {
+      "type": "object",
+      "description": "Configuration options for Claude Code execution",
+      "properties": {
+        "model": {
+          "type": "string",
+          "description": "Claude model to use"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum tokens for response"
+        },
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Temperature for response generation"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 300000,
+          "description": "Timeout in milliseconds"
+        },
+        "permission_mode": {
+          "type": "string",
+          "enum": ["bypassPermissions", "default", "plan", "acceptEdits"],
+          "description": "Permission mode for Claude Code execution"
+        },
+        "cwd": {
+          "type": "string",
+          "description": "Working directory for the Claude Code session"
+        },
+        "auto_shutdown": {
+          "type": "boolean",
+          "description": "Whether to automatically shutdown after completion"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,304 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://claude-code-wrapper-specs.dev/schemas/events.json",
+  "title": "Claude Code Event Schema",
+  "description": "JSON Schema for all Claude Code wrapper event structures",
+  "type": "object",
+  "properties": {
+    "event": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "shutdown",
+        "run_started",
+        "run_completed",
+        "run_cancelled",
+        "run_terminated",
+        "run_failed",
+        "stream",
+        "status",
+        "error",
+        "fatal",
+        "signal",
+        "state",
+        "cancel_requested",
+        "cancel_ignored",
+        "limit_notice",
+        "auto_shutdown"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of the event"
+    }
+  },
+  "required": ["event", "timestamp"],
+  "oneOf": [
+    { "$ref": "#/$defs/ReadyEvent" },
+    { "$ref": "#/$defs/ShutdownEvent" },
+    { "$ref": "#/$defs/RunStartedEvent" },
+    { "$ref": "#/$defs/RunCompletedEvent" },
+    { "$ref": "#/$defs/RunCancelledEvent" },
+    { "$ref": "#/$defs/RunTerminatedEvent" },
+    { "$ref": "#/$defs/RunFailedEvent" },
+    { "$ref": "#/$defs/StreamEvent" },
+    { "$ref": "#/$defs/StatusEvent" },
+    { "$ref": "#/$defs/ErrorEvent" },
+    { "$ref": "#/$defs/FatalEvent" },
+    { "$ref": "#/$defs/SignalEvent" },
+    { "$ref": "#/$defs/StateEvent" },
+    { "$ref": "#/$defs/CancelRequestedEvent" },
+    { "$ref": "#/$defs/CancelIgnoredEvent" },
+    { "$ref": "#/$defs/LimitNoticeEvent" },
+    { "$ref": "#/$defs/AutoShutdownEvent" }
+  ],
+  "$defs": {
+    "BaseEvent": {
+      "type": "object",
+      "properties": {
+        "event": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "state": { "$ref": "#/$defs/WrapperState" }
+      },
+      "required": ["event", "timestamp"]
+    },
+    "ReadyEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "ready" },
+            "version": { "type": "integer" },
+            "outcome": { "type": "string" },
+            "reason": { "type": "string" },
+            "tags": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["version", "outcome", "reason", "tags"]
+        }
+      ]
+    },
+    "ShutdownEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "shutdown" },
+            "last_session_id": { "type": ["string", "null"] },
+            "version": { "type": "integer" },
+            "outcome": { "type": "string" },
+            "reason": { "type": "string" },
+            "tags": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["version", "outcome", "reason", "tags"]
+        }
+      ]
+    },
+    "RunStartedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "run_started" },
+            "run_id": { "type": "string" },
+            "prompt": { "type": "string" },
+            "session_id": { "type": ["string", "null"] }
+          },
+          "required": ["run_id", "prompt"]
+        }
+      ]
+    },
+    "RunCompletedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "run_completed" },
+            "run_id": { "type": "string" },
+            "outcome": { "type": "string" },
+            "reason": { "type": "string" },
+            "session_id": { "type": ["string", "null"] },
+            "tags": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["run_id", "outcome", "reason", "tags"]
+        }
+      ]
+    },
+    "RunCancelledEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "run_cancelled" },
+            "run_id": { "type": "string" },
+            "outcome": { "type": "string" },
+            "reason": { "type": "string" },
+            "session_id": { "type": ["string", "null"] },
+            "tags": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["run_id", "outcome", "reason", "tags"]
+        }
+      ]
+    },
+    "RunTerminatedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "run_terminated" },
+            "run_id": { "type": "string" },
+            "outcome": { "type": "string" },
+            "reason": { "type": "string" },
+            "session_id": { "type": ["string", "null"] },
+            "tags": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["run_id", "outcome", "reason", "tags"]
+        }
+      ]
+    },
+    "RunFailedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "run_failed" },
+            "run_id": { "type": "string" },
+            "outcome": { "type": "string" },
+            "reason": { "type": "string" },
+            "session_id": { "type": ["string", "null"] },
+            "tags": { "type": "array", "items": { "type": "string" } },
+            "error": { "type": "string" }
+          },
+          "required": ["run_id", "outcome", "reason", "tags", "error"]
+        }
+      ]
+    },
+    "StreamEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "stream" },
+            "run_id": { "type": "string" },
+            "chunk": { "type": "string" },
+            "chunk_type": { "type": "string" }
+          },
+          "required": ["run_id", "chunk", "chunk_type"]
+        }
+      ]
+    },
+    "StatusEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "status" },
+            "active_run_id": { "type": ["string", "null"] }
+          }
+        }
+      ]
+    },
+    "ErrorEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "error" },
+            "error": { "type": "string" },
+            "payload": { "type": ["string", "object", "null"] },
+            "active_run_id": { "type": ["string", "null"] }
+          },
+          "required": ["error"]
+        }
+      ]
+    },
+    "FatalEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "fatal" },
+            "error": { "type": "string" },
+            "traceback": { "type": "string" }
+          },
+          "required": ["error", "traceback"]
+        }
+      ]
+    },
+    "SignalEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "signal" },
+            "signal": { "type": "integer" }
+          },
+          "required": ["signal"]
+        }
+      ]
+    },
+    "StateEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "state" }
+          }
+        }
+      ]
+    },
+    "CancelRequestedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "cancel_requested" },
+            "run_id": { "type": "string" }
+          },
+          "required": ["run_id"]
+        }
+      ]
+    },
+    "CancelIgnoredEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "cancel_ignored" },
+            "reason": { "type": "string" }
+          },
+          "required": ["reason"]
+        }
+      ]
+    },
+    "LimitNoticeEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "limit_notice" },
+            "notice": { "type": "string" }
+          },
+          "required": ["notice"]
+        }
+      ]
+    },
+    "AutoShutdownEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/BaseEvent" },
+        {
+          "properties": {
+            "event": { "const": "auto_shutdown" },
+            "reason": { "type": "string" }
+          },
+          "required": ["reason"]
+        }
+      ]
+    },
+    "WrapperState": {
+      "type": "string",
+      "enum": ["idle", "executing", "terminating"],
+      "description": "Current state of the Claude Code wrapper"
+    }
+  }
+}
