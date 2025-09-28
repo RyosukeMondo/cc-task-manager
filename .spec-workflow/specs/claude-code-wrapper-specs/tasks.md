@@ -9,7 +9,7 @@
   - _Requirements: 1.1, 1.2_
   - _Prompt: Implement the task for spec claude-code-wrapper-specs, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Schema Architect specializing in JSON Schema and OpenAPI specifications | Task: Create comprehensive JSON schemas for all Claude Code communication protocols following requirements 1.1 and 1.2, leveraging existing validation infrastructure from packages/schemas | Restrictions: Must validate against real Claude Code payloads, ensure backward compatibility, follow JSON Schema draft 2020-12 standard | _Leverage: packages/schemas validation patterns, scripts/claude_wrapper.py event examples | _Requirements: Protocol specifications with complete type safety | Success: All schemas validate real payloads, TypeScript interfaces generated correctly, zero validation errors for known communication patterns | Instructions: Mark this task as in-progress in tasks.md when starting, then mark as completed when finished_
 
-- [ ] 2. Create runtime monitoring and capture system in claudeCodeSpecs/runtime-monitoring/
+- [x] 2. Create runtime monitoring and capture system in claudeCodeSpecs/runtime-monitoring/
   - Files: claudeCodeSpecs/runtime-monitoring/capture-engine.py, event-processor.py, session-manager.py
   - Implement real-time Claude Code behavior capture system
   - Process and analyze captured events for pattern detection
