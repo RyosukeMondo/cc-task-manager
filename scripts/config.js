@@ -9,8 +9,8 @@ const CONFIG = {
 
   // Projects configuration - just add your projects here
   projects: [
-     { available: true, name: 'cc-task-manager', path: '.', spec: 'claude-code-wrapper-specs' }
-    ,{ available: false, name: 'warps', path: '../warps', spec: 'structured-logging-system' }
+     { available: false, name: 'cc-task-manager', path: '.', spec: 'claude-code-wrapper-specs' }
+    ,{ available: true, name: 'warps', path: '../warps', spec: 'battle-e2e-testing' }
     ,{ available: false, name: 'mind', path: '../mind-training', spec: 'compatible-llm-providerx' }
     ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'fix-all-existing-tests' }
   ],
