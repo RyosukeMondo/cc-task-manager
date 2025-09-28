@@ -81,7 +81,7 @@
   - _Requirements: FR5 (Configuration System), NFR3 (Backward Compatibility)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: CLI Developer with expertise in argument parsing and user interface design | Task: Create unified CLI interface in workflows/cli.py that supports all workflow types while maintaining backward compatibility following requirements FR5 and NFR3 | Restrictions: Must preserve existing CLI behavior, provide clear help documentation, handle all workflow-specific parameters | Success: CLI works for all workflows, backward compatibility maintained, help documentation is comprehensive, user experience is intuitive_
 
-- [-] 10. Create comprehensive test suite
+- [x] 10. Create comprehensive test suite
   - File: tests/workflows/
   - Create unit tests for all core components and integration tests for each workflow type
   - Test error handling, edge cases, and performance
