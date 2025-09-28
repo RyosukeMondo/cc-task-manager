@@ -9,7 +9,7 @@
   - _Requirements: FR1 (Workflow Abstraction)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Python Systems Architect specializing in abstract base classes and plugin architectures | Task: Create the core BaseWorkflow abstract class and WorkflowConfig dataclass in workflows/core/base_workflow.py, establishing the foundation for a pluggable workflow system following requirement FR1 | Restrictions: Must use ABC for proper abstraction, maintain backward compatibility with existing automation, follow Python typing best practices | Success: BaseWorkflow class provides clear template method interface, WorkflowConfig handles all configuration scenarios, code is well-documented and type-safe_
 
-- [ ] 2. Build completion detection framework
+- [x] 2. Build completion detection framework
   - File: workflows/core/completion_detector.py
   - Implement CompletionDetector abstract base class and concrete detectors (TextPatternDetector, CommandResultDetector, ToolResultDetector)
   - Migrate existing completion detection logic from spec_workflow_automation.py
