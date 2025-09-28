@@ -62,6 +62,10 @@ class SpecWorkflowAutomation:
         self.current_run_id: Optional[str] = None
         self.session_log_file = session_log_file
 
+        # Load configuration values
+        self.max_cycles = self._get_config_value('max-cycles', 10)  # Default fallback to 10
+        self.max_session_time = self._get_config_value('max-session-time', 1800)  # Default 30 minutes
+
         # Debug configuration options
         self.debug_options = debug_options or {
             'show_raw_data': False,
@@ -77,6 +81,29 @@ class SpecWorkflowAutomation:
         # Setup signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
+
+    def _get_config_value(self, config_key: str, default_value: int) -> int:
+        """Get configuration value from unified config script."""
+        try:
+            script_dir = Path(__file__).parent
+            config_script = script_dir / "config.js"
+
+            result = subprocess.run(
+                ["node", str(config_script), config_key],
+                capture_output=True,
+                text=True,
+                cwd=script_dir
+            )
+
+            if result.returncode == 0 and result.stdout.strip():
+                return int(result.stdout.strip())
+            else:
+                logger.warning(f"Failed to get config value '{config_key}', using default: {default_value}")
+                return default_value
+
+        except Exception as e:
+            logger.warning(f"Error reading config value '{config_key}': {e}, using default: {default_value}")
+            return default_value
 
     def _signal_handler(self, signum: int, frame) -> None:
         """Handle shutdown signals gracefully."""
@@ -792,9 +819,8 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             return False
 
         cycle_count = 0
-        max_cycles = 10  # Prevent infinite loops
 
-        while not self.shutdown_requested and cycle_count < max_cycles:
+        while not self.shutdown_requested and cycle_count < self.max_cycles:
             cycle_count += 1
             logger.info(f"Starting automation cycle {cycle_count}")
 
@@ -806,13 +832,12 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             # Monitor the session
             session_ended = False
             monitoring_start = time.time()
-            max_session_time = 1800  # 30 minutes max per session
 
             while (self.session_active and
                    not self.shutdown_requested and
                    not session_ended and
                    not self.spec_completed and  # Exit immediately if completion detected
-                   time.time() - monitoring_start < max_session_time):
+                   time.time() - monitoring_start < self.max_session_time):
 
                 session_ended = self._monitor_claude_output()
 
@@ -840,12 +865,12 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                 return True
 
             # Wait a bit before next cycle
-            if cycle_count < max_cycles:
+            if cycle_count < self.max_cycles:
                 logger.info("Waiting before next cycle...")
                 time.sleep(2)
 
-        if cycle_count >= max_cycles:
-            logger.warning(f"Reached maximum cycles ({max_cycles}), stopping automation")
+        if cycle_count >= self.max_cycles:
+            logger.warning(f"Reached maximum cycles ({self.max_cycles}), stopping automation current: {cycle_count}, but want to extend to 50")
 
         return self.spec_completed
 

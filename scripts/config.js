@@ -39,6 +39,12 @@ const CONFIG = {
     dashboardPrefix: 'spec-workflow-dashboard-',
   },
 
+  // Automation settings
+  automation: {
+    maxCycles: 50,  // Maximum automation cycles before stopping
+    maxSessionTime: 1800,  // 30 minutes max per session (in seconds)
+  },
+
   // Common PM2 settings
   pm2Defaults: {
     instances: 1,
@@ -115,6 +121,12 @@ if (require.main === module) {
       if (project) {
         console.log(JSON.stringify(project));
       }
+      break;
+    case 'max-cycles':
+      console.log(CONFIG.automation.maxCycles);
+      break;
+    case 'max-session-time':
+      console.log(CONFIG.automation.maxSessionTime);
       break;
     default:
       console.log(JSON.stringify(CONFIG, null, 2));
