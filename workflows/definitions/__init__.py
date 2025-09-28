@@ -13,9 +13,15 @@ Available Workflows:
 """
 
 from .spec_workflow import SpecWorkflow, create_spec_workflow, migrate_from_automation_config
+from .test_fix_workflow import TestFixWorkflow, create_test_fix_workflow
+from .type_fix_workflow import TypeFixWorkflow, create_type_fix_workflow
 
 __all__ = [
     'SpecWorkflow',
     'create_spec_workflow',
-    'migrate_from_automation_config'
+    'migrate_from_automation_config',
+    'TestFixWorkflow',
+    'create_test_fix_workflow',
+    'TypeFixWorkflow',
+    'create_type_fix_workflow'
 ]

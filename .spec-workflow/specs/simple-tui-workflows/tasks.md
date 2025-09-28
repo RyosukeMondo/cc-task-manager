@@ -45,7 +45,7 @@
   - _Requirements: FR2 (Test Fix workflow type)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Test Automation Engineer with expertise in multiple testing frameworks | Task: Create TestFixWorkflow class in workflows/definitions/test_fix_workflow.py that automates test failure resolution following requirement FR2 | Restrictions: Must support multiple test frameworks, handle different error output formats, ensure reliable completion detection | Success: Workflow successfully fixes failing tests across different frameworks, completion detection works reliably, handles edge cases gracefully_
 
-- [ ] 6. Implement type fix workflow
+- [x] 6. Implement type fix workflow
   - File: workflows/definitions/type_fix_workflow.py
   - Create TypeFixWorkflow class with prompt template for type error analysis and TypeScript/mypy completion detection
   - Support multiple type checkers with configurable commands
