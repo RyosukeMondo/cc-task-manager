@@ -72,7 +72,7 @@
   - _Requirements: FR5 (Configuration System)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: DevOps Engineer with expertise in configuration management and environment handling | Task: Create ConfigManager class in workflows/core/config_manager.py that provides flexible configuration loading and management following requirement FR5 | Restrictions: Must support multiple configuration formats, handle environment-specific overrides, ensure validation and error handling | Success: Configuration system is flexible and robust, supports all workflow types, environment overrides work correctly, validation prevents invalid configurations_
 
-- [ ] 9. Build unified CLI interface
+- [x] 9. Build unified CLI interface
   - File: workflows/cli.py
   - Create command-line interface supporting all workflow types with argument parsing and help documentation
   - Ensure backward compatibility with existing CLI usage patterns
