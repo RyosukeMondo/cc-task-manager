@@ -27,7 +27,7 @@
   - _Requirements: FR3 (Execution Engine)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Python Systems Engineer with expertise in process orchestration and session management | Task: Create WorkflowEngine class in workflows/core/workflow_engine.py that provides unified execution for all workflow types, migrating logic from SpecWorkflowAutomation following requirement FR3 | Restrictions: Must reuse existing claude_wrapper.py without modification, preserve all debug and logging functionality, maintain error handling patterns | Success: Engine handles all workflow types uniformly, session management is robust, existing automation functionality preserved completely_
 
-- [ ] 4. Migrate spec workflow to new system
+- [x] 4. Migrate spec workflow to new system
   - File: workflows/definitions/spec_workflow.py
   - Create SpecWorkflow class inheriting from BaseWorkflow with existing prompt template and completion patterns
   - Ensure 100% backward compatibility with current spec-workflow automation

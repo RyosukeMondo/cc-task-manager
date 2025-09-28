@@ -23,6 +23,15 @@ providing a clean, extensible architecture for new workflow types.
 """
 
 from .core.base_workflow import BaseWorkflow, WorkflowConfig
+from .core.workflow_engine import WorkflowEngine, create_workflow_engine
+from .definitions import SpecWorkflow, create_spec_workflow
 
-__all__ = ['BaseWorkflow', 'WorkflowConfig']
+__all__ = [
+    'BaseWorkflow',
+    'WorkflowConfig',
+    'WorkflowEngine',
+    'create_workflow_engine',
+    'SpecWorkflow',
+    'create_spec_workflow'
+]
 __version__ = '1.0.0'
