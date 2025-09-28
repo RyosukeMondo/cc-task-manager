@@ -1,0 +1,12 @@
+{
+  "id": "approval_1759063111771_cp7xznjpr",
+  "title": "Implementation Tasks Document - Claude Code Wrapper Specifications",
+  "filePath": ".spec-workflow/specs/claude-code-wrapper-specs/tasks.md",
+  "type": "document",
+  "status": "approved",
+  "createdAt": "2025-09-28T12:38:31.771Z",
+  "category": "spec",
+  "categoryName": "claude-code-wrapper-specs",
+  "response": "ダッシュボードから承認",
+  "respondedAt": "2025-09-28T12:39:50.682Z"
+}

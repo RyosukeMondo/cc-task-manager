@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/claude-code-wrapper-specs/tasks.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-28T12:38:31.781Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759063111771_cp7xznjpr",
+      "approvalTitle": "Implementation Tasks Document - Claude Code Wrapper Specifications"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-28T12:39:50.679Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759063111771_cp7xznjpr",
+      "approvalTitle": "Implementation Tasks Document - Claude Code Wrapper Specifications"
+    }
+  ]
+}

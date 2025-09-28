@@ -10,10 +10,16 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/config.js"
 
+# Validate configuration file exists
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "❌ Configuration file not found: $CONFIG_FILE"
+    exit 1
+fi
+
 # Configuration from unified config
-PROJECT_DIR="/home/rmondo/repos/cc-task-manager"
+PROJECT_DIR="$(node -e "const config = require('$CONFIG_FILE'); console.log(config.baseCwd);")"
 APP_PATTERN="spec-workflow-automation-*"
-ECOSYSTEM_FILE="ecosystem.config.js"
+ECOSYSTEM_FILE="$(node -e "const config = require('$CONFIG_FILE'); console.log(config.paths.ecosystemFile);")"
 
 # Project list - from unified config
 PROJECTS=($(node "$CONFIG_FILE" projects))
@@ -22,7 +28,6 @@ PROJECTS=($(node "$CONFIG_FILE" projects))
 EXPECTED_AUTOMATION_PROCESSES=($(node "$CONFIG_FILE" expected-automation))
 EXPECTED_DASHBOARD_PROCESSES=($(node "$CONFIG_FILE" expected-dashboard))
 ALL_EXPECTED_PROCESSES=($(node "$CONFIG_FILE" all-expected))
-ORPHANED_PROCESSES=($(node "$CONFIG_FILE" orphaned))
 
 # Color codes for output
 RED='\033[0;31m'
@@ -74,17 +79,19 @@ show_usage() {
     echo "  PROCESS_TYPE=both       - Target both automation + dashboard (default)"
     echo ""
     echo "App names (optional - defaults to all):"
-    echo "  cc-task-manager - automation + dashboard for cc-task-manager"
-    echo "  warps           - automation + dashboard for warps"
-    echo "  mind            - automation + dashboard for mind"
+    for project in "${PROJECTS[@]}"; do
+        echo "  $project - automation + dashboard for $project"
+    done
     echo ""
     echo "Examples:"
     echo "  $0 start                          # Start all automation + dashboard processes"
     echo "  $0 delete                         # Delete all automation + dashboard processes"
     echo "  PROCESS_TYPE=automation $0 start  # Start only automation processes"
     echo "  PROCESS_TYPE=dashboard $0 delete  # Delete only dashboard processes"
-    echo "  $0 start cc-task-manager          # Start cc-task-manager automation + dashboard"
-    echo "  $0 logs warps                     # View both warps automation + dashboard logs"
+    if [[ ${#PROJECTS[@]} -gt 0 ]]; then
+        echo "  $0 start ${PROJECTS[0]}                     # Start ${PROJECTS[0]} automation + dashboard"
+        echo "  $0 logs ${PROJECTS[0]}                      # View both ${PROJECTS[0]} automation + dashboard logs"
+    fi
 }
 
 # Change to project directory
@@ -93,6 +100,15 @@ cd "$PROJECT_DIR"
 # Get command and app name
 COMMAND="${1:-}"
 APP_NAME="${2:-}"
+
+# Function to validate process name
+validate_process_name() {
+    local name="$1"
+    if [[ -n "$name" && ! "$name" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+        print_error "Invalid process name: $name"
+        exit 1
+    fi
+}
 
 # Function to get target processes (symmetric: both automation AND dashboard)
 get_target_processes() {
@@ -110,6 +126,9 @@ get_target_processes() {
             fi
             ;;
         *)
+            # Validate process name
+            validate_process_name "$1"
+
             # Check if it's a known project name
             for project in "${PROJECTS[@]}"; do
                 if [[ "$1" == "$project" ]]; then
@@ -137,18 +156,6 @@ cleanup_orphaned_processes() {
     print_info "Checking for orphaned spec-workflow processes..."
 
     local orphaned_found=false
-
-    # Check for known orphaned processes from unified config
-    for process in "${ORPHANED_PROCESSES[@]}"; do
-        if pm2 describe "$process" &>/dev/null; then
-            print_warning "Found orphaned process: $process"
-            pm2 delete "$process" 2>/dev/null || true
-            print_success "Removed orphaned process: $process"
-            orphaned_found=true
-        fi
-    done
-
-    # Use unified expected processes list
 
     # Get list of all PM2 processes with spec-workflow prefix
     local all_processes=$(pm2 list | grep -E "spec-workflow|claude-code" | awk '{print $4}' | grep -v "│" | grep -v "name" | grep -v "─" | sort | uniq)
@@ -181,9 +188,25 @@ cleanup_orphaned_processes() {
     fi
 }
 
+# Function to check if PM2 is installed
+check_pm2() {
+    if ! command -v pm2 &> /dev/null; then
+        print_error "PM2 is not installed or not in PATH"
+        print_info "Install PM2 with: npm install -g pm2"
+        exit 1
+    fi
+}
+
+# Function to ensure logs directory exists
+ensure_logs_dir() {
+    local logs_dir="$PROJECT_DIR/$(node -e "const config = require('$CONFIG_FILE'); console.log(config.paths.logsDir);")"
+    mkdir -p "$logs_dir"
+}
+
 # Handle commands
 case "$COMMAND" in
     start)
+        check_pm2
         print_info "Starting processes: $TARGET_PROCESSES"
 
         # Auto-cleanup orphaned processes before starting
@@ -191,7 +214,7 @@ case "$COMMAND" in
         echo ""
 
         # Ensure logs directory exists
-        mkdir -p "$PROJECT_DIR/logs"
+        ensure_logs_dir
 
         if [ -n "$APP_NAME" ]; then
             # Start specific process
@@ -230,6 +253,7 @@ case "$COMMAND" in
         ;;
 
     stop)
+        check_pm2
         print_info "Stopping processes: $TARGET_PROCESSES"
         for process in $TARGET_PROCESSES; do
             if pm2 describe "$process" &>/dev/null; then
@@ -240,6 +264,7 @@ case "$COMMAND" in
         ;;
 
     restart)
+        check_pm2
         print_info "Restarting processes: $TARGET_PROCESSES"
         for process in $TARGET_PROCESSES; do
             if pm2 describe "$process" &>/dev/null; then
@@ -253,6 +278,7 @@ case "$COMMAND" in
         ;;
 
     logs)
+        check_pm2
         if [ -n "$APP_NAME" ]; then
             print_info "Showing logs for $TARGET_PROCESSES (Ctrl+C to exit)..."
             echo ""
@@ -275,6 +301,7 @@ case "$COMMAND" in
         ;;
 
     status)
+        check_pm2
         print_info "Process status for: $TARGET_PROCESSES"
         for process in $TARGET_PROCESSES; do
             echo ""
@@ -287,16 +314,19 @@ case "$COMMAND" in
         ;;
 
     list)
+        check_pm2
         print_info "All PM2 processes:"
         pm2 list
         ;;
 
     monitor)
+        check_pm2
         print_info "Opening PM2 monitor (Ctrl+C to exit)..."
         pm2 monit
         ;;
 
     save)
+        check_pm2
         print_info "Saving PM2 process list..."
         pm2 save
         print_success "Process list saved"
@@ -304,12 +334,14 @@ case "$COMMAND" in
         ;;
 
     startup)
+        check_pm2
         print_info "Generating PM2 startup script..."
         pm2 startup
         print_warning "Follow the instructions above to enable PM2 on system startup"
         ;;
 
     delete)
+        check_pm2
         print_warning "Removing processes: $TARGET_PROCESSES from PM2..."
         read -p "Are you sure? (y/N) " -n 1 -r
         echo
@@ -326,6 +358,7 @@ case "$COMMAND" in
         ;;
 
     flush)
+        check_pm2
         print_info "Flushing logs for: $TARGET_PROCESSES"
         for process in $TARGET_PROCESSES; do
             if pm2 describe "$process" &>/dev/null; then
@@ -336,6 +369,7 @@ case "$COMMAND" in
         ;;
 
     cleanup)
+        check_pm2
         print_info "Manual cleanup of orphaned spec-workflow processes"
         cleanup_orphaned_processes
         echo ""
@@ -345,19 +379,21 @@ case "$COMMAND" in
 
     "")
         # Default behavior - show status and usage
-        any_running=false
-        for process in ${ALL_EXPECTED_PROCESSES[@]}; do
-            if pm2 describe "$process" &>/dev/null; then
-                any_running=true
-                break
-            fi
-        done
+        if command -v pm2 &> /dev/null; then
+            any_running=false
+            for process in ${ALL_EXPECTED_PROCESSES[@]}; do
+                if pm2 describe "$process" &>/dev/null; then
+                    any_running=true
+                    break
+                fi
+            done
 
-        if [ "$any_running" = true ]; then
-            print_info "Current status (all spec-workflow processes):"
-            all_processes=$(echo ${ALL_EXPECTED_PROCESSES[@]} | tr ' ' ',')
-            pm2 status $all_processes 2>/dev/null || true
-            echo ""
+            if [ "$any_running" = true ]; then
+                print_info "Current status (all spec-workflow processes):"
+                all_processes=$(echo ${ALL_EXPECTED_PROCESSES[@]} | tr ' ' ',')
+                pm2 status $all_processes 2>/dev/null || true
+                echo ""
+            fi
         fi
         show_usage
         ;;

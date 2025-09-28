@@ -63,7 +63,7 @@ class SpecWorkflowAutomation:
         self.session_log_file = session_log_file
 
         # Load configuration values
-        self.max_cycles = self._get_config_value('max-cycles', 10)  # Default fallback to 10
+        self.max_cycles = self._get_config_value('max-cycles', 50)  # Default fallback to 50
         self.max_session_time = self._get_config_value('max-session-time', 1800)  # Default 30 minutes
 
         # Debug configuration options
@@ -877,7 +877,7 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
                 time.sleep(2)
 
         if cycle_count >= self.max_cycles:
-            logger.warning(f"Reached maximum cycles ({self.max_cycles}), stopping automation current: {cycle_count}, but want to extend to 50")
+            logger.warning(f"Reached maximum cycles ({self.max_cycles}), stopping automation current: {cycle_count}")
 
         return self.spec_completed
 

@@ -9,9 +9,9 @@ const CONFIG = {
 
   // Projects configuration - just add your projects here
   projects: [
-     { available: true, name: 'cc-task-manager', path: '.', spec: 'simple-tui-workflows' }
-    ,{ available: false, name: 'warps', path: '../warps', spec: '2025-09-28-critical-issues' }
-    ,{ available: false, name: 'mind', path: '../mind-training', spec: 'ccontract-driven-type-error-fix' }
+     { available: true, name: 'cc-task-manager', path: '.', spec: 'claude-code-wrapper-specs' }
+    ,{ available: false, name: 'warps', path: '../warps', spec: 'structured-logging-system' }
+    ,{ available: false, name: 'mind', path: '../mind-training', spec: 'compatible-llm-providerx' }
     ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'fix-all-existing-tests' }
   ],
 
@@ -71,9 +71,13 @@ CONFIG.computed = {
     return CONFIG.projects.filter(p => p.available);
   },
 
-  // Expected process names
-  expectedAutomationProcesses: CONFIG.projects.map(p => CONFIG.naming.automationPrefix + p.name),
-  expectedDashboardProcesses: CONFIG.projects.map(p => CONFIG.naming.dashboardPrefix + p.name),
+  // Expected process names (only for available projects)
+  get expectedAutomationProcesses() {
+    return this.availableProjects.map(p => CONFIG.naming.automationPrefix + p.name);
+  },
+  get expectedDashboardProcesses() {
+    return this.availableProjects.map(p => CONFIG.naming.dashboardPrefix + p.name);
+  },
 
   // All expected processes
   get allExpectedProcesses() {

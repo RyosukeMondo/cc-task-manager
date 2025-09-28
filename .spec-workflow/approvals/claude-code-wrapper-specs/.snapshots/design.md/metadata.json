@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/claude-code-wrapper-specs/design.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-28T12:36:34.088Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759062994076_15mon029n",
+      "approvalTitle": "Technical Design Document - Claude Code Wrapper Specifications"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-28T12:37:05.767Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759062994076_15mon029n",
+      "approvalTitle": "Technical Design Document - Claude Code Wrapper Specifications"
+    }
+  ]
+}

@@ -43,17 +43,23 @@ The workflow system is included in this project. No additional installation requ
 ### Basic Usage
 
 ```bash
+# Navigate to project root first
+cd /path/to/cc-task-manager
+
 # Spec workflow (most common)
-python -m workflows.cli spec --spec-name "my-feature" --project /path/to/project
+python3 -m workflows spec --spec-name "my-feature" --project /path/to/project
 
 # Test fix workflow
-python -m workflows.cli test-fix --project /path/to/project --test-command "npm test"
+python3 -m workflows test-fix --project /path/to/project --test-command "npm test"
 
 # Type fix workflow
-python -m workflows.cli type-fix --project /path/to/project --type-command "npx tsc"
+python3 -m workflows type-fix --project /path/to/project --type-command "npx tsc"
 
 # Build fix workflow
-python -m workflows.cli build-fix --project /path/to/project --build-command "npm run build"
+python3 -m workflows build-fix --project /path/to/project --build-command "npm run build"
+
+# With global options (note: global options come before workflow type)
+python3 -m workflows --max-cycles 5 --verbose test-fix --project /path/to/project
 ```
 
 ### Python API
@@ -69,8 +75,8 @@ workflow = create_spec_workflow(
     project_path=Path("/path/to/project")
 )
 
-# Execute workflow
-engine = WorkflowEngine(workflow.config.project_path)
+# Execute workflow (note: WorkflowEngine takes the full config, not just project_path)
+engine = WorkflowEngine(workflow.config)
 success = await engine.execute_workflow(workflow)
 ```
 
@@ -120,7 +126,9 @@ Automates spec-workflow task execution using Claude Code sessions.
 
 **Usage**:
 ```bash
-python -m workflows.cli spec --spec-name "user-auth" --project /path/to/project
+# From project root directory
+cd /path/to/cc-task-manager
+python3 -m workflows spec --spec-name "user-auth" --project /path/to/project
 ```
 
 **Configuration**:
@@ -144,7 +152,9 @@ Automates fixing failing tests until all tests pass.
 
 **Usage**:
 ```bash
-python -m workflows.cli test-fix --project /path/to/project --test-command "npm test"
+# From project root directory
+cd /path/to/cc-task-manager
+python3 -m workflows test-fix --project /path/to/project --test-command "npm test"
 ```
 
 **Configuration**:
@@ -167,7 +177,9 @@ Automates fixing type errors until type checking passes.
 
 **Usage**:
 ```bash
-python -m workflows.cli type-fix --project /path/to/project --type-command "npx tsc"
+# From project root directory
+cd /path/to/cc-task-manager
+python3 -m workflows type-fix --project /path/to/project --type-command "npx tsc"
 ```
 
 **Configuration**:
@@ -190,7 +202,9 @@ Automates fixing build errors until compilation succeeds.
 
 **Usage**:
 ```bash
-python -m workflows.cli build-fix --project /path/to/project --build-command "npm run build"
+# From project root directory
+cd /path/to/cc-task-manager
+python3 -m workflows build-fix --project /path/to/project --build-command "npm run build"
 ```
 
 **Configuration**:
@@ -469,8 +483,9 @@ python scripts/migrate_to_workflows.py --validate
 # Before
 python scripts/spec_workflow_automation.py --spec-name "my-spec" --project /path
 
-# After
-python -m workflows.cli spec --spec-name "my-spec" --project /path
+# After (from cc-task-manager project root)
+cd /path/to/cc-task-manager
+python3 -m workflows spec --spec-name "my-spec" --project /path
 ```
 
 ##### 2. Update Python Imports
@@ -534,9 +549,9 @@ pwd
 # Verify workflows module exists
 ls -la workflows/
 
-# Run from project root
-cd /path/to/project
-python -m workflows.cli --help
+# Run from project root (cc-task-manager directory, not target project)
+cd /path/to/cc-task-manager
+python3 -m workflows --help
 ```
 
 #### Workflow Execution Failures
@@ -549,8 +564,9 @@ python -m workflows.cli --help
 3. Verify completion detection patterns
 
 ```bash
-# Enable verbose debugging
-python -m workflows.cli spec --spec-name "my-spec" --project . --debug-all --verbose
+# Enable verbose debugging (note: global options before workflow type)
+cd /path/to/cc-task-manager
+python3 -m workflows --debug-all --verbose spec --spec-name "my-spec" --project .
 
 # Check session logs
 tail -f logs/workflow_session.log
@@ -583,8 +599,9 @@ python -c "from workflows.core.config_manager import ConfigManager; print(Config
 3. Test workflow manually first
 
 ```bash
-# Test workflow manually
-python -m workflows.cli spec --spec-name "test" --project .
+# Test workflow manually (from cc-task-manager root)
+cd /path/to/cc-task-manager
+python3 -m workflows spec --spec-name "test" --project .
 
 # Check PM2 process logs
 pm2 logs spec-workflow
@@ -597,19 +614,25 @@ pm2 restart ecosystem.config.js
 
 #### Basic Debugging
 ```bash
-python -m workflows.cli spec --spec-name "my-spec" --project . --verbose
+# From cc-task-manager root directory
+cd /path/to/cc-task-manager
+python3 -m workflows --verbose spec --spec-name "my-spec" --project .
 ```
 
 #### Advanced Debugging
 ```bash
-python -m workflows.cli spec --spec-name "my-spec" --project . \
-  --debug-all --debug-tools --debug-content --verbose
+# From cc-task-manager root directory
+cd /path/to/cc-task-manager
+python3 -m workflows --debug-all --debug-tools --debug-content --verbose \
+  spec --spec-name "my-spec" --project .
 ```
 
 #### Session Logging
 ```bash
-python -m workflows.cli spec --spec-name "my-spec" --project . \
-  --session-log session.jsonl --debug-full
+# From cc-task-manager root directory
+cd /path/to/cc-task-manager
+python3 -m workflows --session-log session.jsonl --debug-full \
+  spec --spec-name "my-spec" --project .
 ```
 
 ### Performance Optimization
@@ -675,7 +698,7 @@ Execution engine for workflow orchestration.
 
 ```python
 class WorkflowEngine:
-    def __init__(self, project_path: Path, debug_options: Dict[str, Any] = None)
+    def __init__(self, config: WorkflowConfig)
     async def execute_workflow(self, workflow: BaseWorkflow) -> bool
     def start_claude_session(self, workflow: BaseWorkflow) -> bool
     def monitor_session(self, workflow: BaseWorkflow) -> bool
@@ -747,7 +770,9 @@ def run_spec_workflow_automation(spec_name: str, project_path: str,
 The unified CLI provides access to all workflow types:
 
 ```bash
-python -m workflows.cli <workflow-type> [options]
+# From cc-task-manager project root
+cd /path/to/cc-task-manager
+python3 -m workflows [global-options] <workflow-type> [workflow-options]
 ```
 
 #### Common Options

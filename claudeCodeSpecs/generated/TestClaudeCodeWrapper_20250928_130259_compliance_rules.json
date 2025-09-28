@@ -1,0 +1,67 @@
+[
+  {
+    "rule_id": "state_transitions",
+    "description": "All state transitions must follow defined state machine",
+    "validation": "state_machine_compliance",
+    "severity": "error"
+  },
+  {
+    "rule_id": "completion_detection",
+    "description": "Completion patterns must be correctly identified",
+    "validation": "completion_pattern_compliance",
+    "severity": "error"
+  },
+  {
+    "rule_id": "error_handling",
+    "description": "Error conditions must be properly handled and reported",
+    "validation": "error_handling_compliance",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "timing_constraints",
+    "description": "Operations must complete within acceptable time bounds",
+    "validation": "timing_compliance",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "timing_normal_execution_timing",
+    "description": "Timing pattern 'normal_execution_timing' performance constraints",
+    "validation": "timing_pattern_normal_execution_timing",
+    "severity": "warning",
+    "max_duration": 10.0,
+    "expected_duration": 10.0
+  },
+  {
+    "rule_id": "valid_state_transitions",
+    "description": "All state transitions must be valid according to state machine",
+    "validation": "state_machine_validation",
+    "severity": "error",
+    "valid_transitions": [
+      {
+        "from": "idle",
+        "to": "executing",
+        "trigger": "run_started"
+      },
+      {
+        "from": "executing",
+        "to": "completed",
+        "trigger": "run_completed"
+      },
+      {
+        "from": "completed",
+        "to": "idle",
+        "trigger": "state"
+      },
+      {
+        "from": "executing",
+        "to": "cancelled",
+        "trigger": "run_cancelled"
+      },
+      {
+        "from": "cancelled",
+        "to": "idle",
+        "trigger": "state"
+      }
+    ]
+  }
+]

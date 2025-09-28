@@ -6,7 +6,7 @@ module.exports = {
       "args": [
         "scripts/spec_workflow_automation.py",
         "--spec-name",
-        "simple-tui-workflows",
+        "claude-code-wrapper-specs",
         "--project",
         ".",
         "--session-log",

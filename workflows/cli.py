@@ -418,7 +418,7 @@ async def run_workflow(workflow) -> int:
     """
     try:
         # Create and configure workflow engine
-        engine = WorkflowEngine(workflow.config.project_path, workflow.config.debug_options)
+        engine = WorkflowEngine(workflow.config)
 
         logger.info(f"🚀 Starting {workflow.config.workflow_type} workflow...")
         logger.info(f"📁 Project: {workflow.config.project_path}")

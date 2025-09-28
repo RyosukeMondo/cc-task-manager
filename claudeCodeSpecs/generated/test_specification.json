@@ -1,0 +1,604 @@
+{
+  "name": "TestClaudeCodeWrapper",
+  "version": "1.0.0",
+  "generated_at": "2025-09-28T13:02:59.889892",
+  "state_machine": {
+    "name": "ClaudeCodeWrapper",
+    "initial_state": "idle",
+    "states": "{'cancelled', 'completed', 'executing', 'idle'}",
+    "transitions": [
+      {
+        "from_state": "idle",
+        "to_state": "executing",
+        "trigger_event": "run_started",
+        "conditions": [],
+        "frequency": 2,
+        "metadata": {
+          "timestamp": "2025-01-01T10:00:00Z",
+          "run_id": "test-1",
+          "event_index": 0
+        }
+      },
+      {
+        "from_state": "executing",
+        "to_state": "completed",
+        "trigger_event": "run_completed",
+        "conditions": [
+          "reason=ok",
+          "outcome=completed"
+        ],
+        "frequency": 1,
+        "metadata": {
+          "timestamp": "2025-01-01T10:00:10Z",
+          "run_id": "test-1",
+          "event_index": 3
+        }
+      },
+      {
+        "from_state": "completed",
+        "to_state": "idle",
+        "trigger_event": "state",
+        "conditions": [],
+        "frequency": 1,
+        "metadata": {
+          "timestamp": "2025-01-01T10:00:11Z",
+          "run_id": null,
+          "event_index": 4
+        }
+      },
+      {
+        "from_state": "executing",
+        "to_state": "cancelled",
+        "trigger_event": "run_cancelled",
+        "conditions": [
+          "outcome=cancelled"
+        ],
+        "frequency": 1,
+        "metadata": {
+          "timestamp": "2025-01-01T11:00:06Z",
+          "run_id": "test-2",
+          "event_index": 8
+        }
+      },
+      {
+        "from_state": "cancelled",
+        "to_state": "idle",
+        "trigger_event": "state",
+        "conditions": [],
+        "frequency": 1,
+        "metadata": {
+          "timestamp": "2025-01-01T11:00:07Z",
+          "run_id": null,
+          "event_index": 9
+        }
+      }
+    ],
+    "final_states": "{'completed', 'idle'}",
+    "error_states": "{'cancelled'}",
+    "metadata": {
+      "generated_at": "2025-09-28T13:02:59.889834",
+      "source_events": 10,
+      "unique_transitions": 5
+    }
+  },
+  "behavioral_patterns": [
+    {
+      "name": "cancellation_behavior",
+      "pattern_type": "cancellation",
+      "description": "Cancellation pattern with 100.0% success rate",
+      "frequency": 2,
+      "confidence": 1.0,
+      "triggers": [
+        "user_cancel",
+        "system_cancel"
+      ],
+      "conditions": [
+        "cancel_requests=1",
+        "cancel_successes=1",
+        "cancel_ignored=0"
+      ],
+      "outcomes": [
+        "run_cancelled",
+        "cancel_ignored"
+      ],
+      "timing_stats": null,
+      "examples": [],
+      "metadata": {
+        "success_rate": 1.0
+      }
+    },
+    {
+      "name": "cancellation_completion",
+      "pattern_type": "completion",
+      "description": "Detected cancellation_completion pattern in session",
+      "frequency": 2,
+      "confidence": 0.6666666666666666,
+      "triggers": [
+        "cancel_requested",
+        "run_cancelled"
+      ],
+      "conditions": [
+        "outcome=cancelled"
+      ],
+      "outcomes": [
+        "cancelled",
+        "state=idle"
+      ],
+      "timing_stats": null,
+      "examples": [
+        {
+          "event": "cancel_requested",
+          "run_id": "test-2",
+          "timestamp": "2025-01-01T11:00:05Z"
+        },
+        {
+          "event": "run_cancelled",
+          "run_id": "test-2",
+          "outcome": "cancelled",
+          "timestamp": "2025-01-01T11:00:06Z"
+        }
+      ],
+      "metadata": {}
+    },
+    {
+      "name": "normal_execution_timing",
+      "pattern_type": "timing",
+      "description": "Session shows normal execution timing pattern",
+      "frequency": 1,
+      "confidence": 1.0,
+      "triggers": [
+        "run_started"
+      ],
+      "conditions": [
+        "execution_time_normal"
+      ],
+      "outcomes": [
+        "run_completed"
+      ],
+      "timing_stats": {
+        "min_duration": 10.0,
+        "max_duration": 10.0,
+        "mean_duration": 10.0,
+        "median_duration": 10.0,
+        "std_duration": 0.0
+      },
+      "examples": [],
+      "metadata": {}
+    },
+    {
+      "name": "cancelled_flow_sequence",
+      "pattern_type": "sequence",
+      "description": "Detected cancelled_flow event sequence pattern",
+      "frequency": 1,
+      "confidence": 1.0,
+      "triggers": [
+        "run_started"
+      ],
+      "conditions": [
+        "follows_cancelled_flow_pattern"
+      ],
+      "outcomes": [
+        "state"
+      ],
+      "timing_stats": null,
+      "examples": [],
+      "metadata": {
+        "expected_sequence": [
+          "run_started",
+          "stream",
+          "cancel_requested",
+          "run_cancelled",
+          "state"
+        ],
+        "matches": [
+          0
+        ]
+      }
+    },
+    {
+      "name": "successful_completion",
+      "pattern_type": "completion",
+      "description": "Detected successful_completion pattern in session",
+      "frequency": 1,
+      "confidence": 0.3333333333333333,
+      "triggers": [
+        "run_completed"
+      ],
+      "conditions": [
+        "reason=ok",
+        "outcome=completed"
+      ],
+      "outcomes": [
+        "state=idle",
+        "completed"
+      ],
+      "timing_stats": null,
+      "examples": [
+        {
+          "event": "run_completed",
+          "run_id": "test-1",
+          "outcome": "completed",
+          "reason": "ok",
+          "timestamp": "2025-01-01T10:00:10Z"
+        }
+      ],
+      "metadata": {}
+    }
+  ],
+  "session_analyses": [
+    {
+      "session_id": "session_1",
+      "start_time": "2025-01-01T10:00:00+00:00",
+      "end_time": "2025-01-01T10:00:11+00:00",
+      "duration_seconds": 11.0,
+      "event_count": 5,
+      "patterns": [
+        {
+          "name": "successful_completion",
+          "pattern_type": "completion",
+          "description": "Detected successful_completion pattern in session",
+          "frequency": 1,
+          "confidence": 0.3333333333333333,
+          "triggers": [
+            "run_completed"
+          ],
+          "conditions": [
+            "reason=ok",
+            "outcome=completed"
+          ],
+          "outcomes": [
+            "state=idle",
+            "completed"
+          ],
+          "timing_stats": null,
+          "examples": [
+            {
+              "event": "run_completed",
+              "run_id": "test-1",
+              "outcome": "completed",
+              "reason": "ok",
+              "timestamp": "2025-01-01T10:00:10Z"
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "name": "normal_execution_timing",
+          "pattern_type": "timing",
+          "description": "Session shows normal execution timing pattern",
+          "frequency": 1,
+          "confidence": 1.0,
+          "triggers": [
+            "run_started"
+          ],
+          "conditions": [
+            "execution_time_normal"
+          ],
+          "outcomes": [
+            "run_completed"
+          ],
+          "timing_stats": {
+            "min_duration": 10.0,
+            "max_duration": 10.0,
+            "mean_duration": 10.0,
+            "median_duration": 10.0,
+            "std_duration": 0.0
+          },
+          "examples": [],
+          "metadata": {}
+        }
+      ],
+      "anomalies": [],
+      "performance_metrics": {
+        "event_frequency": {
+          "run_started": 1,
+          "stream": 2,
+          "run_completed": 1,
+          "state": 1
+        },
+        "stream_event_count": 2,
+        "error_rate": 0.0,
+        "completion_rate": 1.0
+      },
+      "completion_status": "completed"
+    },
+    {
+      "session_id": "session_2",
+      "start_time": "2025-01-01T11:00:00+00:00",
+      "end_time": "2025-01-01T11:00:07+00:00",
+      "duration_seconds": 7.0,
+      "event_count": 5,
+      "patterns": [
+        {
+          "name": "cancellation_completion",
+          "pattern_type": "completion",
+          "description": "Detected cancellation_completion pattern in session",
+          "frequency": 2,
+          "confidence": 0.6666666666666666,
+          "triggers": [
+            "cancel_requested",
+            "run_cancelled"
+          ],
+          "conditions": [
+            "outcome=cancelled"
+          ],
+          "outcomes": [
+            "cancelled",
+            "state=idle"
+          ],
+          "timing_stats": null,
+          "examples": [
+            {
+              "event": "cancel_requested",
+              "run_id": "test-2",
+              "timestamp": "2025-01-01T11:00:05Z"
+            },
+            {
+              "event": "run_cancelled",
+              "run_id": "test-2",
+              "outcome": "cancelled",
+              "timestamp": "2025-01-01T11:00:06Z"
+            }
+          ],
+          "metadata": {}
+        },
+        {
+          "name": "cancelled_flow_sequence",
+          "pattern_type": "sequence",
+          "description": "Detected cancelled_flow event sequence pattern",
+          "frequency": 1,
+          "confidence": 1.0,
+          "triggers": [
+            "run_started"
+          ],
+          "conditions": [
+            "follows_cancelled_flow_pattern"
+          ],
+          "outcomes": [
+            "state"
+          ],
+          "timing_stats": null,
+          "examples": [],
+          "metadata": {
+            "expected_sequence": [
+              "run_started",
+              "stream",
+              "cancel_requested",
+              "run_cancelled",
+              "state"
+            ],
+            "matches": [
+              0
+            ]
+          }
+        },
+        {
+          "name": "cancellation_behavior",
+          "pattern_type": "cancellation",
+          "description": "Cancellation pattern with 100.0% success rate",
+          "frequency": 2,
+          "confidence": 1.0,
+          "triggers": [
+            "user_cancel",
+            "system_cancel"
+          ],
+          "conditions": [
+            "cancel_requests=1",
+            "cancel_successes=1",
+            "cancel_ignored=0"
+          ],
+          "outcomes": [
+            "run_cancelled",
+            "cancel_ignored"
+          ],
+          "timing_stats": null,
+          "examples": [],
+          "metadata": {
+            "success_rate": 1.0
+          }
+        }
+      ],
+      "anomalies": [],
+      "performance_metrics": {
+        "event_frequency": {
+          "run_started": 1,
+          "stream": 1,
+          "cancel_requested": 1,
+          "run_cancelled": 1,
+          "state": 1
+        },
+        "stream_event_count": 1,
+        "error_rate": 0.0,
+        "completion_rate": 0.0
+      },
+      "completion_status": "cancelled"
+    }
+  ],
+  "compliance_rules": [
+    {
+      "rule_id": "state_transitions",
+      "description": "All state transitions must follow defined state machine",
+      "validation": "state_machine_compliance",
+      "severity": "error"
+    },
+    {
+      "rule_id": "completion_detection",
+      "description": "Completion patterns must be correctly identified",
+      "validation": "completion_pattern_compliance",
+      "severity": "error"
+    },
+    {
+      "rule_id": "error_handling",
+      "description": "Error conditions must be properly handled and reported",
+      "validation": "error_handling_compliance",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "timing_constraints",
+      "description": "Operations must complete within acceptable time bounds",
+      "validation": "timing_compliance",
+      "severity": "warning"
+    },
+    {
+      "rule_id": "timing_normal_execution_timing",
+      "description": "Timing pattern 'normal_execution_timing' performance constraints",
+      "validation": "timing_pattern_normal_execution_timing",
+      "severity": "warning",
+      "max_duration": 10.0,
+      "expected_duration": 10.0
+    },
+    {
+      "rule_id": "valid_state_transitions",
+      "description": "All state transitions must be valid according to state machine",
+      "validation": "state_machine_validation",
+      "severity": "error",
+      "valid_transitions": [
+        {
+          "from": "idle",
+          "to": "executing",
+          "trigger": "run_started"
+        },
+        {
+          "from": "executing",
+          "to": "completed",
+          "trigger": "run_completed"
+        },
+        {
+          "from": "completed",
+          "to": "idle",
+          "trigger": "state"
+        },
+        {
+          "from": "executing",
+          "to": "cancelled",
+          "trigger": "run_cancelled"
+        },
+        {
+          "from": "cancelled",
+          "to": "idle",
+          "trigger": "state"
+        }
+      ]
+    }
+  ],
+  "validation_criteria": [
+    {
+      "criterion_id": "state_machine_compliance",
+      "description": "Implementation must follow defined state machine",
+      "test_type": "behavioral",
+      "validation_method": "state_transition_testing",
+      "acceptance_threshold": 1.0,
+      "test_scenarios": [
+        "Transition from idle to executing via run_started",
+        "Transition from executing to completed via run_completed",
+        "Transition from completed to idle via state",
+        "Transition from executing to cancelled via run_cancelled",
+        "Transition from cancelled to idle via state"
+      ]
+    },
+    {
+      "criterion_id": "pattern_cancellation_behavior_validation",
+      "description": "Implementation must exhibit cancellation_behavior pattern",
+      "test_type": "pattern_detection",
+      "validation_method": "runtime_pattern_analysis",
+      "acceptance_threshold": 0.9,
+      "pattern_triggers": [
+        "user_cancel",
+        "system_cancel"
+      ],
+      "expected_outcomes": [
+        "run_cancelled",
+        "cancel_ignored"
+      ]
+    },
+    {
+      "criterion_id": "pattern_normal_execution_timing_validation",
+      "description": "Implementation must exhibit normal_execution_timing pattern",
+      "test_type": "pattern_detection",
+      "validation_method": "runtime_pattern_analysis",
+      "acceptance_threshold": 0.9,
+      "pattern_triggers": [
+        "run_started"
+      ],
+      "expected_outcomes": [
+        "run_completed"
+      ]
+    },
+    {
+      "criterion_id": "pattern_cancelled_flow_sequence_validation",
+      "description": "Implementation must exhibit cancelled_flow_sequence pattern",
+      "test_type": "pattern_detection",
+      "validation_method": "runtime_pattern_analysis",
+      "acceptance_threshold": 0.9,
+      "pattern_triggers": [
+        "run_started"
+      ],
+      "expected_outcomes": [
+        "state"
+      ]
+    },
+    {
+      "criterion_id": "performance_compliance",
+      "description": "Implementation must meet performance benchmarks",
+      "test_type": "performance",
+      "validation_method": "timing_analysis",
+      "acceptance_threshold": 0.9,
+      "benchmarks": {
+        "max_execution_time": 10.0,
+        "expected_execution_time": 10.0,
+        "acceptable_deviation": 0.0,
+        "timeout_threshold": 300
+      }
+    }
+  ],
+  "performance_benchmarks": {
+    "session_metrics": {
+      "avg_duration": 9.0,
+      "avg_events_per_session": 5.0,
+      "completion_rate": 0.5,
+      "error_rate": 0.0
+    },
+    "pattern_metrics": {
+      "avg_patterns_per_session": 2.5,
+      "most_common_patterns": [
+        {
+          "name": "successful_completion",
+          "frequency": 1
+        },
+        {
+          "name": "normal_execution_timing",
+          "frequency": 1
+        },
+        {
+          "name": "cancellation_completion",
+          "frequency": 1
+        },
+        {
+          "name": "cancelled_flow_sequence",
+          "frequency": 1
+        },
+        {
+          "name": "cancellation_behavior",
+          "frequency": 1
+        }
+      ],
+      "pattern_confidence_avg": 0.8
+    }
+  },
+  "documentation": {
+    "state_machine": "# ClaudeCodeWrapper State Machine\\n\\nThis state machine represents the behavioral states and transitions for the Claude Code wrapper.\\n\\n## States (4)\\n\\n- **cancelled** (Error)\\n- **completed** (Final)\\n- **executing** (Normal)\\n- **idle** (Final)\\n\\n## Transitions (5)\\n\\n- idle \u2192 executing on `run_started` (observed 2x)\\n- executing \u2192 completed on `run_completed` [reason=ok, outcome=completed]\\n- completed \u2192 idle on `state`\\n- executing \u2192 cancelled on `run_cancelled` [outcome=cancelled]\\n- cancelled \u2192 idle on `state`",
+    "behavioral_patterns": "# Behavioral Patterns\\n\\nThis section describes 5 behavioral patterns observed in Claude Code wrapper runtime.\\n\\n## Cancellation Patterns (1)\\n\\n### cancellation_behavior\\n**Confidence:** 1.00 | **Frequency:** 2\\n\\nCancellation pattern with 100.0% success rate\\n\\n**Triggers:** user_cancel, system_cancel\\n**Outcomes:** run_cancelled, cancel_ignored\\n\\n## Completion Patterns (2)\\n\\n### cancellation_completion\\n**Confidence:** 0.67 | **Frequency:** 2\\n\\nDetected cancellation_completion pattern in session\\n\\n**Triggers:** cancel_requested, run_cancelled\\n**Outcomes:** cancelled, state=idle\\n\\n### successful_completion\\n**Confidence:** 0.33 | **Frequency:** 1\\n\\nDetected successful_completion pattern in session\\n\\n**Triggers:** run_completed\\n**Outcomes:** state=idle, completed\\n\\n## Timing Patterns (1)\\n\\n### normal_execution_timing\\n**Confidence:** 1.00 | **Frequency:** 1\\n\\nSession shows normal execution timing pattern\\n\\n**Triggers:** run_started\\n**Outcomes:** run_completed\\n\\n## Sequence Patterns (1)\\n\\n### cancelled_flow_sequence\\n**Confidence:** 1.00 | **Frequency:** 1\\n\\nDetected cancelled_flow event sequence pattern\\n\\n**Triggers:** run_started\\n**Outcomes:** state\\n",
+    "usage_examples": "# Usage Examples\\n\\nThese examples are derived from real runtime observations.\\n",
+    "implementation_guidelines": "# Implementation Guidelines\\n\\nGuidelines for implementing Claude Code wrappers that comply with this specification.\\n\\n## State Management\\n\\nYour implementation must maintain state according to the ClaudeCodeWrapper state machine:\\n\\n- **cancelled**: Handle state-specific logic and valid transitions\\n- **completed**: Handle state-specific logic and valid transitions\\n- **executing**: Handle state-specific logic and valid transitions\\n- **idle**: Handle state-specific logic and valid transitions"
+  },
+  "metadata": {
+    "source_sessions": 2,
+    "total_events": 10,
+    "generation_tool": "BehaviorAnalyzer",
+    "requirements_covered": [
+      "2.1",
+      "2.2",
+      "2.3"
+    ]
+  }
+}
