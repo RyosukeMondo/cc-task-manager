@@ -1,21 +1,21 @@
 module.exports = {
   "apps": [
     {
-      "name": "spec-workflow-automation-cc-task-manager",
+      "name": "spec-workflow-automation-warps",
       "script": "/usr/bin/python3",
       "args": [
         "scripts/spec_workflow_automation.py",
         "--spec-name",
-        "claude-code-wrapper-specs",
+        "battle-e2e-testing",
         "--project",
-        ".",
+        "../warps",
         "--session-log",
-        "logs/spec-workflow-cc-task-manager.jsonl"
+        "logs/spec-workflow-warps.jsonl"
       ],
       "cwd": "/home/rmondo/repos/cc-task-manager",
       "autorestart": false,
-      "error_file": "logs/pm2-spec-workflow-cc-task-manager-error.log",
-      "out_file": "logs/pm2-spec-workflow-cc-task-manager-out.log",
+      "error_file": "logs/pm2-spec-workflow-warps-error.log",
+      "out_file": "logs/pm2-spec-workflow-warps-out.log",
       "instances": 1,
       "watch": false,
       "max_memory_restart": "1G",
@@ -27,20 +27,20 @@ module.exports = {
       "time": true
     },
     {
-      "name": "spec-workflow-dashboard-cc-task-manager",
+      "name": "spec-workflow-dashboard-warps",
       "script": "npx",
       "args": [
         "-y",
         "@pimzino/spec-workflow-mcp@latest",
-        "/home/rmondo/repos/cc-task-manager",
+        "../warps",
         "--dashboard",
         "--port",
-        "3401"
+        "3402"
       ],
       "cwd": "/home/rmondo/repos/cc-task-manager",
       "autorestart": true,
-      "error_file": "logs/pm2-dashboard-cc-task-manager-error.log",
-      "out_file": "logs/pm2-dashboard-cc-task-manager-out.log",
+      "error_file": "logs/pm2-dashboard-warps-error.log",
+      "out_file": "logs/pm2-dashboard-warps-out.log",
       "instances": 1,
       "watch": false,
       "max_memory_restart": "1G",
