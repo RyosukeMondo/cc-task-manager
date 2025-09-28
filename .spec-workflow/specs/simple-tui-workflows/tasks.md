@@ -54,7 +54,7 @@
   - _Requirements: FR2 (Type Fix workflow type)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: TypeScript/Python Developer with expertise in type systems and static analysis tools | Task: Create TypeFixWorkflow class in workflows/definitions/type_fix_workflow.py that automates type error resolution following requirement FR2 | Restrictions: Must support TypeScript, Python mypy, and other type checkers, handle complex type error messages, ensure clean completion detection | Success: Workflow resolves type errors effectively, supports multiple type checking tools, completion detection is accurate and reliable_
 
-- [ ] 7. Implement build fix workflow
+- [x] 7. Implement build fix workflow
   - File: workflows/definitions/build_fix_workflow.py
   - Create BuildFixWorkflow class with prompt template for build error analysis and build command completion detection
   - Support various build systems (npm, webpack, make, cargo, etc.)
