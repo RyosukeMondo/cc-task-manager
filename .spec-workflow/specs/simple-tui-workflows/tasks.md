@@ -90,7 +90,7 @@
   - _Requirements: Success criteria (90% test coverage)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with expertise in Python testing frameworks and test automation | Task: Create comprehensive test suite in tests/workflows/ covering all components and workflows with 90% coverage following success criteria | Restrictions: Must test all workflow types, cover error scenarios, ensure tests are maintainable and reliable | Success: Test coverage exceeds 90%, all workflow types tested, integration tests validate end-to-end functionality, test suite runs reliably in CI/CD_
 
-- [ ] 11. Create migration script and documentation
+- [x] 11. Create migration script and documentation
   - File: scripts/migrate_to_workflows.py and workflows/README.md
   - Create migration script from old spec_workflow_automation.py and comprehensive documentation
   - Document extension points for custom workflows and troubleshooting guide
