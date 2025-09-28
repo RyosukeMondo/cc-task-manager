@@ -9,10 +9,10 @@ const CONFIG = {
 
   // Projects configuration - just add your projects here
   projects: [
-     { available: false, name: 'cc-task-manager', path: '.', spec: 'frontend-implementation' }
-    ,{ available: true, name: 'warps', path: '../warps', spec: 'fix-tsc-type-error-following-contract-driven' }
-    ,{ available: false, name: 'mind', path: '../mind-training', spec: 'contract-driven-type-safety' }
-    ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'todo-refactoring' }
+     { available: true, name: 'cc-task-manager', path: '.', spec: 'simple-tui-workflows' }
+    ,{ available: false, name: 'warps', path: '../warps', spec: '2025-09-28-critical-issues' }
+    ,{ available: false, name: 'mind', path: '../mind-training', spec: 'ccontract-driven-type-error-fix' }
+    ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'fix-all-existing-tests' }
   ],
 
   // Dashboard port assignments

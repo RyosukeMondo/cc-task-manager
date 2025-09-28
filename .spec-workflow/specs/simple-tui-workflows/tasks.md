@@ -18,7 +18,7 @@
   - _Requirements: FR4 (Completion Detection)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Python Developer specializing in strategy pattern and plugin systems | Task: Create completion detection framework in workflows/core/completion_detector.py with abstract base class and concrete implementations, migrating logic from existing spec_workflow_automation.py following requirement FR4 | Restrictions: Must preserve all existing detection patterns, ensure pluggable architecture, maintain performance of current detection | Success: All completion detector types implemented and tested, existing detection logic preserved, framework supports easy extension with new detector types_
 
-- [ ] 3. Create workflow engine with session management
+- [x] 3. Create workflow engine with session management
   - File: workflows/core/workflow_engine.py
   - Implement WorkflowEngine class that orchestrates Claude Code sessions using existing claude_wrapper.py
   - Migrate core execution logic from SpecWorkflowAutomation class

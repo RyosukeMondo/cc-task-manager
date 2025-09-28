@@ -245,7 +245,7 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
         text_lower = text_content.lower()
         logger.debug(f"🔍 Checking limited completion patterns in: {text_lower[:100]}...")
 
-        # HARDCODED ROBUST patterns - cast a wide net for completion detection
+        # HARDCODED ROBUST patterns - more specific to avoid false positives
         specific_completion_patterns = [
             # Original patterns
             "specification is fully implemented",
@@ -261,12 +261,17 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             "all 8 tasks are completed",
             "all 6 tasks are completed",
 
-            # Zero pending patterns
-            "0 pending tasks",
-            "with 0 pending tasks",
-            "0 tasks remaining",
+            # Zero pending patterns - more specific to avoid substring matches
+            " 0 pending tasks",  # Leading space to avoid matching "10 pending"
+            " and 0 pending tasks",
+            " with 0 pending tasks",
+            " 0 tasks remaining",
+            "shows 0 pending",
+            "has 0 pending",
             "no pending tasks",
             "no remaining tasks",
+            "zero pending tasks",
+            "zero tasks remaining",
 
             # Status completion patterns
             "specification shows that all",
@@ -276,10 +281,12 @@ Important: Use the mcp__spec-workflow tools to interact with the specification s
             "spec is completed",
             "specification completed",
 
-            # Combined patterns from the logs
-            "all 12 tasks are completed with 0 pending tasks",
+            # Combined patterns from the logs - more specific
+            "all 12 tasks are completed with 0 pending",
             "shows that all 12 tasks are completed",
-            "specification shows that all 12 tasks are completed"
+            "specification shows that all 12 tasks are completed",
+            "completed with 0 pending",
+            "finished with 0 pending"
         ]
 
         for pattern in specific_completion_patterns:
