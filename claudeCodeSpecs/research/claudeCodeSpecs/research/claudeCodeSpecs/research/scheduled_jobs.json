@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-09-28T22:10:13.278170",
+  "total_jobs": 1,
+  "jobs": [
+    {
+      "job_id": "10f4d2f8",
+      "name": "Test Job",
+      "function": "health_check",
+      "args": [],
+      "kwargs": {},
+      "priority": 2,
+      "status": "pending",
+      "schedule_type": "once",
+      "schedule_config": {},
+      "created_at": "2025-09-28T22:10:13.278160",
+      "last_run": null,
+      "next_run": "2025-09-28T22:10:13.278154",
+      "run_count": 0,
+      "max_retries": 3,
+      "retry_count": 0,
+      "timeout_seconds": 300,
+      "metadata": {}
+    }
+  ]
+}

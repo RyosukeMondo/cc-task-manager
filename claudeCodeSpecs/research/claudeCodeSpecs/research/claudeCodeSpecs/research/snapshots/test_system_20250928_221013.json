@@ -1,0 +1,20 @@
+{
+  "snapshot_id": "test_system_20250928_221013",
+  "source": "test_system",
+  "timestamp": "2025-09-28T22:10:13.277567",
+  "data": {
+    "api": {
+      "endpoints": {
+        "/test": {
+          "method": "GET"
+        }
+      }
+    },
+    "behaviors": {
+      "patterns": {}
+    },
+    "states": {
+      "transitions": []
+    }
+  }
+}
