@@ -81,7 +81,7 @@
   - _Requirements: FR5 (Configuration System), NFR3 (Backward Compatibility)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: CLI Developer with expertise in argument parsing and user interface design | Task: Create unified CLI interface in workflows/cli.py that supports all workflow types while maintaining backward compatibility following requirements FR5 and NFR3 | Restrictions: Must preserve existing CLI behavior, provide clear help documentation, handle all workflow-specific parameters | Success: CLI works for all workflows, backward compatibility maintained, help documentation is comprehensive, user experience is intuitive_
 
-- [ ] 10. Create comprehensive test suite
+- [-] 10. Create comprehensive test suite
   - File: tests/workflows/
   - Create unit tests for all core components and integration tests for each workflow type
   - Test error handling, edge cases, and performance
@@ -99,7 +99,7 @@
   - _Requirements: Success criteria (custom workflows <50 lines), NFR2 (Maintainability)_
   - _Prompt: Implement the task for spec simple-tui-workflows, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Technical Writer and Migration Specialist with expertise in system transitions and documentation | Task: Create migration script and comprehensive documentation enabling smooth transition and custom workflow development following success criteria and NFR2 | Restrictions: Must ensure zero-downtime migration, documentation must be clear and complete, examples must work out of the box | Success: Migration script handles all scenarios, documentation enables users to create custom workflows easily, troubleshooting guide covers common issues_
 
-- [ ] 12. Validate system integration and performance
+- [x] 12. Validate system integration and performance
   - File: workflows/validation/
   - Test all workflows with real-world scenarios and validate performance matches existing system
   - Ensure ecosystem integration points work correctly
