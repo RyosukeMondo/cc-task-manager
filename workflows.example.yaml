@@ -1,0 +1,28 @@
+build-fix:
+  build_command: npm run build
+  clean_build: false
+  max_cycles: 25
+  parallel_jobs: 1
+global:
+  debug_options:
+    max_content_length: 500
+    show_tool_details: true
+    truncate_long_content: true
+  environment_overrides:
+    NODE_ENV: development
+spec:
+  completion_patterns:
+  - specification is fully implemented
+  - all tasks are completed
+  max_cycles: 10
+  max_session_time: 1800
+test-fix:
+  completion_patterns:
+  - all tests passing
+  - 0 failing tests
+  max_cycles: 15
+  test_command: npm test
+type-fix:
+  incremental_check: true
+  max_cycles: 20
+  type_check_command: npx tsc --noEmit
