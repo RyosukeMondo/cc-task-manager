@@ -1,6 +1,6 @@
 # Tasks Document
 
-- [ ] 1. Create WebSocket gateway with Socket.IO configuration
+- [x] 1. Create WebSocket gateway with Socket.IO configuration
   - File: apps/backend/src/websocket/websocket.gateway.ts
   - Set up Socket.IO WebSocket gateway with NestJS integration
   - Configure connection handling, authentication, and room management
