@@ -1,0 +1,1128 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CC Task Manager Backend API",
+    "description": "Comprehensive task management API with contract-driven validation and real-time capabilities.\n\n## Features\n- **JWT Authentication**: Secure token-based authentication with CASL authorization\n- **Task Management**: Full CRUD operations with filtering, pagination, and bulk operations\n- **Real-time Updates**: WebSocket events for instant task status updates\n- **User Management**: Profile management with role-based access control\n- **Performance Monitoring**: Built-in metrics and performance tracking\n- **Type Safety**: Contract-driven validation using Zod schemas\n\n## Authentication\nMost endpoints require JWT Bearer token authentication. Include the token in the Authorization header:\n```\nAuthorization: Bearer <your-jwt-token>\n```\n\n## Error Handling\nAll errors follow a consistent format with correlation IDs for debugging:\n```json\n{\n  \"statusCode\": 400,\n  \"message\": [\"Validation error details\"],\n  \"error\": \"Bad Request\",\n  \"correlationId\": \"req-123456789\"\n}\n```\n\n## Rate Limiting\nAPI endpoints are rate-limited:\n- Authentication endpoints: 5 requests per minute\n- Task operations: 100 requests per minute\n- Bulk operations: 10 requests per minute\n\n## Performance\n- Task creation: <100ms (95th percentile)\n- Task queries: <200ms (95th percentile)\n- Real-time events: <100ms delivery",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.cc-task-manager.com",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/api/v1/tasks": {
+      "get": {
+        "tags": ["Task Management"],
+        "summary": "Get tasks with filtering and pagination",
+        "description": "Retrieves tasks with comprehensive filtering, sorting, and pagination capabilities.\n\n**Query Features:**\n- Filter by status, priority, project, date ranges\n- Full-text search across title and description\n- Flexible sorting by multiple fields\n- Efficient cursor-based pagination\n\n**Performance:** <200ms for 95th percentile with proper indexing",
+        "operationId": "getTasks",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Page number (1-based)",
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Items per page (1-100)",
+            "example": 20
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["pending", "running", "completed", "failed", "cancelled"]
+              }
+            },
+            "description": "Filter by task status(es)",
+            "example": ["pending", "running"]
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "urgent"]
+              }
+            },
+            "description": "Filter by task priority(ies)",
+            "example": ["high", "urgent"]
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Filter by project ID",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Filter tasks created after this date",
+            "example": "2024-01-01T00:00:00Z"
+          },
+          {
+            "name": "createdBefore",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Filter tasks created before this date",
+            "example": "2024-12-31T23:59:59Z"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "description": "Full-text search query (max 100 chars)",
+            "example": "authentication system"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["createdAt", "updatedAt", "priority", "status", "title"],
+              "default": "createdAt"
+            },
+            "description": "Sort field",
+            "example": "createdAt"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            },
+            "description": "Sort order",
+            "example": "desc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tasks retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedTaskResponse"
+                },
+                "example": {
+                  "data": [
+                    {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "title": "Implement user authentication",
+                      "status": "pending",
+                      "priority": "high",
+                      "createdAt": "2024-01-15T09:00:00Z"
+                    },
+                    {
+                      "id": "550e8400-e29b-41d4-a716-446655440001",
+                      "title": "Create task dashboard",
+                      "status": "running",
+                      "priority": "medium",
+                      "createdAt": "2024-01-15T08:30:00Z"
+                    }
+                  ],
+                  "pagination": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 125,
+                    "totalPages": 7,
+                    "hasNext": true,
+                    "hasPrev": false
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Task Management"],
+        "summary": "Create a new task",
+        "description": "Creates a new task with comprehensive validation and automatic assignment to the authenticated user as the creator.\n\n**Business Rules:**\n- Title is required and must be between 1-200 characters\n- Prompt is required and must not exceed 10,000 characters\n- Scheduled time (if provided) must be in the future\n- Tags are limited to 10 maximum with 50 characters each\n- Project ID must exist if provided\n\n**Performance:** Typically completes in <100ms",
+        "operationId": "createTask",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaskDto"
+              },
+              "example": {
+                "title": "Implement user authentication system",
+                "description": "Create JWT-based authentication with role-based access control",
+                "prompt": "Implement a secure authentication system using JWT tokens with CASL for authorization. Include login, logout, and token refresh endpoints.",
+                "config": {
+                  "timeout": 1800,
+                  "retryAttempts": 3,
+                  "priority": "high"
+                },
+                "projectId": "789e0123-e89b-12d3-a456-426614174111",
+                "tags": ["authentication", "security", "backend"],
+                "scheduledAt": "2024-01-15T10:00:00Z"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                },
+                "example": {
+                  "id": "550e8400-e29b-41d4-a716-446655440000",
+                  "title": "Implement user authentication system",
+                  "description": "Create JWT-based authentication with role-based access control",
+                  "prompt": "Implement a secure authentication system using JWT tokens...",
+                  "status": "pending",
+                  "priority": "high",
+                  "progress": null,
+                  "config": {
+                    "timeout": 1800,
+                    "retryAttempts": 3,
+                    "priority": "high"
+                  },
+                  "createdBy": {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "username": "developer",
+                    "email": "dev@example.com"
+                  },
+                  "project": {
+                    "id": "789e0123-e89b-12d3-a456-426614174111",
+                    "name": "Authentication Module"
+                  },
+                  "tags": ["authentication", "security", "backend"],
+                  "createdAt": "2024-01-15T09:00:00Z",
+                  "updatedAt": "2024-01-15T09:00:00Z",
+                  "scheduledAt": "2024-01-15T10:00:00Z",
+                  "startedAt": null,
+                  "completedAt": null,
+                  "estimatedDuration": null,
+                  "actualDuration": null,
+                  "errorMessage": null,
+                  "retryCount": 0
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{id}": {
+      "get": {
+        "tags": ["Task Management"],
+        "summary": "Get task by ID",
+        "description": "Retrieves a specific task by its unique identifier with complete details.\n\n**Returns:**\n- Complete task information\n- User and project relationships\n- Execution status and progress\n- Configuration and metadata\n\n**Performance:** <50ms with proper database indexing",
+        "operationId": "getTask",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Task unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Task Management"],
+        "summary": "Update task",
+        "description": "Updates an existing task with the provided changes. Only modified fields need to be included.\n\n**Business Rules:**\n- Only task creator or assigned users can update\n- Status transitions must follow workflow rules\n- Scheduled time must be in future if updated\n\n**Performance:** <100ms with optimistic locking",
+        "operationId": "updateTask",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Task unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaskDto"
+              },
+              "example": {
+                "title": "Updated task title",
+                "description": "Updated task description",
+                "config": {
+                  "timeout": 2400,
+                  "retryAttempts": 5
+                },
+                "tags": ["authentication", "security", "backend", "updated"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Task Management"],
+        "summary": "Delete task",
+        "description": "Permanently deletes a task and all associated data including comments, attachments, and logs.\n\n**WARNING:** This operation cannot be undone.\n\n**Authorization:** Only task creator or users with admin privileges can delete tasks.\n\n**Performance:** <100ms with cascade deletion",
+        "operationId": "deleteTask",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Task unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Task deleted successfully"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{id}/status": {
+      "patch": {
+        "tags": ["Task Management"],
+        "summary": "Update task status",
+        "description": "Updates the execution status of a task with optional progress tracking and error reporting.\n\n**Status Transitions:**\n- PENDING → RUNNING, CANCELLED\n- RUNNING → COMPLETED, FAILED, CANCELLED\n- COMPLETED → (final state)\n- FAILED → PENDING (for retry)\n- CANCELLED → PENDING (for restart)\n\n**Performance:** <50ms with status validation",
+        "operationId": "updateTaskStatus",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Task unique identifier",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskStatusUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/bulk": {
+      "post": {
+        "tags": ["Task Management"],
+        "summary": "Bulk task operations",
+        "description": "Performs batch operations on multiple tasks efficiently with transactional consistency.\n\n**Supported Operations:**\n- delete: Permanently delete tasks\n- cancel: Cancel running tasks\n- retry: Retry failed tasks\n\n**Limits:** Maximum 100 tasks per operation\n**Performance:** Processes ~10 tasks per second with proper batching",
+        "operationId": "bulkTaskOperation",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkTaskOperationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bulk operation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkOperationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/analytics/metrics": {
+      "get": {
+        "tags": ["Task Management"],
+        "summary": "Get task metrics and analytics",
+        "description": "Retrieves comprehensive analytics and performance metrics for tasks.\n\n**Metrics Include:**\n- Task completion statistics\n- Performance benchmarks\n- Success/failure rates\n- Processing time analytics\n\n**Performance:** Cached for 5 minutes, <100ms response time",
+        "operationId": "getTaskMetrics",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task metrics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskMetrics"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateTaskDto": {
+        "type": "object",
+        "required": ["title", "prompt"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Task title (required)",
+            "example": "Implement user authentication system"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Optional task description",
+            "example": "Create JWT-based authentication with role-based access control"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000,
+            "description": "Task execution prompt (required)",
+            "example": "Implement a secure authentication system using JWT tokens..."
+          },
+          "config": {
+            "type": "object",
+            "description": "Optional task configuration",
+            "properties": {
+              "timeout": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 3600,
+                "description": "Task timeout in seconds",
+                "example": 1800
+              },
+              "retryAttempts": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5,
+                "description": "Number of retry attempts",
+                "example": 3
+              },
+              "priority": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "urgent"],
+                "description": "Task priority level",
+                "example": "high"
+              }
+            }
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Optional project association",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 50
+            },
+            "maxItems": 10,
+            "description": "Task tags for categorization",
+            "example": ["authentication", "security", "backend"]
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional scheduled execution time (must be future)",
+            "example": "2024-01-15T10:00:00Z"
+          }
+        }
+      },
+      "UpdateTaskDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Updated task title"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Updated task description"
+          },
+          "config": {
+            "type": "object",
+            "description": "Updated task configuration"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 50
+            },
+            "maxItems": 10,
+            "description": "Updated task tags"
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Updated scheduled time (must be future)"
+          }
+        }
+      },
+      "TaskStatusUpdateDto": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["pending", "running", "completed", "failed", "cancelled"],
+            "description": "New task status",
+            "example": "completed"
+          },
+          "progress": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Task completion progress (0.0 to 1.0)",
+            "example": 0.75
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "Error message if status is FAILED",
+            "example": "Timeout exceeded during execution"
+          }
+        }
+      },
+      "BulkTaskOperationDto": {
+        "type": "object",
+        "required": ["taskIds", "operation"],
+        "properties": {
+          "taskIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 100,
+            "description": "Array of task IDs to operate on",
+            "example": ["550e8400-e29b-41d4-a716-446655440000", "6ba7b810-9dad-11d1-80b4-00c04fd430c8"]
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["delete", "cancel", "retry"],
+            "description": "Bulk operation to perform",
+            "example": "delete"
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "force": {
+                "type": "boolean",
+                "default": false,
+                "description": "Force operation even if validation fails"
+              }
+            }
+          }
+        }
+      },
+      "TaskResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique task identifier"
+          },
+          "title": {
+            "type": "string",
+            "description": "Task title"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Task description"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Task execution prompt"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "running", "completed", "failed", "cancelled"],
+            "description": "Current task status"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "urgent"],
+            "description": "Task priority level"
+          },
+          "progress": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Task completion progress"
+          },
+          "config": {
+            "type": "object",
+            "nullable": true,
+            "description": "Task configuration"
+          },
+          "createdBy": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "username": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              }
+            },
+            "description": "User who created the task"
+          },
+          "project": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "description": "Associated project"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Task tags"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Task creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Scheduled execution time"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Execution start time"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Execution completion time"
+          },
+          "estimatedDuration": {
+            "type": "number",
+            "nullable": true,
+            "description": "Estimated duration in seconds"
+          },
+          "actualDuration": {
+            "type": "number",
+            "nullable": true,
+            "description": "Actual duration in seconds"
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true,
+            "description": "Error message if failed"
+          },
+          "retryCount": {
+            "type": "number",
+            "default": 0,
+            "description": "Number of retry attempts"
+          }
+        }
+      },
+      "PaginatedTaskResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaskResponse"
+            },
+            "description": "Array of tasks"
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "number",
+                "description": "Current page number"
+              },
+              "limit": {
+                "type": "number",
+                "description": "Items per page"
+              },
+              "total": {
+                "type": "number",
+                "description": "Total number of items"
+              },
+              "totalPages": {
+                "type": "number",
+                "description": "Total number of pages"
+              },
+              "hasNext": {
+                "type": "boolean",
+                "description": "Whether there are more pages"
+              },
+              "hasPrev": {
+                "type": "boolean",
+                "description": "Whether there are previous pages"
+              }
+            }
+          }
+        }
+      },
+      "BulkOperationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Overall operation success"
+          },
+          "processedCount": {
+            "type": "number",
+            "description": "Number of successfully processed tasks"
+          },
+          "failedCount": {
+            "type": "number",
+            "description": "Number of failed operations"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "success": {
+                  "type": "boolean"
+                },
+                "error": {
+                  "type": "string",
+                  "nullable": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "TaskMetrics": {
+        "type": "object",
+        "properties": {
+          "totalTasks": {
+            "type": "number",
+            "description": "Total number of tasks",
+            "example": 1250
+          },
+          "completedTasks": {
+            "type": "number",
+            "description": "Number of completed tasks",
+            "example": 980
+          },
+          "failedTasks": {
+            "type": "number",
+            "description": "Number of failed tasks",
+            "example": 45
+          },
+          "averageDuration": {
+            "type": "number",
+            "nullable": true,
+            "description": "Average task completion time in seconds",
+            "example": 1847.5
+          },
+          "successRate": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Task success rate (0.0 to 1.0)",
+            "example": 0.956
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "description": "HTTP status code"
+          },
+          "message": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "description": "Error message or array of validation errors"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error type"
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "Request correlation ID for debugging"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequestResponse": {
+        "description": "Invalid request data provided",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "statusCode": 400,
+              "message": ["Title is required", "Prompt must be 10000 characters or less"],
+              "error": "Bad Request",
+              "correlationId": "req-123456789"
+            }
+          }
+        }
+      },
+      "UnauthorizedResponse": {
+        "description": "Authentication required",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "statusCode": 401,
+              "message": "Unauthorized",
+              "error": "Unauthorized",
+              "correlationId": "req-123456789"
+            }
+          }
+        }
+      },
+      "ForbiddenResponse": {
+        "description": "Insufficient permissions",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "statusCode": 403,
+              "message": "Insufficient permissions: cannot access task. Users can only access tasks they created or are assigned to.",
+              "error": "Forbidden",
+              "correlationId": "req-123456789"
+            }
+          }
+        }
+      },
+      "NotFoundResponse": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "statusCode": 404,
+              "message": "Task not found",
+              "error": "Not Found",
+              "correlationId": "req-123456789"
+            }
+          }
+        }
+      },
+      "InternalServerErrorResponse": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "statusCode": 500,
+              "message": "Internal server error",
+              "error": "Internal Server Error",
+              "correlationId": "req-123456789"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "JWT": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT Bearer token for API authentication"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Task Management",
+      "description": "Task management operations with comprehensive validation and real-time capabilities"
+    },
+    {
+      "name": "Authentication",
+      "description": "User authentication and session management endpoints"
+    },
+    {
+      "name": "Users",
+      "description": "User profile and management with role-based access control"
+    },
+    {
+      "name": "Health",
+      "description": "Service health monitoring and readiness checks"
+    },
+    {
+      "name": "Queue",
+      "description": "Background job processing and queue management"
+    },
+    {
+      "name": "Documentation",
+      "description": "API documentation and specification endpoints"
+    }
+  ],
+  "security": [
+    {
+      "JWT": []
+    }
+  ]
+}

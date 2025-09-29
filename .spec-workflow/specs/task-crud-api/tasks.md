@@ -72,7 +72,7 @@
   - _Requirements: All requirements validation through comprehensive testing_
   - _Prompt: Implement the task for spec task-crud-api, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer specializing in API integration testing and test automation | Task: Create comprehensive integration tests for all task API endpoints covering all requirements through systematic testing | Restrictions: Must follow SOLID principles (SRP for focused test cases, ISP for test interfaces), apply KISS principle for test design, ensure DRY/SSOT compliance with reusable test patterns, implement contract-driven test validation, apply fail-fast testing principles, test all CRUD operations, authentication, authorization, and error conditions | _Leverage: database test utilities and existing integration test patterns | Success: Tests follow SOLID principles with focused responsibilities, KISS principle applied, DRY/SSOT maintained, contract-driven validation implemented, fail-fast testing working, comprehensive coverage achieved, performance validated, tests run reliably | Instructions: Design test contracts first, implement SOLID test structure, validate fail-fast principles, ensure complete coverage, mark complete [x]_
 
-- [ ] 9. Generate OpenAPI specification and API documentation
+- [x] 9. Generate OpenAPI specification and API documentation
   - File: apps/backend/api-docs/task-api.json
   - Generate complete OpenAPI 3.0 specification from NestJS decorators
   - Create comprehensive API documentation with examples
