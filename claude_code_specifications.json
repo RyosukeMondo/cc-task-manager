@@ -1,0 +1,559 @@
+{
+  "comprehensive_spec": {
+    "behavioral_patterns": {
+      "session_structures": 8,
+      "workflow_patterns": {}
+    },
+    "claude_code_overview": {
+      "availability": [
+        "CLI",
+        "TypeScript SDK (@anthropic-ai/claude-code)",
+        "Python SDK (claude-code-sdk)"
+      ],
+      "description": "Claude Code is an agentic coding tool with CLI, TypeScript, and Python SDKs",
+      "key_features": [
+        "Context management with automatic compaction",
+        "Rich tool ecosystem (file ops, code execution, web search, MCP)",
+        "Advanced permissions and fine-grained control",
+        "Built-in error handling and session management",
+        "Optimized Claude integration with prompt caching"
+      ]
+    },
+    "session_management": {
+      "format": "JSONL files in ~/.claude/projects/*/sessions/",
+      "key_fields": [
+        "type",
+        "message",
+        "sessionId",
+        "timestamp",
+        "version",
+        "cwd",
+        "gitBranch"
+      ],
+      "message_types": [
+        "unknown",
+        "summary",
+        "user",
+        "assistant"
+      ]
+    },
+    "stdio_interface": {
+      "commands": [
+        "prompt",
+        "cancel",
+        "status",
+        "shutdown"
+      ],
+      "events": [
+        "signal",
+        "error",
+        "run_started",
+        "cancel_ignored",
+        "cancel_requested",
+        "status",
+        "stream",
+        "limit_notice",
+        "run_cancelled",
+        "run_terminated",
+        "run_completed",
+        "auto_shutdown",
+        "run_failed",
+        "state",
+        "ready",
+        "shutdown",
+        "fatal"
+      ],
+      "input_format": "JSON lines on STDIN",
+      "output_format": "JSON events on STDOUT"
+    },
+    "tool_ecosystem": {
+      "discovered_tools": [
+        "mcp__spec-workflow__spec-status",
+        "mcp__spec-workflow__manage-tasks",
+        "Glob",
+        "Read",
+        "Bash",
+        "Edit",
+        "TodoWrite",
+        "mcp__serena__list_dir",
+        "mcp__serena__activate_project",
+        "mcp__serena__read_file",
+        "mcp__serena__find_file",
+        "Write",
+        "ListMcpResourcesTool",
+        "mcp__spec-workflow__spec-workflow-guide",
+        "mcp__spec-workflow__get-steering-context",
+        "mcp__spec-workflow__spec-list",
+        "mcp__spec-workflow__get-template-context",
+        "mcp__serena__search_for_pattern",
+        "mcp__spec-workflow__create-spec-doc",
+        "mcp__spec-workflow__request-approval",
+        "mcp__spec-workflow__get-approval-status",
+        "mcp__spec-workflow__delete-approval",
+        "mcp__serena__list_memories",
+        "mcp__serena__read_memory",
+        "mcp__serena__get_symbols_overview",
+        "mcp__serena__find_symbol"
+      ],
+      "usage_patterns": {
+        "Bash": 19,
+        "Edit": 7,
+        "Glob": 1,
+        "ListMcpResourcesTool": 1,
+        "Read": 15,
+        "TodoWrite": 24,
+        "Write": 4,
+        "mcp__serena__activate_project": 5,
+        "mcp__serena__find_file": 3,
+        "mcp__serena__find_symbol": 6,
+        "mcp__serena__get_symbols_overview": 1,
+        "mcp__serena__list_dir": 13,
+        "mcp__serena__list_memories": 1,
+        "mcp__serena__read_file": 10,
+        "mcp__serena__read_memory": 1,
+        "mcp__serena__search_for_pattern": 7,
+        "mcp__spec-workflow__create-spec-doc": 5,
+        "mcp__spec-workflow__delete-approval": 3,
+        "mcp__spec-workflow__get-approval-status": 5,
+        "mcp__spec-workflow__get-steering-context": 3,
+        "mcp__spec-workflow__get-template-context": 5,
+        "mcp__spec-workflow__manage-tasks": 20,
+        "mcp__spec-workflow__request-approval": 4,
+        "mcp__spec-workflow__spec-list": 2,
+        "mcp__spec-workflow__spec-status": 2,
+        "mcp__spec-workflow__spec-workflow-guide": 3
+      }
+    }
+  },
+  "extraction_timestamp": "2025-09-29T01:56:35.696932",
+  "sdk_specifications": {},
+  "session_patterns": {
+    "error_patterns": {},
+    "message_types": {
+      "assistant": 284,
+      "summary": 9,
+      "unknown": 102,
+      "user": 193
+    },
+    "session_structures": {
+      "133a86b1-22d7-4609-986a-0adc7577c850": {
+        "cwd": "/mnt/d/repos/wa-tools/task1",
+        "gitBranch": "feature/gemini-provider",
+        "message_count": 24,
+        "version": "1.0.108"
+      },
+      "799bbce2-9090-4649-aaba-e9c57aaf63b5": {
+        "cwd": "/mnt/d/repos/wa-tools",
+        "gitBranch": "spec-doc",
+        "message_count": 100,
+        "version": "1.0.108"
+      },
+      "817decab-e4db-42cd-b3dc-1e616e06f6dc": {
+        "cwd": "/mnt/d/repos/wa-tools",
+        "gitBranch": "spec-doc",
+        "message_count": 58,
+        "version": "1.0.108"
+      },
+      "91d4f3f6-03ae-4274-8180-d1fc879eeb2f": {
+        "cwd": "/mnt/d/repos/wa-tools",
+        "gitBranch": "spec-doc",
+        "message_count": 102,
+        "version": "1.0.108"
+      },
+      "998db56e-607c-4f14-be48-12c21d645147": {
+        "cwd": "/mnt/d/repos/wa-tools",
+        "gitBranch": "spec-doc",
+        "message_count": 102,
+        "version": "1.0.108"
+      },
+      "beaf3616-7700-4e17-9aea-f2fb049c7c80": {
+        "cwd": "/mnt/d/repos/wa-tools",
+        "gitBranch": "spec-doc",
+        "message_count": 1,
+        "version": "1.0.108"
+      },
+      "ca6b2ebf-d397-4d80-8675-f8bcbd8d39ca": {
+        "cwd": "/mnt/d/repos/wa-tools",
+        "gitBranch": "spec-doc",
+        "message_count": 87,
+        "version": "1.0.108"
+      },
+      "d39f4c57-e602-4481-ba7e-ad053ce1c3fc": {
+        "cwd": "/mnt/d/repos/wa-tools",
+        "gitBranch": "spec-doc",
+        "message_count": 3,
+        "version": "1.0.108"
+      }
+    },
+    "tool_usage": {
+      "Bash": 19,
+      "Edit": 7,
+      "Glob": 1,
+      "ListMcpResourcesTool": 1,
+      "Read": 15,
+      "TodoWrite": 24,
+      "Write": 4,
+      "mcp__serena__activate_project": 5,
+      "mcp__serena__find_file": 3,
+      "mcp__serena__find_symbol": 6,
+      "mcp__serena__get_symbols_overview": 1,
+      "mcp__serena__list_dir": 13,
+      "mcp__serena__list_memories": 1,
+      "mcp__serena__read_file": 10,
+      "mcp__serena__read_memory": 1,
+      "mcp__serena__search_for_pattern": 7,
+      "mcp__spec-workflow__create-spec-doc": 5,
+      "mcp__spec-workflow__delete-approval": 3,
+      "mcp__spec-workflow__get-approval-status": 5,
+      "mcp__spec-workflow__get-steering-context": 3,
+      "mcp__spec-workflow__get-template-context": 5,
+      "mcp__spec-workflow__manage-tasks": 20,
+      "mcp__spec-workflow__request-approval": 4,
+      "mcp__spec-workflow__spec-list": 2,
+      "mcp__spec-workflow__spec-status": 2,
+      "mcp__spec-workflow__spec-workflow-guide": 3
+    },
+    "workflow_patterns": {}
+  },
+  "source_analysis": {
+    "apis": {
+      "monitoring-api.py": {
+        "classes": [
+          "MonitoringAPIResponse",
+          "MonitoringAPI"
+        ],
+        "functions": [
+          "__post_init__",
+          "to_dict",
+          "__init__",
+          "start_monitoring_session",
+          "stop_monitoring_session",
+          "list_active_sessions",
+          "get_session_status",
+          "capture_event",
+          "get_events",
+          "get_event_by_id",
+          "process_events",
+          "get_event_statistics",
+          "enable_monitoring",
+          "disable_monitoring",
+          "get_monitoring_status",
+          "export_session_data",
+          "main"
+        ]
+      },
+      "specification-api.py": {
+        "classes": [
+          "APIResponse",
+          "SpecificationAPI"
+        ],
+        "functions": [
+          "__post_init__",
+          "to_dict",
+          "__init__",
+          "list_specifications",
+          "get_specification",
+          "create_specification",
+          "update_specification",
+          "delete_specification",
+          "list_schemas",
+          "get_schema",
+          "generate_specification_from_data",
+          "analyze_runtime_behavior",
+          "get_system_status",
+          "_generate_behavioral_spec",
+          "main"
+        ]
+      },
+      "unified-api.py": {
+        "classes": [
+          "UnifiedAPIResponse",
+          "UnifiedAPI"
+        ],
+        "functions": [
+          "__post_init__",
+          "to_dict",
+          "__init__",
+          "get_system_health",
+          "get_system_overview",
+          "list_specifications",
+          "get_specification",
+          "create_specification",
+          "update_specification",
+          "delete_specification",
+          "start_monitoring_session",
+          "stop_monitoring_session",
+          "list_active_sessions",
+          "capture_event",
+          "get_events",
+          "validate_data",
+          "validate_batch",
+          "check_compliance",
+          "run_validation_tests",
+          "full_specification_workflow",
+          "validate_and_monitor_wrapper",
+          "_convert_response",
+          "_convert_monitoring_response",
+          "_convert_validation_response",
+          "main"
+        ]
+      },
+      "validation-api.py": {
+        "classes": [
+          "ValidationAPIResponse",
+          "ValidationAPI"
+        ],
+        "functions": [
+          "__post_init__",
+          "to_dict",
+          "__init__",
+          "validate_data",
+          "validate_batch",
+          "get_validation_schemas",
+          "get_schema_details",
+          "check_compliance",
+          "generate_compliance_report",
+          "run_validation_tests",
+          "run_custom_test",
+          "get_validation_history",
+          "get_validation_by_id",
+          "get_validation_statistics",
+          "get_validation_system_status",
+          "clear_validation_history",
+          "export_validation_data",
+          "main"
+        ]
+      }
+    },
+    "components": {
+      "__pycache__": {
+        "file_count": 0,
+        "files": []
+      },
+      "analysis": {
+        "file_count": 5,
+        "files": [
+          "pattern_detector.py",
+          "advanced_pattern_detector.py",
+          "__init__.py",
+          "behavior_analyzer.py",
+          "state_machine_generator.py"
+        ]
+      },
+      "api": {
+        "file_count": 5,
+        "files": [
+          "specification-api.py",
+          "__init__.py",
+          "monitoring-api.py",
+          "unified-api.py",
+          "validation-api.py"
+        ]
+      },
+      "claudeCodeSpecs": {
+        "file_count": 0,
+        "files": []
+      },
+      "docs": {
+        "file_count": 0,
+        "files": []
+      },
+      "generated": {
+        "file_count": 0,
+        "files": []
+      },
+      "maintenance": {
+        "file_count": 4,
+        "files": [
+          "monitor.py",
+          "alert-system.py",
+          "update-scheduler.py",
+          "test_system.py"
+        ]
+      },
+      "research": {
+        "file_count": 3,
+        "files": [
+          "sdk_monitor.py",
+          "research_scheduler.py",
+          "change_detector.py"
+        ]
+      },
+      "runtime-data": {
+        "file_count": 0,
+        "files": []
+      },
+      "runtime-monitoring": {
+        "file_count": 5,
+        "files": [
+          "session-manager.py",
+          "comprehensive_scenarios.py",
+          "capture-engine.py",
+          "__init__.py",
+          "event-processor.py"
+        ]
+      },
+      "schemas": {
+        "file_count": 0,
+        "files": []
+      },
+      "specs": {
+        "file_count": 0,
+        "files": []
+      },
+      "tests": {
+        "file_count": 0,
+        "files": []
+      },
+      "validation": {
+        "file_count": 3,
+        "files": [
+          "compliance-checker.py",
+          "test-runner.py",
+          "schema-validator.py"
+        ]
+      }
+    },
+    "documentation": {},
+    "schemas": {}
+  },
+  "wrapper_interface": {
+    "error_handling": {},
+    "input_commands": {
+      "cancel": {
+        "discovered_in": "handle_command"
+      },
+      "prompt": {
+        "discovered_in": "handle_command"
+      },
+      "shutdown": {
+        "discovered_in": "handle_command"
+      },
+      "status": {
+        "discovered_in": "handle_command"
+      }
+    },
+    "json_schemas": {
+      "active_run_id": [
+        "self"
+      ],
+      "details": [
+        "str"
+      ],
+      "error": [
+        "str",
+        "text"
+      ],
+      "exit_on_complete": [
+        "exit_on_complete"
+      ],
+      "id": [
+        "run_id"
+      ],
+      "last_session_id": [
+        "self"
+      ],
+      "message": [
+        "run_context",
+        "limit_msg"
+      ],
+      "options": [
+        "options_dict"
+      ],
+      "payload": [
+        "action",
+        "serialised"
+      ],
+      "prompt_digest": [
+        "prompt"
+      ],
+      "raw": [
+        "line"
+      ],
+      "repr": [
+        "repr"
+      ],
+      "requested_run_id": [
+        "requested_run_id"
+      ],
+      "run_id": [
+        "self",
+        "run_id",
+        "run_context"
+      ],
+      "signal": [
+        "signum"
+      ],
+      "started_at": [
+        "datetime"
+      ],
+      "state": [
+        "self"
+      ],
+      "timestamp": [
+        "datetime"
+      ],
+      "traceback": [
+        "getattr",
+        "traceback"
+      ],
+      "version": [
+        "1"
+      ]
+    },
+    "output_events": {
+      "auto_shutdown": {
+        "discovered_in": "output_json calls"
+      },
+      "cancel_ignored": {
+        "discovered_in": "output_json calls"
+      },
+      "cancel_requested": {
+        "discovered_in": "output_json calls"
+      },
+      "error": {
+        "discovered_in": "output_json calls"
+      },
+      "fatal": {
+        "discovered_in": "output_json calls"
+      },
+      "limit_notice": {
+        "discovered_in": "output_json calls"
+      },
+      "ready": {
+        "discovered_in": "output_json calls"
+      },
+      "run_cancelled": {
+        "discovered_in": "output_json calls"
+      },
+      "run_completed": {
+        "discovered_in": "output_json calls"
+      },
+      "run_failed": {
+        "discovered_in": "output_json calls"
+      },
+      "run_started": {
+        "discovered_in": "output_json calls"
+      },
+      "run_terminated": {
+        "discovered_in": "output_json calls"
+      },
+      "shutdown": {
+        "discovered_in": "output_json calls"
+      },
+      "signal": {
+        "discovered_in": "output_json calls"
+      },
+      "state": {
+        "discovered_in": "output_json calls"
+      },
+      "status": {
+        "discovered_in": "output_json calls"
+      },
+      "stream": {
+        "discovered_in": "output_json calls"
+      }
+    },
+    "state_management": {}
+  }
+}
