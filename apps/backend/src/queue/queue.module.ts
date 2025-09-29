@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { QueueService } from './queue.service';
 import { QueueManagerService } from './queue-manager.service';
+import { QueueMonitorService } from './queue-monitor.service';
 import { QueueController } from './queue.controller';
 import { QueueConfigService } from './queue.config';
 import { TaskProcessorWorker } from './processors/task-processor.worker';
@@ -30,6 +31,7 @@ import { BackendSchemaRegistry } from '../schemas/schema-registry';
  * Services:
  * - QueueService: Basic queue operations and job processing
  * - QueueManagerService: Advanced queue management with comprehensive job control
+ * - QueueMonitorService: Comprehensive queue monitoring and metrics collection
  * - QueueConfigService: Centralized configuration management
  * - TaskProcessorWorker: Worker for processing Claude Code task execution
  *
@@ -38,7 +40,7 @@ import { BackendSchemaRegistry } from '../schemas/schema-registry';
 @Module({
   imports: [ConfigModule],
   controllers: [QueueController],
-  providers: [QueueService, QueueManagerService, QueueConfigService, TaskProcessorWorker, BackendSchemaRegistry],
-  exports: [QueueService, QueueManagerService, QueueConfigService, TaskProcessorWorker],
+  providers: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, TaskProcessorWorker, BackendSchemaRegistry],
+  exports: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, TaskProcessorWorker],
 })
 export class QueueModule {}

@@ -27,7 +27,7 @@
   - _Requirements: 2.1, 2.2, 3.1_
   - _Prompt: Implement the task for spec bullmq-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Worker Process Engineer with expertise in job processing and Claude Code integration | Task: Create task processor workers for Claude Code execution following requirements 2.1, 2.2, and 3.1, leveraging existing Claude wrapper patterns | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must handle long-running tasks, implement proper progress tracking, ensure worker reliability, handle Claude Code interface correctly| _Leverage: claude_wrapper.py patterns and existing worker implementations if available | Success: Workers process Claude Code tasks reliably, progress tracking working, error handling robust, job completion accurate, integration with Claude wrapper functional | Instructions: Mark in progress [-], create worker class, implement processing logic, test Claude integration, mark complete [x]_
 
-- [ ] 4. Create job queue monitoring and metrics collection
+- [x] 4. Create job queue monitoring and metrics collection
   - File: apps/backend/src/queue/queue-monitor.service.ts
   - Implement monitoring service for queue health and job statistics
   - Add metrics collection for job completion rates, processing times, and failure analysis
