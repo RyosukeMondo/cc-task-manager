@@ -8,6 +8,7 @@ import { WebSocketAuthGuard } from './websocket-auth.guard';
 import { TaskEventsService } from './events/task-events.service';
 import { QueueEventsService } from './events/queue-events.service';
 import { ClaudeEventsService } from './events/claude-events.service';
+import { SystemEventsService } from './events/system-events.service';
 import { UserChannelsService } from './channels/user-channels.service';
 
 /**
@@ -58,6 +59,7 @@ import { UserChannelsService } from './channels/user-channels.service';
     TaskEventsService,
     QueueEventsService,
     ClaudeEventsService,
+    SystemEventsService,
     UserChannelsService,
   ],
   
@@ -68,6 +70,7 @@ import { UserChannelsService } from './channels/user-channels.service';
     TaskEventsService,
     QueueEventsService,
     ClaudeEventsService,
+    SystemEventsService,
     UserChannelsService,
   ],
 })

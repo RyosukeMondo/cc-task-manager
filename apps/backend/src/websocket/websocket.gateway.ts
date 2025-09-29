@@ -532,6 +532,39 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   }
 
   /**
+   * Alias for getConnectedUsersCount for compatibility
+   */
+  getConnectionCount(): number {
+    return this.getConnectedUsersCount();
+  }
+
+  /**
+   * Get connection statistics for monitoring
+   */
+  getConnectionStats(): Record<string, any> {
+    const roomStats: Record<string, number> = {};
+
+    for (const connection of this.connectedUsers.values()) {
+      for (const room of connection.rooms) {
+        roomStats[room] = (roomStats[room] || 0) + 1;
+      }
+    }
+
+    return {
+      totalConnections: this.connectedUsers.size,
+      roomStats,
+      timestamp: new Date(),
+    };
+  }
+
+  /**
+   * Helper method to generate admin room name
+   */
+  getAdminRoom(): string {
+    return 'admin:system';
+  }
+
+  /**
    * Get connected users by room for debugging
    */
   getUsersByRoom(room: string): string[] {

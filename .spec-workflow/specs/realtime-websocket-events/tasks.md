@@ -45,7 +45,7 @@
   - _Requirements: 3.1, 3.2, 4.1_
   - _Prompt: Implement the task for spec realtime-websocket-events, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Output Streaming Engineer with expertise in real-time data streaming and Claude Code integration | Task: Implement Claude Code execution output streaming following requirements 3.1, 3.2, and 4.1, integrating with Claude Code wrapper | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must stream output without buffering delays, handle large output volumes efficiently, preserve output formatting, implement stream controls (pause/resume), ensure reliable delivery| _Leverage: Claude Code wrapper from claude-code-wrapper-integration spec and streaming patterns | Success: Claude Code output streams in real-time, large outputs handled efficiently, formatting preserved, stream controls functional, delivery reliable | Instructions: Set to in progress [-], create Claude events service, implement output streaming, test with large outputs, mark complete [x]_
 
-- [ ] 6. Add system health and monitoring event broadcasts
+- [x] 6. Add system health and monitoring event broadcasts
   - File: apps/backend/src/websocket/events/system-events.service.ts
   - Implement system health monitoring events and status broadcasts
   - Add performance metrics streaming and alert notifications
