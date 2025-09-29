@@ -18,7 +18,7 @@
   - _Requirements: 1.1, 1.2_
   - _Prompt: Implement the task for spec database-schema-completion, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Database Administrator with expertise in PostgreSQL migrations and data safety | Task: Generate and validate Prisma migration for new Claude Code entities following requirements 1.1 and 1.2 | Restrictions: Must follow SOLID principles (SRP for focused migration, OCP for extensible migrations), apply KISS principle for migration simplicity, ensure DRY/SSOT compliance with no duplicate DDL, implement fail-fast validation for migration safety, migration must be reversible, cannot break existing relationships | _Leverage: apps/backend/prisma/migrations/ directory structure and naming conventions | Success: Migration follows SOLID principles, applies KISS principle, maintains DRY/SSOT, fail-fast validation working, executes safely, preserves data, is reversible | Instructions: Design migration contracts first, implement SOLID principles, validate fail-fast safety checks, mark complete [x]_
 
-- [ ] 3. Generate TypeScript types and Prisma client
+- [x] 3. Generate TypeScript types and Prisma client
   - File: apps/backend/node_modules/.prisma/client/ (generated)
   - Run Prisma generate to create TypeScript types for new entities
   - Validate type safety and IntelliSense support
