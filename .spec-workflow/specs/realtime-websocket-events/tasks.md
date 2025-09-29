@@ -27,7 +27,7 @@
   - _Requirements: 3.1, 3.2, security requirements_
   - _Prompt: Implement the task for spec realtime-websocket-events, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Security Engineer with expertise in real-time authorization and channel management | Task: Implement user-specific event channels with permission filtering following requirements 3.1, 3.2, and security requirements, ensuring proper access control | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must enforce user permissions for all events, implement secure channel isolation, handle permission changes dynamically, prevent unauthorized access to events, maintain performance with permission checks| _Leverage: authentication system from task-crud-api spec and authorization patterns | Success: User channels properly isolated, permission filtering accurate, access control prevents unauthorized events, permission changes handled dynamically, performance impact minimal | Instructions: Mark in progress [-], create channel service, implement permission filtering, test security boundaries, mark complete [x]_
 
-- [ ] 4. Create queue job progress event streaming
+- [x] 4. Create queue job progress event streaming
   - File: apps/backend/src/websocket/events/queue-events.service.ts
   - Implement real-time progress updates for queue job execution
   - Add job status broadcasting and execution metrics streaming

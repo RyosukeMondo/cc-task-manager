@@ -23,6 +23,13 @@ export enum WebSocketEventType {
   // System events
   NOTIFICATION = 'system:notification',
   ALERT = 'system:alert',
+
+  // Queue job events
+  QUEUE_JOB_STARTED = 'queue:job_started',
+  QUEUE_JOB_PROGRESS = 'queue:job_progress',
+  QUEUE_JOB_COMPLETED = 'queue:job_completed',
+  QUEUE_JOB_FAILED = 'queue:job_failed',
+  QUEUE_JOB_STALLED = 'queue:job_stalled',
   
   // Room events
   JOIN_ROOM = 'room:join',
@@ -115,6 +122,25 @@ export const RoomEventDataSchema = z.object({
 });
 
 /**
+ * Queue job event data schema
+ */
+export const QueueJobEventDataSchema = z.object({
+  jobId: z.string().min(1, 'Job ID is required'),
+  queueName: z.string().min(1, 'Queue name is required'),
+  jobType: z.string().min(1, 'Job type is required'),
+  status: z.enum(['started', 'progress', 'completed', 'failed', 'stalled']),
+  progress: z.number().min(0).max(100).optional(),
+  result: z.any().optional(),
+  error: z.string().optional(),
+  attemptsMade: z.number().int().min(0).optional(),
+  maxAttempts: z.number().int().min(1).optional(),
+  processingTime: z.number().min(0).optional(), // milliseconds
+  startedAt: z.date().optional(),
+  completedAt: z.date().optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
+/**
  * Connection event data schema
  */
 export const ConnectionEventDataSchema = z.object({
@@ -177,6 +203,18 @@ export const WebSocketEventSchema = BaseWebSocketEventSchema.and(
         WebSocketEventType.ALERT,
       ]),
       data: NotificationEventDataSchema,
+    }),
+
+    // Queue job events
+    z.object({
+      eventType: z.enum([
+        WebSocketEventType.QUEUE_JOB_STARTED,
+        WebSocketEventType.QUEUE_JOB_PROGRESS,
+        WebSocketEventType.QUEUE_JOB_COMPLETED,
+        WebSocketEventType.QUEUE_JOB_FAILED,
+        WebSocketEventType.QUEUE_JOB_STALLED,
+      ]),
+      data: QueueJobEventDataSchema,
     }),
     
     // Room management events
@@ -246,6 +284,7 @@ export type BaseWebSocketEvent = z.infer<typeof BaseWebSocketEventSchema>;
 export type TaskEventData = z.infer<typeof TaskEventDataSchema>;
 export type UserActivityEventData = z.infer<typeof UserActivityEventDataSchema>;
 export type NotificationEventData = z.infer<typeof NotificationEventDataSchema>;
+export type QueueJobEventData = z.infer<typeof QueueJobEventDataSchema>;
 export type RoomEventData = z.infer<typeof RoomEventDataSchema>;
 export type ConnectionEventData = z.infer<typeof ConnectionEventDataSchema>;
 export type WebSocketEvent = z.infer<typeof WebSocketEventSchema>;
@@ -324,5 +363,21 @@ export const createUserActivityEvent = (
     room,
     roomType,
     data: activityData,
+  });
+};
+
+export const createQueueJobEvent = (
+  eventType: WebSocketEventType,
+  userId: string,
+  queueJobData: QueueJobEventData,
+  room?: string,
+  roomType?: WebSocketRoomType
+): WebSocketEvent => {
+  return validateWebSocketEvent({
+    eventType,
+    userId,
+    room,
+    roomType,
+    data: queueJobData,
   });
 };

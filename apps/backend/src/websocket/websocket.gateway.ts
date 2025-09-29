@@ -498,6 +498,13 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   }
 
   /**
+   * Helper method to generate global room name for system-wide events
+   */
+  getGlobalRoom(): string {
+    return `global:system`;
+  }
+
+  /**
    * Helper method to track user room memberships
    */
   private addUserToRoom(socketId: string, room: string) {
