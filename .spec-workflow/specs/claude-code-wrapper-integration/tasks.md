@@ -27,7 +27,7 @@
   - _Requirements: 2.1, 2.2, 3.1_
   - _Prompt: Implement the task for spec claude-code-wrapper-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Session Management Engineer with expertise in resource lifecycle and state management | Task: Implement Claude Code session management and state tracking following requirements 2.1, 2.2, and 3.1, using existing session patterns | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must handle session lifecycle properly, implement resource cleanup, prevent memory leaks, handle concurrent sessions, ensure session isolation| _Leverage: existing session management patterns and resource cleanup utilities | Success: Sessions managed correctly throughout lifecycle, state tracking accurate, resource cleanup prevents leaks, concurrent sessions isolated, session limits enforced | Instructions: Mark in progress [-], create session service, implement lifecycle management, test concurrent sessions, mark complete [x]_
 
-- [ ] 4. Create Claude Code task execution queue integration
+- [x] 4. Create Claude Code task execution queue integration
   - File: apps/backend/src/claude/claude-queue.service.ts
   - Integrate Claude Code execution with BullMQ job processing
   - Add task queuing and execution status tracking
