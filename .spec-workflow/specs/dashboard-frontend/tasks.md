@@ -36,8 +36,8 @@
   - _Requirements: 2.1, 2.2, validation requirements_
   - _Prompt: Implement the task for spec dashboard-frontend, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Form Developer with expertise in React forms and validation patterns | Task: Create task forms with comprehensive validation following requirements 2.1, 2.2, and validation requirements, using Zod schemas and modern form libraries | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must provide real-time validation feedback, handle form state properly, ensure accessibility for form controls, implement proper error messaging, support complex task configurations| _Leverage: Zod schemas from task-crud-api spec and React Hook Form patterns | Success: Forms validate input in real-time, error messages clear and helpful, form state management robust, accessibility features complete, task creation and editing smooth | Instructions: Set to in progress [-], create form components, implement validation, test user interactions, mark complete [x]_
 
-- [ ] 5. Add task filtering, sorting, and search functionality
-  - File: apps/frontend/components/tasks/TaskFilters.tsx, apps/frontend/components/tasks/TaskSearch.tsx
+- [x] 5. Add task filtering, sorting, and search functionality
+  - File: apps/frontend/src/components/tasks/TaskFilters.tsx, apps/frontend/src/components/tasks/TaskSearch.tsx
   - Implement advanced filtering and search capabilities for task management
   - Add sorting options and saved filter presets
   - Purpose: Enable efficient task discovery and organization for large task lists
