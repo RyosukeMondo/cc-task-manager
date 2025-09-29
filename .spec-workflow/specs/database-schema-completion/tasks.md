@@ -27,7 +27,7 @@
   - _Requirements: 2.1, 2.2_
   - _Prompt: Implement the task for spec database-schema-completion, first run spec-workflow-guide to get the workflow guide then implement the task: Role: TypeScript Developer with expertise in Prisma client and type generation | Task: Generate and validate TypeScript types for new Claude Code entities following requirements 2.1 and 2.2 | Restrictions: Must follow SOLID principles (ISP for focused type interfaces, DIP for type abstractions), apply KISS principle for type simplicity, ensure DRY/SSOT compliance with single type definitions, implement fail-fast type validation, maintain existing compatibility, ensure proper relationship typing | _Leverage: existing Prisma client configuration and type generation patterns | Success: Types follow SOLID principles with proper interfaces, KISS principle applied, DRY/SSOT maintained, fail-fast type validation working, strong typing complete, IntelliSense functional | Instructions: Design type contracts first, implement ISP for interfaces, validate SOLID compliance, mark complete [x]_
 
-- [ ] 4. Create shared type definitions package
+- [x] 4. Create shared type definitions package
   - File: packages/types/src/database/claude-entities.ts
   - Export TypeScript interfaces for Claude Code entities
   - Create utility types for common operations and transformations
@@ -36,7 +36,7 @@
   - _Requirements: 2.1, 2.2_
   - _Prompt: Implement the task for spec database-schema-completion, first run spec-workflow-guide to get the workflow guide then implement the task: Role: TypeScript Architect specializing in shared libraries and type definitions | Task: Create comprehensive shared type definitions for Claude Code entities following requirements 2.1 and 2.2 | Restrictions: Must follow SOLID principles (ISP for segregated interfaces, SRP for focused types, DIP for abstract contracts), apply KISS principle for simple type design, ensure DRY/SSOT compliance as single source of truth, implement contract-driven type interfaces first, maintain framework-agnostic design, ensure Prisma compatibility | _Leverage: packages/types/src/ directory structure and existing type patterns | Success: Types follow SOLID principles with proper interface segregation, KISS principle applied, serves as SSOT for all apps, contract-driven interfaces defined, framework-agnostic design achieved, Prisma compatibility maintained | Instructions: Design contracts first, implement ISP interfaces, validate SOLID compliance, verify SSOT usage, mark complete [x]_
 
-- [ ] 5. Create database seeding script for development
+- [x] 5. Create database seeding script for development
   - File: apps/backend/prisma/seed.ts
   - Add seed data for Claude Code entities in development
   - Create realistic test scenarios with proper relationships
@@ -45,7 +45,7 @@
   - _Requirements: 3.1, 3.2_
   - _Prompt: Implement the task for spec database-schema-completion, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Developer with expertise in database seeding and test data generation | Task: Create comprehensive seeding script for Claude Code entities following requirements 3.1 and 3.2 | Restrictions: Must follow SOLID principles (SRP for focused seeding functions, OCP for extensible seed data), apply KISS principle for simple seeding logic, ensure DRY/SSOT compliance with reusable seed generators, implement fail-fast validation for seed data integrity, respect foreign key constraints, create realistic scenarios | _Leverage: existing seeding patterns if they exist, or establish new conventions | Success: Seeding follows SOLID principles with focused responsibilities, KISS principle applied, DRY/SSOT maintained with reusable generators, fail-fast validation prevents bad data, relationships properly established, scenarios comprehensive | Instructions: Design seeding contracts first, implement SRP functions, validate fail-fast data integrity, mark complete [x]_
 
-- [ ] 6. Create repository patterns for Claude Code entities
+- [x] 6. Create repository patterns for Claude Code entities
   - File: apps/backend/src/database/repositories/claude-task.repository.ts
   - Implement repository pattern for ClaudeTask with optimized queries
   - Add methods for common operations like findByStatus, findByUser, etc.

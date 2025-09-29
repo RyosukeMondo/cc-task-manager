@@ -9,16 +9,9 @@ const CONFIG = {
 
   // Projects configuration - just add your projects here
   projects: [
-     { available: false, name: 'cc-task-manager', path: '.', spec: 'claude-code-wrapper-specs' }
-    ,{ available: true, name: 'warps', path: '../warps', spec: 'battle-e2e-testing' }
-    ,{ available: true, name: 'mind-advanced-evaluation-metrics', path: '../mind-training/worktree/advanced-evaluation-metrics', spec: 'advanced-evaluation-metrics' }
-    ,{ available: true, name: 'mind-authentication-flow', path: '../mind-training/worktree/authentication-flow', spec: 'authentication-flow' }
-    ,{ available: true, name: 'mind-real-time-sync-backend', path: '../mind-training/worktree/real-time-sync-backend', spec: 'real-time-sync-backend' }
-    ,{ available: true, name: 'mind-real-time-sync-ui', path: '../mind-training/worktree/real-time-sync-ui', spec: 'real-time-sync-ui' }
-    ,{ available: true, name: 'mind-skill-radar-charts', path: '../mind-training/worktree/skill-radar-charts', spec: 'skill-radar-charts' }
-    ,{ available: true, name: 'mind-user-dashboard', path: '../mind-training/worktree/user-dashboard', spec: 'user-dashboard' }
-    ,{ available: true, name: 'mind-training-content-generator', path: '../mind-training/worktree/training-content-generator', spec: 'training-content-generator' }
-    ,{ available: true, name: 'mind-training-session-ui', path: '../mind-training/worktree/training-session-ui', spec: 'training-session-ui' }
+     { available: true, name: 'cc-task-manager', path: '.', spec: 'database-schema-completion' }
+    ,{ available: false, name: 'warps', path: '../warps', spec: 'battle-e2e-testing' }
+    ,{ available: false, name: 'mind-advanced-evaluation-metrics', path: '../mind-training/worktree/advanced-evaluation-metrics', spec: 'advanced-evaluation-metrics' }
     ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'fix-all-existing-tests' }
   ],
 
