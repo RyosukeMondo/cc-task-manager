@@ -1,6 +1,6 @@
 # Tasks Document
 
-- [ ] 1. Create enhanced Prisma schema with Claude Code entities
+- [x] 1. Create enhanced Prisma schema with Claude Code entities
   - File: apps/backend/prisma/schema.prisma
   - Extend existing schema with ClaudeTask, TaskExecution, QueueJob, ExecutionLog, SystemMetric, and TaskResult models
   - Add comprehensive enums for task status, execution status, log levels, and metric types
@@ -9,7 +9,7 @@
   - _Requirements: 1.1, 1.2, 1.3_
   - _Prompt: Implement the task for spec database-schema-completion, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Database Engineer specializing in PostgreSQL and Prisma ORM | Task: Extend existing Prisma schema with comprehensive Claude Code entities following requirements 1.1, 1.2, and 1.3 | Restrictions: Must follow SOLID principles (SRP for focused entities, OCP for extensible schema, ISP for lean interfaces), apply KISS principle for schema simplicity, ensure DRY/SSOT compliance with no duplicate entity definitions, implement fail-fast validation with proper constraints, maintain backward compatibility, follow PostgreSQL naming conventions | _Leverage: apps/backend/prisma/schema.prisma existing patterns, relationship conventions, enum definitions | Success: All new entities properly defined with SOLID principles implemented, schema follows KISS principle, DRY/SSOT maintained with no duplication, fail-fast constraints working, referential integrity preserved, supports all requirements | Instructions: Design entity contracts first, implement following SOLID principles, validate KISS/DRY compliance, apply fail-fast constraints, mark complete [x]_
 
-- [ ] 2. Create database migration for new entities
+- [x] 2. Create database migration for new entities
   - File: apps/backend/prisma/migrations/[timestamp]_add_claude_code_entities/migration.sql
   - Generate Prisma migration for new schema additions
   - Ensure migration preserves existing data and relationships
