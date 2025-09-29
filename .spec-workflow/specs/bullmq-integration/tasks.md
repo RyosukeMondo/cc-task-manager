@@ -1,6 +1,6 @@
 # Tasks Document
 
-- [ ] 1. Create BullMQ queue configuration and connection
+- [x] 1. Create BullMQ queue configuration and connection
   - File: apps/backend/src/queue/queue.config.ts
   - Set up Redis connection configuration for BullMQ
   - Configure queue options with retry policies and rate limiting
