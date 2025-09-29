@@ -72,7 +72,7 @@
   - _Requirements: 3.1, 3.2, reliability requirements_
   - _Prompt: Implement the task for spec realtime-websocket-events, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Event Persistence Engineer with expertise in event sourcing and offline synchronization | Task: Implement event replay and persistence following requirements 3.1, 3.2, and reliability requirements, ensuring no critical events are lost | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must store events efficiently without excessive storage usage, implement intelligent replay logic to avoid overwhelming reconnecting clients, handle event expiration properly, ensure data consistency during replay| _Leverage: database persistence from database-schema-completion spec and event sourcing patterns | Success: Event persistence storage efficient, replay logic intelligent and non-overwhelming, event expiration managed properly, data consistency maintained, missed events reliably replayed | Instructions: Set to in progress [-], create event replay service, implement persistence logic, test reconnection scenarios, mark complete [x]_
 
-- [ ] 9. Create comprehensive WebSocket integration tests
+- [x] 9. Create comprehensive WebSocket integration tests
   - File: apps/backend/src/websocket/__tests__/websocket-integration.test.ts
   - Write integration tests for all WebSocket functionality and event flows
   - Test connection handling, event broadcasting, and error scenarios
