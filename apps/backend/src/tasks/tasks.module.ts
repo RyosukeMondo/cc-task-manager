@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ContractRegistry } from '../../../../src/contracts/ContractRegistry';
 import { ContractValidationPipe } from '../../../../src/contracts/ContractValidationPipe';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
-import { TasksController } from './tasks.controller';
+import { TaskController } from './task.controller';
 import { TasksService } from './tasks.service';
 import { TasksRepository } from './tasks.repository';
 import { QueueModule } from '../queue/queue.module';
@@ -13,7 +13,7 @@ import { QueueModule } from '../queue/queue.module';
  * Implements comprehensive task management functionality following SOLID principles:
  * 
  * 1. Single Responsibility Principle:
- *    - TasksController: HTTP request/response handling
+ *    - TaskController: HTTP request/response handling
  *    - TasksService: Business logic and validation
  *    - TasksRepository: Data access layer abstraction
  * 
@@ -31,7 +31,7 @@ import { QueueModule } from '../queue/queue.module';
  */
 @Module({
   imports: [QueueModule], // Import QueueModule to use QueueService
-  controllers: [TasksController],
+  controllers: [TaskController],
   providers: [
     TasksService,
     TasksRepository,

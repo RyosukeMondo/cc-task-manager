@@ -150,8 +150,70 @@ export class TasksService {
   }
 
   /**
+   * Get tasks with pagination (alias for getAllTasks with different return structure)
+   *
+   * @param filters Query filters
+   * @returns Paginated task response
+   */
+  async getTasks(filters: any): Promise<any> {
+    const result = await this.getAllTasks(filters);
+    return {
+      data: result.tasks,
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: Math.ceil(result.total / result.limit),
+        hasNext: result.page < Math.ceil(result.total / result.limit),
+        hasPrev: result.page > 1
+      }
+    };
+  }
+
+  /**
+   * Update task status with optional progress and error information
+   *
+   * @param taskId Task ID
+   * @param statusUpdate Status update data
+   * @returns Updated task
+   */
+  async updateTaskStatus(taskId: string, statusUpdate: any): Promise<TaskBase> {
+    const task = await this.getTaskById(taskId);
+
+    const updateData: UpdateTask = {
+      status: statusUpdate.status
+    };
+
+    if (statusUpdate.progress !== undefined) {
+      updateData.progress = statusUpdate.progress;
+    }
+
+    if (statusUpdate.errorMessage !== undefined) {
+      updateData.errorMessage = statusUpdate.errorMessage;
+    }
+
+    return this.updateTask(taskId, updateData, 'system');
+  }
+
+  /**
+   * Get task metrics and analytics
+   *
+   * @returns Task metrics
+   */
+  async getTaskMetrics(): Promise<any> {
+    const stats = await this.getTaskStatistics();
+    return {
+      totalTasks: stats.totalTasks,
+      completedTasks: stats.completedTasks,
+      failedTasks: stats.failedTasks,
+      averageDuration: stats.averageCompletionTime,
+      successRate: stats.successRate
+    };
+  }
+
+  /**
    * Update a task with validation and business rules
-   * 
+   *
    * @param taskId Task ID
    * @param updateData Update data
    * @param updatedById ID of the user updating the task
