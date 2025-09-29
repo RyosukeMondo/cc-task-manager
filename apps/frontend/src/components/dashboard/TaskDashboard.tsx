@@ -25,6 +25,7 @@ import {
 import { TaskUpdateEvent, TaskCreatedEvent, TaskCompletedEvent, TaskErrorEvent } from '@/lib/websocket/types';
 import { DashboardLayout, DashboardGrid, MetricCard } from './DashboardLayout';
 import { TaskStatusChart, TaskTrendChart, PerformanceChart } from './charts';
+import { TaskTable } from '../tables/TaskTable';
 import {
   useScreenReaderAnnouncement,
   statusAnnouncements,
@@ -430,6 +431,22 @@ export function TaskDashboard({ className, refreshInterval = 30000 }: TaskDashbo
           error={error}
         />
       </div>
+
+      {/* Task Data Table */}
+      <TaskTable
+        tasks={tasks}
+        onTaskSelect={(task) => {
+          // Handle task selection - could open task details modal
+          console.log('Selected task:', task);
+        }}
+        onRefresh={() => {
+          // Handle manual refresh
+          announce('Refreshing task data...', 'polite');
+          setLiveMessage('Refreshing task data...');
+        }}
+        isLoading={loading}
+        initialPageSize={10}
+      />
 
       {/* System Status and Recent Activity */}
       <div className="grid gap-6 lg:grid-cols-2">
