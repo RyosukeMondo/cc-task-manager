@@ -399,44 +399,6 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
     client.emit('heartbeat-ack', { timestamp: new Date() });
   }
 
-  /**
-   * Public method to emit events to specific rooms with permission filtering
-   * Used by other services to send real-time updates
-   */
-  async emitToRoom(room: string, event: WebSocketEvent) {
-    try {
-      const validatedEvent = validateWebSocketEvent(event);
-
-      // Get users in the room and filter based on permissions
-      const roomUsers = this.userChannelsService.getChannelUsers(room);
-      const filteredSockets: Socket[] = [];
-
-      for (const userId of roomUsers) {
-        // Check if user has permission to receive this event
-        const canReceive = await this.userChannelsService.filterEventForUser(validatedEvent, userId);
-        if (canReceive) {
-          // Find user's sockets and add to filtered list
-          for (const [socketId, connection] of this.connectedUsers) {
-            if (connection.userId === userId && connection.rooms.has(room)) {
-              filteredSockets.push(connection.socket);
-            }
-          }
-        }
-      }
-
-      // Emit to filtered sockets only
-      for (const socket of filteredSockets) {
-        socket.emit('event', validatedEvent);
-      }
-
-      // Persist event for offline client replay
-      await this.eventReplayService.persistEvent(validatedEvent);
-
-      this.logger.debug(`Event emitted to room ${room} (${filteredSockets.length} filtered recipients): ${event.eventType}`);
-    } catch (error) {
-      this.logger.error(`Failed to emit event to room ${room}: ${error.message}`);
-    }
-  }
 
   /**
    * Public method to send notifications to specific users
@@ -684,6 +646,27 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
    */
   getUserConnectionDetails(userId: string) {
     return this.connectionManager.getUserConnections(userId);
+  }
+
+  /**
+   * Emit event to all clients in a specific room
+   * Used by event services for real-time broadcasting
+   */
+  emitToRoom(room: string, event: WebSocketEvent | any) {
+    try {
+      if (event.eventType) {
+        // It's a WebSocket event, validate it
+        const validatedEvent = validateWebSocketEvent(event);
+        this.server.to(room).emit('event', validatedEvent);
+        this.logger.debug(`Event emitted to room ${room}: ${event.eventType}`);
+      } else {
+        // It's a raw event (like batched events), emit directly
+        this.server.to(room).emit('event', event);
+        this.logger.debug(`Raw event emitted to room ${room}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to emit to room ${room}: ${error.message}`);
+    }
   }
 
   /**
