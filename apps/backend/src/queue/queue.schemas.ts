@@ -7,6 +7,14 @@ import { z } from 'zod';
  * All job data is validated using these schemas before processing.
  */
 
+// Job priority levels - defined early for use in schemas
+export enum JobPriority {
+  LOW = 'low',
+  NORMAL = 'normal',
+  HIGH = 'high',
+  URGENT = 'urgent',
+}
+
 // Base job metadata schema
 const JobMetadataSchema = z.object({
   correlationId: z.string().uuid().optional(),
@@ -121,6 +129,23 @@ export const WebhookDeliveryJobSchema = z.object({
   metadata: JobMetadataSchema,
 });
 
+// Claude Code task execution job data
+export const ClaudeCodeTaskJobSchema = z.object({
+  type: z.literal('CLAUDE_CODE_TASK'),
+  prompt: z.string().min(1),
+  workingDirectory: z.string().optional(),
+  options: z.object({
+    sessionId: z.string().optional(),
+    resumeLastSession: z.boolean().default(false),
+    exitOnComplete: z.boolean().default(true),
+    permissionMode: z.enum(['ask', 'bypassPermissions']).default('ask'),
+    timeout: z.number().int().min(0).max(3600000).default(300000), // 5 minutes default
+  }).optional(),
+  expectedDuration: z.number().int().min(0).optional(), // estimated duration in milliseconds
+  priority: z.nativeEnum(JobPriority).default(JobPriority.NORMAL),
+  metadata: JobMetadataSchema,
+});
+
 // Union type for all job types
 export const QueueJobSchema = z.discriminatedUnion('type', [
   TaskNotificationJobSchema,
@@ -129,6 +154,7 @@ export const QueueJobSchema = z.discriminatedUnion('type', [
   DataExportJobSchema,
   ScheduledTaskJobSchema,
   WebhookDeliveryJobSchema,
+  ClaudeCodeTaskJobSchema,
 ]);
 
 // Job options schema for BullMQ
@@ -156,6 +182,73 @@ export const QueueMetricsSchema = z.object({
   timestamp: z.date(),
 });
 
+// Additional enums and schemas for Queue Manager Service
+
+// Job status enumeration
+export enum JobStatus {
+  WAITING = 'waiting',
+  ACTIVE = 'active',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  DELAYED = 'delayed',
+  PAUSED = 'paused',
+}
+
+// Job retry strategy schema
+export const JobRetryStrategySchema = z.object({
+  maxAttempts: z.number().int().min(1).max(10).default(3),
+  backoffType: z.enum(['fixed', 'exponential']).default('exponential'),
+  backoffDelay: z.number().int().min(1000).default(5000),
+});
+
+// Delayed job options schema
+export const DelayedJobOptionsSchema = z.object({
+  executeAt: z.date().optional(),
+  delay: z.number().int().min(0).optional(),
+  priority: z.nativeEnum(JobPriority).optional(),
+  timezone: z.string().optional(),
+}).refine(data => data.executeAt || data.delay, {
+  message: 'Either executeAt or delay must be provided',
+});
+
+// Enhanced queue manager options schema
+export const QueueManagerOptionsSchema = z.object({
+  priority: z.nativeEnum(JobPriority).optional(),
+  delay: z.number().int().min(0).optional(),
+  maxAttempts: z.number().int().min(1).max(10).optional(),
+  retryStrategy: JobRetryStrategySchema.optional(),
+  removeOnComplete: z.union([z.boolean(), z.number()]).optional(),
+  removeOnFail: z.union([z.boolean(), z.number()]).optional(),
+  jobId: z.string().optional(),
+  timezone: z.string().optional(),
+});
+
+// Bulk job operation schema
+export const BulkJobOperationSchema = z.object({
+  jobIds: z.array(z.string()).min(1),
+  operation: z.enum(['retry', 'cancel', 'updatePriority']),
+  options: z.object({
+    priority: z.nativeEnum(JobPriority).optional(),
+    retryStrategy: JobRetryStrategySchema.optional(),
+  }).optional(),
+});
+
+// Job search filters schema
+export const JobSearchFiltersSchema = z.object({
+  queueName: z.string().optional(),
+  status: z.nativeEnum(JobStatus).optional(),
+  priority: z.nativeEnum(JobPriority).optional(),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(50),
+});
+
+// Enhanced queue metrics schema
+export const EnhancedQueueMetricsSchema = QueueMetricsSchema.extend({
+  throughput: z.number().min(0).default(0),
+  averageProcessingTime: z.number().min(0).default(0),
+  failureRate: z.number().min(0).max(100).default(0),
+});
+
 // Type exports
 export type TaskNotificationJob = z.infer<typeof TaskNotificationJobSchema>;
 export type EmailJob = z.infer<typeof EmailJobSchema>;
@@ -163,6 +256,12 @@ export type ReportGenerationJob = z.infer<typeof ReportGenerationJobSchema>;
 export type DataExportJob = z.infer<typeof DataExportJobSchema>;
 export type ScheduledTaskJob = z.infer<typeof ScheduledTaskJobSchema>;
 export type WebhookDeliveryJob = z.infer<typeof WebhookDeliveryJobSchema>;
+export type ClaudeCodeTaskJob = z.infer<typeof ClaudeCodeTaskJobSchema>;
 export type QueueJob = z.infer<typeof QueueJobSchema>;
 export type JobOptions = z.infer<typeof JobOptionsSchema>;
-export type QueueMetrics = z.infer<typeof QueueMetricsSchema>;
+export type QueueMetrics = z.infer<typeof EnhancedQueueMetricsSchema>;
+export type JobRetryStrategy = z.infer<typeof JobRetryStrategySchema>;
+export type DelayedJobOptions = z.infer<typeof DelayedJobOptionsSchema>;
+export type QueueManagerOptions = z.infer<typeof QueueManagerOptionsSchema>;
+export type BulkJobOperation = z.infer<typeof BulkJobOperationSchema>;
+export type JobSearchFilters = z.infer<typeof JobSearchFiltersSchema>;

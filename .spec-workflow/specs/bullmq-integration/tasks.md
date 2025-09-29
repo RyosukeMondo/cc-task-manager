@@ -9,7 +9,7 @@
   - _Requirements: 1.1, 1.2_
   - _Prompt: Implement the task for spec bullmq-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Engineer specializing in Redis and message queue architecture | Task: Create BullMQ queue configuration with Redis connection following requirements 1.1 and 1.2, using existing configuration patterns from apps/backend/src/config/ | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must handle connection failures gracefully, implement proper retry logic, ensure queue persistence, follow existing config conventions |  _Leverage: existing configuration patterns and Redis setup conventions | Success: BullMQ connects reliably to Redis, queue configuration supports all task types, retry policies work correctly, rate limiting prevents overload, configuration follows project patterns | Instructions: Mark as in progress [-], create queue config, implement Redis connection, test connectivity, mark complete [x]_
 
-- [ ] 2. Create queue manager service for queue operations
+- [x] 2. Create queue manager service for queue operations
   - File: apps/backend/src/queue/queue-manager.service.ts
   - Implement service for adding, processing, and monitoring queue jobs
   - Add methods for job priority, delay, and retry management
@@ -18,7 +18,7 @@
   - _Requirements: 1.1, 1.2, 2.1_
   - _Prompt: Implement the task for spec bullmq-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Queue Engineering Specialist with expertise in BullMQ and job processing patterns | Task: Create comprehensive queue manager service following requirements 1.1, 1.2, and 2.1, implementing all queue operations using existing service patterns | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must handle job failures gracefully, implement proper error handling, support all job types from requirements, maintain transaction safety| _Leverage: existing service architecture and patterns from apps/backend/src/services/ | Success: All queue operations working, job priority and delay implemented, retry logic handles failures, monitoring capabilities active, follows service patterns | Instructions: Set to in progress [-], create service class, implement queue operations, add error handling, test job processing, mark complete [x]_
 
-- [ ] 3. Implement task processor workers for Claude Code execution
+- [x] 3. Implement task processor workers for Claude Code execution
   - File: apps/backend/src/queue/processors/task-processor.worker.ts
   - Create worker processes to handle Claude Code task execution
   - Implement job processing logic with proper error handling and progress tracking
