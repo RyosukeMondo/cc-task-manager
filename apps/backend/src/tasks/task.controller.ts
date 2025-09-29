@@ -31,6 +31,7 @@ import {
 } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { TaskOwnershipGuard, BypassOwnership } from './guards/task-ownership.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JWTPayload } from '../schemas/auth.schemas';
 import {
@@ -395,6 +396,7 @@ export class TaskController {
    * all metadata, relationships, and execution history.
    */
   @Get(':id')
+  @UseGuards(TaskOwnershipGuard)
   @ApiOperation({
     summary: 'Get task by ID',
     description: `Retrieves a specific task by its unique identifier with complete details.
@@ -419,6 +421,16 @@ export class TaskController {
     // TaskResponseDto schema would be referenced here
   })
   @ApiUnauthorizedResponse({ description: 'Authentication required' })
+  @ApiForbiddenResponse({
+    description: 'Access denied - users can only access tasks they created or are assigned to',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 403 },
+        message: { type: 'string', example: 'Insufficient permissions: cannot access task. Users can only access tasks they created or are assigned to.' },
+      },
+    },
+  })
   @ApiNotFoundResponse({
     description: 'Task not found',
     schema: {
@@ -442,6 +454,7 @@ export class TaskController {
    * and automatic tracking of modification history.
    */
   @Patch(':id')
+  @UseGuards(TaskOwnershipGuard)
   @ApiOperation({
     summary: 'Update task',
     description: `Updates an existing task with the provided changes. Only modified fields need to be included.
@@ -519,6 +532,7 @@ export class TaskController {
    * This operation cannot be undone.
    */
   @Delete(':id')
+  @UseGuards(TaskOwnershipGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Delete task',
@@ -554,6 +568,7 @@ export class TaskController {
    * Typically used by task execution engines and monitoring systems.
    */
   @Patch(':id/status')
+  @UseGuards(TaskOwnershipGuard)
   @ApiOperation({
     summary: 'Update task status',
     description: `Updates the execution status of a task with optional progress tracking and error reporting.

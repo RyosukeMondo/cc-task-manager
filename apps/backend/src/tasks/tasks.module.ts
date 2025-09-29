@@ -5,7 +5,9 @@ import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TaskController } from './task.controller';
 import { TasksService } from './tasks.service';
 import { TasksRepository } from './tasks.repository';
+import { TaskOwnershipGuard } from './guards/task-ownership.guard';
 import { QueueModule } from '../queue/queue.module';
+import { CaslAbilityFactory } from '../auth/casl-ability.factory';
 
 /**
  * Task Management Module
@@ -35,7 +37,9 @@ import { QueueModule } from '../queue/queue.module';
   providers: [
     TasksService,
     TasksRepository,
-    
+    TaskOwnershipGuard,
+    CaslAbilityFactory,
+
     // Leverage existing contract validation infrastructure
     // These are registered in the root AppModule and available globally
     ContractRegistry,

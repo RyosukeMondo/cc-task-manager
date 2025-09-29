@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { JWTPayload } from '../schemas/auth.schemas';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TasksRepository, ITasksRepository } from './tasks.repository';
 import { QueueService } from '../queue/queue.service';
@@ -104,8 +105,19 @@ export class TasksService {
   }
 
   /**
+   * Find task by ID with user context (for authorization)
+   * @param taskId Task ID to find
+   * @param user User making the request
+   * @returns Task if found
+   * @throws NotFoundException if task not found
+   */
+  async findOne(taskId: string, user: JWTPayload): Promise<TaskBase> {
+    return this.getTaskById(taskId);
+  }
+
+  /**
    * Get task by ID with existence validation
-   * 
+   *
    * @param taskId Task ID
    * @returns Task if found
    * @throws NotFoundException if task not found

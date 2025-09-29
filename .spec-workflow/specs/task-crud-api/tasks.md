@@ -27,7 +27,7 @@
   - _Requirements: 2.1, 2.2, 3.1_
   - _Prompt: Implement the task for spec task-crud-api, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend Engineer specializing in service layer architecture and business logic | Task: Implement task service with comprehensive business logic following requirements 2.1, 2.2, and 3.1 | Restrictions: Must follow SOLID principles (SRP for focused service responsibilities, DIP with repository abstractions, ISP for service interfaces, OCP for extensible business rules), apply KISS principle for business logic simplicity, ensure DRY/SSOT compliance with centralized business rules, implement contract-driven service interfaces first, apply fail-fast validation for business rules | _Leverage: database repositories from database-schema-completion spec and existing service patterns | Success: Service follows SOLID principles with proper abstractions, KISS principle applied to business logic, DRY/SSOT maintained for business rules, contract-driven interfaces implemented, fail-fast business validation working, repository integration complete, queue coordination functional | Instructions: Design service contracts first, implement SOLID architecture, validate business rules with fail-fast, mark complete [x]_
 
-- [ ] 4. Add JWT authentication and authorization guards
+- [x] 4. Add JWT authentication and authorization guards
   - File: apps/backend/src/tasks/guards/task-ownership.guard.ts
   - Create guards for task ownership and permission validation
   - Integrate with existing JWT authentication system
