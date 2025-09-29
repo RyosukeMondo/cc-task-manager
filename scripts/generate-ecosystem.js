@@ -37,7 +37,7 @@ function generateEcosystemConfig() {
         projectPath,
         '--dashboard',
         '--port',
-        CONFIG.dashboardPorts[project.name].toString()
+        CONFIG.computed.dashboardPorts[project.name].toString()
       ],
       cwd: CONFIG.baseCwd,
       autorestart: true,
