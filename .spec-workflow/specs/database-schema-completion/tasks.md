@@ -81,7 +81,7 @@
   - _Requirements: Testing requirements from design document_
   - _Prompt: Implement the task for spec database-schema-completion, first run spec-workflow-guide to get the workflow guide then implement the task: Role: QA Engineer with expertise in database testing and test isolation patterns | Task: Create comprehensive database testing utilities with transaction isolation and helper functions | Restrictions: Must follow SOLID principles (SRP for focused test utilities, ISP for test interfaces, DIP for test abstractions), apply KISS principle for test simplicity, ensure DRY/SSOT compliance with reusable test helpers, implement fail-fast test validation, ensure test isolation, support both unit and integration scenarios | _Leverage: existing testing configuration and patterns in the project | Success: Test utilities follow SOLID principles, KISS principle applied, DRY/SSOT maintained with reusable helpers, fail-fast validation prevents test pollution, transaction isolation working, comprehensive cleanup mechanisms | Instructions: Design test contracts first, implement SRP utilities, validate isolation with fail-fast checks, mark complete [x]_
 
-- [ ] 10. Write comprehensive database integration tests
+- [x] 10. Write comprehensive database integration tests
   - File: apps/backend/src/database/__tests__/claude-entities.integration.test.ts
   - Create integration tests for all repositories and complex queries
   - Test relationship integrity and constraint enforcement
