@@ -89,6 +89,19 @@ model Task {
   @@index([createdById])
   @@index([assigneeId])
   @@index([projectId])
+  @@index([completedAt])
+  @@index([dueDate])
+  // Composite indexes for task management
+  @@index([status, priority])
+  @@index([status, assigneeId])
+  @@index([createdById, status])
+  @@index([projectId, status])
+  @@index([assigneeId, status])
+  @@index([status, dueDate])
+  // Task performance queries
+  @@index([status, priority, assigneeId])
+  @@index([projectId, status, priority])
+  @@index([assigneeId, status, dueDate])
   @@map("tasks")
 }
 
@@ -195,6 +208,19 @@ model ClaudeTask {
   @@index([createdById])
   @@index([scheduledAt])
   @@index([startedAt])
+  @@index([completedAt])
+  @@index([projectId])
+  // Composite indexes for common query patterns
+  @@index([status, priority])
+  @@index([status, createdById])
+  @@index([createdById, status])
+  @@index([projectId, status])
+  @@index([status, scheduledAt])
+  @@index([status, startedAt])
+  @@index([createdById, createdAt])
+  // Performance indexes for monitoring queries
+  @@index([status, completedAt, startedAt])
+  @@index([createdById, status, priority])
   @@map("claude_tasks")
 }
 
@@ -237,6 +263,21 @@ model TaskExecution {
   @@index([workerId])
   @@index([startedAt])
   @@index([lastHeartbeat])
+  @@index([completedAt])
+  @@index([processId])
+  @@index([sessionId])
+  // Composite indexes for execution monitoring
+  @@index([taskId, status])
+  @@index([status, workerId])
+  @@index([status, startedAt])
+  @@index([workerId, status])
+  @@index([taskId, status, startedAt])
+  // Performance indexes for resource tracking
+  @@index([status, lastHeartbeat])
+  @@index([workerId, lastHeartbeat])
+  @@index([status, completedAt, startedAt])
+  // Monitoring dashboard queries
+  @@index([status, workerId, startedAt])
   @@map("task_executions")
 }
 
@@ -274,6 +315,22 @@ model QueueJob {
   @@index([priority])
   @@index([createdAt])
   @@index([jobId])
+  @@index([taskId])
+  @@index([processedAt])
+  @@index([finishedAt])
+  // Composite indexes for queue management
+  @@index([queueName, status])
+  @@index([status, priority])
+  @@index([queueName, priority])
+  @@index([status, createdAt])
+  @@index([taskId, status])
+  // BullMQ optimization indexes
+  @@index([queueName, status, priority])
+  @@index([status, delay, priority])
+  @@index([queueName, createdAt])
+  // Queue performance monitoring
+  @@index([status, processedAt])
+  @@index([queueName, status, createdAt])
   @@map("queue_jobs")
 }
 
@@ -297,6 +354,12 @@ model JobAttempt {
   @@index([attemptNumber])
   @@index([status])
   @@index([startedAt])
+  @@index([finishedAt])
+  // Composite indexes for attempt tracking
+  @@index([queueJobId, attemptNumber])
+  @@index([queueJobId, status])
+  @@index([status, startedAt])
+  @@index([queueJobId, status, attemptNumber])
   @@map("job_attempts")
 }
 
@@ -325,6 +388,20 @@ model ExecutionLog {
   @@index([source])
   @@index([timestamp])
   @@index([correlationId])
+  @@index([component])
+  @@index([operation])
+  // Composite indexes for log querying
+  @@index([executionId, level])
+  @@index([executionId, timestamp])
+  @@index([level, timestamp])
+  @@index([source, level])
+  @@index([correlationId, timestamp])
+  // Log analysis and monitoring
+  @@index([executionId, level, timestamp])
+  @@index([source, level, timestamp])
+  @@index([component, level, timestamp])
+  // Error tracking and debugging
+  @@index([level, source, timestamp])
   @@map("execution_logs")
 }
 
@@ -353,6 +430,20 @@ model SystemMetric {
   @@index([timestamp])
   @@index([workerId])
   @@index([executionId])
+  @@index([queueName])
+  // Composite indexes for metrics querying
+  @@index([metricType, metricName])
+  @@index([metricType, timestamp])
+  @@index([metricName, timestamp])
+  @@index([workerId, timestamp])
+  @@index([executionId, timestamp])
+  // Performance monitoring queries
+  @@index([metricType, metricName, timestamp])
+  @@index([workerId, metricType, timestamp])
+  @@index([executionId, metricType, timestamp])
+  // Resource usage analytics
+  @@index([metricType, workerId, timestamp])
+  @@index([queueName, metricType, timestamp])
   @@map("system_metrics")
 }
 
@@ -381,6 +472,12 @@ model TaskResult {
   @@index([taskId])
   @@index([status])
   @@index([createdAt])
+  // Composite indexes for result querying
+  @@index([taskId, status])
+  @@index([status, createdAt])
+  @@index([taskId, createdAt])
+  // Performance analysis queries
+  @@index([taskId, status, createdAt])
   @@map("task_results")
 }
 
@@ -403,6 +500,14 @@ model ResultFile {
   @@index([resultId])
   @@index([filename])
   @@index([contentType])
+  @@index([size])
+  // Composite indexes for file management
+  @@index([resultId, filename])
+  @@index([contentType, size])
+  @@index([resultId, contentType])
+  // File search and organization
+  @@index([filename, contentType])
+  @@index([resultId, createdAt])
   @@map("result_files")
 }
 
