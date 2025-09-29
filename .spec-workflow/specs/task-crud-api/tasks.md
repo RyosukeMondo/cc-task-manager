@@ -81,7 +81,7 @@
   - _Requirements: 1.1, documentation requirements_
   - _Prompt: Implement the task for spec task-crud-api, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Technical Writer with expertise in API documentation and OpenAPI specifications | Task: Generate comprehensive OpenAPI specification and documentation following requirement 1.1 and documentation requirements | Restrictions: Must follow SOLID principles (SRP for focused documentation sections, ISP for specific doc interfaces), apply KISS principle for documentation clarity, ensure DRY/SSOT compliance as single source for API documentation, implement contract-driven documentation that matches implementation exactly, maintain accuracy with fail-fast verification | _Leverage: NestJS Swagger module and existing documentation conventions | Success: Documentation follows SOLID principles with clear separation, KISS principle applied for clarity, serves as DRY/SSOT for API docs, contract-driven accuracy maintained, fail-fast verification working, OpenAPI spec complete, frontend integration ready | Instructions: Design documentation contracts first, implement SOLID doc structure, validate accuracy with fail-fast checks, mark complete [x]_
 
-- [ ] 10. Optimize API performance and add monitoring
+- [x] 10. Optimize API performance and add monitoring
   - File: apps/backend/src/tasks/middleware/task-performance.middleware.ts
   - Add performance monitoring and optimization for task endpoints
   - Implement response caching and query optimization

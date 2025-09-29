@@ -30,6 +30,7 @@ import {
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
+import { TaskPerformanceService } from './middleware/task-performance.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TaskOwnershipGuard, BypassOwnership } from './guards/task-ownership.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -75,7 +76,10 @@ import {
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('JWT')
 export class TaskController {
-  constructor(private readonly tasksService: TasksService) {}
+  constructor(
+    private readonly tasksService: TasksService,
+    private readonly performanceService: TaskPerformanceService,
+  ) {}
 
   /**
    * Create a new task
@@ -773,5 +777,90 @@ export class TaskController {
   @ApiUnauthorizedResponse({ description: 'Authentication required' })
   async getTaskMetrics(): Promise<TaskMetricsDto> {
     return this.tasksService.getTaskMetrics();
+  }
+
+  /**
+   * Get performance monitoring data
+   *
+   * Retrieves comprehensive performance metrics and optimization
+   * recommendations for task API endpoints.
+   */
+  @Get('performance/report')
+  @BypassOwnership()
+  @ApiOperation({
+    summary: 'Get performance monitoring report',
+    description: `Retrieves comprehensive performance analytics including:
+
+    **Performance Metrics:**
+    - Average response times by endpoint
+    - 95th percentile response times
+    - Cache hit rates and efficiency
+    - Memory usage and optimization suggestions
+    - Database query performance analysis
+
+    **Optimization Recommendations:**
+    - Query optimization suggestions
+    - Caching strategy recommendations
+    - Memory usage improvements
+    - Connection pool optimization
+
+    **Trend Analysis:**
+    - Performance trends over time
+    - Memory usage patterns
+    - Error rate tracking
+
+    **Performance:** Cached for 1 minute, <50ms response time`,
+  })
+  @ApiOkResponse({
+    description: 'Performance report retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        summary: {
+          type: 'object',
+          properties: {
+            averageQueryDuration: { type: 'number', example: 45.2 },
+            cacheHitRate: { type: 'number', example: 85.5 },
+            memoryUtilization: { type: 'number', example: 67.3 },
+            connectionPoolEfficiency: { type: 'number', example: 95.5 },
+          },
+        },
+        optimizationRecommendations: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              query: { type: 'string' },
+              totalExecutions: { type: 'number' },
+              avgDuration: { type: 'number' },
+              recommendations: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    type: { type: 'string' },
+                    description: { type: 'string' },
+                    priority: { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] },
+                    estimatedImprovement: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+        trends: {
+          type: 'object',
+          properties: {
+            queryPerformanceTrend: { type: 'string', enum: ['improving', 'stable', 'degrading'] },
+            memoryUsageTrend: { type: 'string', enum: ['improving', 'stable', 'degrading'] },
+          },
+        },
+        lastUpdated: { type: 'number' },
+      },
+    },
+  })
+  @ApiUnauthorizedResponse({ description: 'Authentication required' })
+  async getPerformanceReport() {
+    return this.performanceService.getPerformanceReport();
   }
 }
