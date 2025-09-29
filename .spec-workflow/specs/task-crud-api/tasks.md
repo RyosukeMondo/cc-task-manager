@@ -18,7 +18,7 @@
   - _Requirements: 1.1, 1.2, 4.1_
   - _Prompt: Implement the task for spec task-crud-api, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Backend API Developer with expertise in NestJS controllers and OpenAPI documentation | Task: Create comprehensive task controller with all CRUD endpoints following requirements 1.1, 1.2, and 4.1 | Restrictions: Must follow SOLID principles (SRP for focused controller responsibilities, DIP with service injection, ISP for specific endpoint interfaces), apply KISS principle for endpoint simplicity, ensure DRY/SSOT compliance with no duplicate logic, implement contract-driven API design first, apply fail-fast validation at controller level, follow REST conventions | _Leverage: existing controller patterns, auth guards, and validation pipes in apps/backend/src/ | Success: Controller follows SOLID principles with proper separation, KISS principle applied, DRY/SSOT maintained, contract-driven API implemented, fail-fast validation working, OpenAPI documentation comprehensive, authentication integrated | Instructions: Design API contracts first, implement SOLID controller structure, validate fail-fast at boundaries, mark complete [x]_
 
-- [ ] 3. Implement task service with business logic
+- [x] 3. Implement task service with business logic
   - File: apps/backend/src/tasks/task.service.ts
   - Create service layer with business logic for task operations
   - Integrate with database repositories and queue service
