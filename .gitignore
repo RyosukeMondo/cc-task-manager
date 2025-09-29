@@ -68,3 +68,5 @@ env.bak/
 venv.bak/
 
 test-workspace
+
+worktree/**

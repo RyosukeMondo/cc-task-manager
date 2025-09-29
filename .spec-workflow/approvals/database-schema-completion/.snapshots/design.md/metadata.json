@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/specs/database-schema-completion/design.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-09-29T03:28:43.292Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759116523279_mg4ex9kt4",
+      "approvalTitle": "Database Schema Completion - Design Document"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-09-29T04:24:11.217Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759116523279_mg4ex9kt4",
+      "approvalTitle": "Database Schema Completion - Design Document"
+    }
+  ]
+}
