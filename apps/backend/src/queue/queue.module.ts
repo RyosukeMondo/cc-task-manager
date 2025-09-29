@@ -9,6 +9,8 @@ import { QueueConfigService } from './queue.config';
 import { TaskProcessorWorker } from './processors/task-processor.worker';
 import { JobSchedulerService } from './scheduler/job-scheduler.service';
 import { JobPersistenceService } from './persistence/job-persistence.service';
+import { PriorityManagerService } from './priority/priority-manager.service';
+import { QueueScalingService } from './scaling/queue-scaling.service';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { DatabaseModule } from '../database/database.module';
 
@@ -39,6 +41,8 @@ import { DatabaseModule } from '../database/database.module';
  * - QueueConfigService: Centralized configuration management
  * - JobSchedulerService: Advanced job scheduling with cron expressions and dependencies
  * - JobPersistenceService: Job state persistence and recovery mechanisms
+ * - PriorityManagerService: Priority-based job processing with load balancing
+ * - QueueScalingService: Auto-scaling and performance optimization for queues
  * - TaskProcessorWorker: Worker for processing Claude Code task execution
  *
  * Exports services for use by other modules.
@@ -46,7 +50,7 @@ import { DatabaseModule } from '../database/database.module';
 @Module({
   imports: [ConfigModule, DatabaseModule],
   controllers: [QueueController, QueueDashboardController],
-  providers: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, JobSchedulerService, JobPersistenceService, TaskProcessorWorker, BackendSchemaRegistry],
-  exports: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, JobSchedulerService, JobPersistenceService, TaskProcessorWorker],
+  providers: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, JobSchedulerService, JobPersistenceService, PriorityManagerService, QueueScalingService, TaskProcessorWorker, BackendSchemaRegistry],
+  exports: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, JobSchedulerService, JobPersistenceService, PriorityManagerService, QueueScalingService, TaskProcessorWorker],
 })
 export class QueueModule {}
