@@ -36,7 +36,7 @@
   - _Requirements: 2.1, 2.2, 4.1_
   - _Prompt: Implement the task for spec realtime-websocket-events, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Queue Monitoring Developer with expertise in job progress tracking and real-time updates | Task: Create queue job progress event streaming following requirements 2.1, 2.2, and 4.1, integrating with BullMQ infrastructure | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must stream job progress without affecting job performance, handle high-frequency progress updates efficiently, ensure progress accuracy, implement proper backpressure handling, maintain queue system performance| _Leverage: BullMQ integration from bullmq-integration spec and queue monitoring patterns | Success: Job progress streams in real-time, performance impact on jobs minimal, progress updates accurate, backpressure prevents overload, queue performance maintained | Instructions: Set to in progress [-], create queue events service, implement progress streaming, test performance impact, mark complete [x]_
 
-- [ ] 5. Implement Claude Code execution output streaming
+- [x] 5. Implement Claude Code execution output streaming
   - File: apps/backend/src/websocket/events/claude-events.service.ts
   - Create real-time streaming for Claude Code execution output
   - Add output formatting and stream management for long-running tasks

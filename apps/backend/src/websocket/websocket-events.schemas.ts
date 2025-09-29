@@ -30,6 +30,15 @@ export enum WebSocketEventType {
   QUEUE_JOB_COMPLETED = 'queue:job_completed',
   QUEUE_JOB_FAILED = 'queue:job_failed',
   QUEUE_JOB_STALLED = 'queue:job_stalled',
+
+  // Claude Code execution events
+  CLAUDE_EXECUTION_STARTED = 'claude:execution_started',
+  CLAUDE_EXECUTION_PROGRESS = 'claude:execution_progress',
+  CLAUDE_EXECUTION_OUTPUT = 'claude:execution_output',
+  CLAUDE_EXECUTION_COMPLETED = 'claude:execution_completed',
+  CLAUDE_EXECUTION_FAILED = 'claude:execution_failed',
+  CLAUDE_EXECUTION_PAUSED = 'claude:execution_paused',
+  CLAUDE_EXECUTION_RESUMED = 'claude:execution_resumed',
   
   // Room events
   JOIN_ROOM = 'room:join',
@@ -151,6 +160,55 @@ export const ConnectionEventDataSchema = z.object({
 });
 
 /**
+ * Claude execution event data schema
+ */
+export const ClaudeExecutionEventDataSchema = z.object({
+  executionId: z.string().min(1, 'Execution ID is required'),
+  taskId: z.string().uuid('Task ID must be a valid UUID').optional(),
+  sessionId: z.string().min(1, 'Session ID is required').optional(),
+  status: z.enum(['started', 'progress', 'output', 'completed', 'failed', 'paused', 'resumed']),
+  progress: z.number().min(0).max(100).optional(),
+
+  // Output data
+  output: z.string().optional(),
+  outputType: z.enum(['stdout', 'stderr', 'tool_use', 'tool_result', 'user_message', 'assistant_message']).optional(),
+  outputChunk: z.string().optional(), // For streaming large outputs
+  chunkIndex: z.number().int().min(0).optional(),
+  totalChunks: z.number().int().min(1).optional(),
+
+  // Execution metadata
+  command: z.string().optional(),
+  workingDirectory: z.string().optional(),
+  environment: z.record(z.string()).optional(),
+
+  // Performance metrics
+  tokensUsed: z.number().int().min(0).optional(),
+  executionTime: z.number().min(0).optional(), // milliseconds
+  memoryUsage: z.number().min(0).optional(), // bytes
+  cpuUsage: z.number().min(0).max(100).optional(), // percentage
+
+  // Result data
+  result: z.any().optional(),
+  error: z.string().optional(),
+  errorCode: z.string().optional(),
+  exitCode: z.number().int().optional(),
+
+  // Control flags
+  isStreamable: z.boolean().default(true),
+  isComplete: z.boolean().default(false),
+  canPause: z.boolean().default(false),
+  canResume: z.boolean().default(false),
+
+  // Additional metadata
+  metadata: z.record(z.any()).optional(),
+
+  // Timestamps
+  startedAt: z.date().optional(),
+  completedAt: z.date().optional(),
+  lastOutputAt: z.date().optional(),
+});
+
+/**
  * Complete WebSocket event schema combining base and event-specific data
  */
 export const WebSocketEventSchema = BaseWebSocketEventSchema.and(
@@ -215,6 +273,20 @@ export const WebSocketEventSchema = BaseWebSocketEventSchema.and(
         WebSocketEventType.QUEUE_JOB_STALLED,
       ]),
       data: QueueJobEventDataSchema,
+    }),
+
+    // Claude execution events
+    z.object({
+      eventType: z.enum([
+        WebSocketEventType.CLAUDE_EXECUTION_STARTED,
+        WebSocketEventType.CLAUDE_EXECUTION_PROGRESS,
+        WebSocketEventType.CLAUDE_EXECUTION_OUTPUT,
+        WebSocketEventType.CLAUDE_EXECUTION_COMPLETED,
+        WebSocketEventType.CLAUDE_EXECUTION_FAILED,
+        WebSocketEventType.CLAUDE_EXECUTION_PAUSED,
+        WebSocketEventType.CLAUDE_EXECUTION_RESUMED,
+      ]),
+      data: ClaudeExecutionEventDataSchema,
     }),
     
     // Room management events
@@ -287,6 +359,7 @@ export type NotificationEventData = z.infer<typeof NotificationEventDataSchema>;
 export type QueueJobEventData = z.infer<typeof QueueJobEventDataSchema>;
 export type RoomEventData = z.infer<typeof RoomEventDataSchema>;
 export type ConnectionEventData = z.infer<typeof ConnectionEventDataSchema>;
+export type ClaudeExecutionEventData = z.infer<typeof ClaudeExecutionEventDataSchema>;
 export type WebSocketEvent = z.infer<typeof WebSocketEventSchema>;
 export type ClientWebSocketEvent = z.infer<typeof ClientWebSocketEventSchema>;
 export type WebSocketAuth = z.infer<typeof WebSocketAuthSchema>;
@@ -379,5 +452,21 @@ export const createQueueJobEvent = (
     room,
     roomType,
     data: queueJobData,
+  });
+};
+
+export const createClaudeExecutionEvent = (
+  eventType: WebSocketEventType,
+  userId: string,
+  claudeExecutionData: ClaudeExecutionEventData,
+  room?: string,
+  roomType?: WebSocketRoomType
+): WebSocketEvent => {
+  return validateWebSocketEvent({
+    eventType,
+    userId,
+    room,
+    roomType,
+    data: claudeExecutionData,
   });
 };
