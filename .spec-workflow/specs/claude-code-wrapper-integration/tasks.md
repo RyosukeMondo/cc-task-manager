@@ -36,7 +36,7 @@
   - _Requirements: 2.1, 2.2, 3.1_
   - _Prompt: Implement the task for spec claude-code-wrapper-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Queue Integration Engineer with expertise in job processing and Claude Code orchestration | Task: Create Claude Code task execution queue integration following requirements 2.1, 2.2, and 3.1, leveraging BullMQ infrastructure | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must integrate seamlessly with existing queue system, handle long-running Claude tasks, implement proper progress tracking, ensure job reliability, manage Claude session resources in queue context| _Leverage: BullMQ integration from bullmq-integration spec and existing queue patterns | Success: Claude Code tasks execute reliably through queue, progress tracking accurate, session management in queue context working, job failure handling robust, integration with BullMQ seamless | Instructions: Set to in progress [-], create queue integration, implement task processing, test queue execution, mark complete [x]_
 
-- [ ] 5. Implement Claude Code output streaming and real-time updates
+- [x] 5. Implement Claude Code output streaming and real-time updates
   - File: apps/backend/src/claude/claude-stream.service.ts
   - Create streaming service for real-time Claude Code output
   - Add WebSocket integration for live output streaming to dashboard
