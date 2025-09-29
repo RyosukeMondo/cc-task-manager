@@ -63,7 +63,7 @@
   - _Requirements: 3.1, 3.2, reliability requirements_
   - _Prompt: Implement the task for spec bullmq-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Reliability Engineer with expertise in data persistence and system recovery | Task: Implement job persistence and recovery mechanisms following requirements 3.1, 3.2, and reliability requirements, using database repositories and persistence patterns | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must ensure data consistency, implement proper recovery logic, maintain job history integrity, handle system restart scenarios| _Leverage: database repositories from database-schema-completion spec and persistence patterns | Success: Job state persisted reliably, recovery after restart working, job history complete and accessible, audit logging functional, data consistency maintained | Instructions: Mark in progress [-], create persistence service, implement recovery logic, test restart scenarios, mark complete [x]_
 
-- [ ] 8. Add job priority queues and load balancing
+- [x] 8. Add job priority queues and load balancing
   - File: apps/backend/src/queue/priority/priority-manager.service.ts
   - Implement priority-based job processing with multiple queue levels
   - Add load balancing across workers and resource-aware job distribution
