@@ -1,0 +1,79 @@
+specifications:
+  - name: database-schema-completion
+    description: Complete database schema with repositories and testing
+    priority: 1
+    mcp_servers:
+      - serena
+      - spec-workflow
+
+  - name: task-crud-api
+    description: Task CRUD API with authentication and real-time events
+    priority: 2
+    mcp_servers:
+      - serena
+      - context7
+      - spec-workflow
+
+  - name: bullmq-integration
+    description: Queue system integration with monitoring and scaling
+    priority: 3
+    mcp_servers:
+      - serena
+      - context7
+      - spec-workflow
+
+  - name: dashboard-frontend
+    description: Next.js dashboard with real-time updates and responsive design
+    priority: 4
+    mcp_servers:
+      - serena
+      - context7
+      - magicuidesign
+      - spec-workflow
+
+  - name: claude-code-wrapper-integration
+    description: Claude Code wrapper integration with streaming and caching
+    priority: 5
+    mcp_servers:
+      - serena
+      - context7
+      - spec-workflow
+
+  - name: realtime-websocket-events
+    description: WebSocket event system with scaling and monitoring
+    priority: 6
+    mcp_servers:
+      - serena
+      - context7
+      - spec-workflow
+
+mcp_servers:
+  - name: dev3000
+    command: claude mcp add --transport http dev3000 http://localhost:3684/api/mcp/mcp
+    description: Local development MCP server
+    required: false
+
+  - name: context7
+    command: claude mcp add context7 npx @upstash/context7-mcp@latest
+    description: Context7 documentation and code examples
+    required: true
+
+  - name: magicuidesign
+    command: claude mcp add magicuidesign npx @magicuidesign/mcp@latest
+    description: Magic UI design components
+    required: false
+
+  - name: playwright
+    command: claude mcp add playwright npx @playwright/mcp@latest
+    description: Playwright browser testing
+    required: false
+
+  - name: serena
+    command: claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena start-mcp-server --context ide-assistant --project $(pwd)
+    description: Serena semantic code understanding
+    required: true
+
+  - name: spec-workflow
+    command: claude mcp add spec-workflow npx @pimzino/spec-workflow-mcp@latest $(pwd)
+    description: Specification workflow management
+    required: true
