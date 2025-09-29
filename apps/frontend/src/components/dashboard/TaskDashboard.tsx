@@ -25,6 +25,11 @@ import {
 import { TaskUpdateEvent, TaskCreatedEvent, TaskCompletedEvent, TaskErrorEvent } from '@/lib/websocket/types';
 import { DashboardLayout, DashboardGrid, MetricCard } from './DashboardLayout';
 import { TaskStatusChart, TaskTrendChart, PerformanceChart } from './charts';
+import {
+  useScreenReaderAnnouncement,
+  statusAnnouncements,
+  LiveRegion
+} from '@/lib/accessibility/screen-reader';
 
 interface TaskDashboardProps {
   className?: string;
@@ -64,6 +69,10 @@ export function TaskDashboard({ className, refreshInterval = 30000 }: TaskDashbo
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [liveMessage, setLiveMessage] = useState<string>('');
+
+  // Screen reader announcements
+  const { announce } = useScreenReaderAnnouncement();
 
   // Real-time task update handlers
   useWebSocketEvent('task:update', (event: TaskUpdateEvent) => {
@@ -81,25 +90,37 @@ export function TaskDashboard({ className, refreshInterval = 30000 }: TaskDashbo
     });
 
     // Add to recent activity
-    addRecentActivity({
+    const activityData = {
       id: `update-${event.data.id}-${Date.now()}`,
-      type: 'started',
+      type: 'started' as const,
       taskId: event.data.id,
       taskName: event.data.sessionName || `Task ${event.data.id.slice(0, 8)}`,
       timestamp: new Date(),
       status: event.data.state
-    });
+    };
+    addRecentActivity(activityData);
+
+    // Announce task status change to screen readers
+    const statusMessage = `Task ${activityData.taskName} status changed to ${event.data.state}`;
+    announce(statusMessage, 'polite');
+    setLiveMessage(statusMessage);
   });
 
   useWebSocketEvent('task:created', (event: TaskCreatedEvent) => {
-    addRecentActivity({
+    const activityData = {
       id: `created-${event.data.taskId}-${Date.now()}`,
-      type: 'created',
+      type: 'created' as const,
       taskId: event.data.taskId,
       taskName: event.data.sessionName,
       timestamp: new Date(),
       status: TaskState.PENDING
-    });
+    };
+    addRecentActivity(activityData);
+
+    // Announce new task creation
+    const message = statusAnnouncements.updated(`New task "${event.data.sessionName}" created`);
+    announce(message, 'polite');
+    setLiveMessage(message);
   });
 
   useWebSocketEvent('task:completed', (event: TaskCompletedEvent) => {
@@ -112,14 +133,20 @@ export function TaskDashboard({ className, refreshInterval = 30000 }: TaskDashbo
       )
     );
 
-    addRecentActivity({
+    const activityData = {
       id: `completed-${event.data.taskId}-${Date.now()}`,
-      type: 'completed',
+      type: 'completed' as const,
       taskId: event.data.taskId,
       taskName: `Task ${event.data.taskId.slice(0, 8)}`,
       timestamp: new Date(),
       status: TaskState.COMPLETED
-    });
+    };
+    addRecentActivity(activityData);
+
+    // Announce task completion
+    const message = statusAnnouncements.updated(`Task ${activityData.taskName} completed successfully`);
+    announce(message, 'assertive');
+    setLiveMessage(message);
   });
 
   useWebSocketEvent('task:error', (event: TaskErrorEvent) => {
@@ -132,14 +159,20 @@ export function TaskDashboard({ className, refreshInterval = 30000 }: TaskDashbo
       )
     );
 
-    addRecentActivity({
+    const activityData = {
       id: `error-${event.data.taskId}-${Date.now()}`,
-      type: 'failed',
+      type: 'failed' as const,
       taskId: event.data.taskId,
       taskName: `Task ${event.data.taskId.slice(0, 8)}`,
       timestamp: new Date(),
       status: TaskState.FAILED
-    });
+    };
+    addRecentActivity(activityData);
+
+    // Announce task failure
+    const message = statusAnnouncements.error(`Task ${activityData.taskName}`, event.data.error);
+    announce(message, 'assertive');
+    setLiveMessage(message);
   });
 
   // Helper function to add recent activity
@@ -271,19 +304,40 @@ export function TaskDashboard({ className, refreshInterval = 30000 }: TaskDashbo
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
+      // Announce when dashboard is ready
+      const message = statusAnnouncements.loaded('Task dashboard');
+      announce(message, 'polite');
+      setLiveMessage(message);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [announce]);
 
   // Handle connection errors
   useEffect(() => {
     if (wsConnection.error) {
       setError(wsConnection.error);
+      // Announce connection errors
+      const message = statusAnnouncements.error('WebSocket connection', wsConnection.error);
+      announce(message, 'assertive');
+      setLiveMessage(message);
     } else {
       setError(null);
     }
-  }, [wsConnection.error]);
+  }, [wsConnection.error, announce]);
+
+  // Announce connection status changes
+  useEffect(() => {
+    if (wsConnection.isConnected) {
+      const message = 'Real-time connection established. Dashboard is now live.';
+      announce(message, 'polite');
+      setLiveMessage(message);
+    } else if (!wsConnection.isConnecting) {
+      const message = 'Real-time connection lost. Data may not be current.';
+      announce(message, 'assertive');
+      setLiveMessage(message);
+    }
+  }, [wsConnection.isConnected, wsConnection.isConnecting, announce]);
 
   return (
     <DashboardLayout
@@ -481,6 +535,9 @@ export function TaskDashboard({ className, refreshInterval = 30000 }: TaskDashbo
           </div>
         </div>
       )}
+
+      {/* Live region for screen reader announcements */}
+      <LiveRegion message={liveMessage} priority="polite" clearDelay={3000} />
     </DashboardLayout>
   );
 }
