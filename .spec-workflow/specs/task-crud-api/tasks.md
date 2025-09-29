@@ -9,7 +9,7 @@
   - _Requirements: 1.1, 2.1_
   - _Prompt: Implement the task for spec task-crud-api, first run spec-workflow-guide to get the workflow guide then implement the task: Role: TypeScript Developer specializing in Zod schemas and API validation | Task: Create comprehensive Zod validation schemas for all task CRUD operations following requirements 1.1 and 2.1 | Restrictions: Must follow SOLID principles (SRP for focused schemas, ISP for specific validation interfaces), apply KISS principle for validation simplicity, ensure DRY/SSOT compliance as single source for validation rules, implement contract-driven schema design first, implement fail-fast validation, maintain database schema consistency | _Leverage: existing schema patterns and validation conventions in packages/schemas/src/ | Success: Schemas follow SOLID principles with proper separation, KISS principle applied, serves as DRY/SSOT for validation, contract-driven interfaces defined, fail-fast validation working, TypeScript types auto-generated, OpenAPI support complete | Instructions: Design validation contracts first, implement SOLID schema structure, validate fail-fast principles, mark complete [x]_
 
-- [ ] 2. Create task controller with OpenAPI documentation
+- [x] 2. Create task controller with OpenAPI documentation
   - File: apps/backend/src/tasks/task.controller.ts
   - Implement NestJS controller with all CRUD endpoints
   - Add comprehensive OpenAPI decorators and documentation
