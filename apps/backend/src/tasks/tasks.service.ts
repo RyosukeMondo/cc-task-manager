@@ -2,16 +2,18 @@ import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenEx
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TasksRepository, ITasksRepository } from './tasks.repository';
 import { QueueService } from '../queue/queue.service';
-import { 
-  TaskBase, 
-  CreateTask, 
-  UpdateTask, 
+import { TaskEventsService } from '../websocket/events/task-events.service';
+import { WebSocketEventType } from '../websocket/websocket-events.schemas';
+import {
+  TaskBase,
+  CreateTask,
+  UpdateTask,
   TaskQueryFilters,
   TaskStatus,
   TaskPriority,
   TaskCategory,
   TaskStatistics,
-  BulkTaskOperation 
+  BulkTaskOperation
 } from '../schemas/task.schemas';
 
 /**
@@ -48,6 +50,7 @@ export class TasksService {
     private readonly tasksRepository: ITasksRepository,
     private readonly schemaRegistry: BackendSchemaRegistry,
     private readonly queueService: QueueService,
+    private readonly taskEventsService: TaskEventsService,
   ) {}
 
   /**
@@ -76,6 +79,14 @@ export class TasksService {
     const createdTask = await this.tasksRepository.create(validation.data, createdById);
 
     this.logger.log(`Created task: ${createdTask.id} - "${createdTask.title}" by user ${createdById}`);
+
+    // Emit real-time task creation event
+    try {
+      await this.taskEventsService.emitTaskCreated(createdTask, createdById);
+    } catch (error) {
+      // Don't fail task creation if event emission fails
+      this.logger.error(`Failed to emit task created event: ${error.message}`);
+    }
 
     // Queue task notification job for assignee if assigned
     if (createdTask.assigneeId) {
@@ -187,7 +198,25 @@ export class TasksService {
     }
     
     this.logger.log(`Updated task: ${taskId} - "${updatedTask.title}" by user ${updatedById}`);
-    
+
+    // Emit real-time task update events
+    try {
+      await this.taskEventsService.emitTaskUpdated(updatedTask, existingTask, updatedById);
+
+      // Emit specific status change event if status changed
+      if (existingTask.status !== updatedTask.status) {
+        await this.taskEventsService.emitTaskStatusChanged(updatedTask, existingTask.status, updatedById);
+      }
+
+      // Emit assignment event if assignee changed
+      if (existingTask.assigneeId !== updatedTask.assigneeId) {
+        await this.taskEventsService.emitTaskAssigned(updatedTask, existingTask.assigneeId, updatedById);
+      }
+    } catch (error) {
+      // Don't fail task update if event emission fails
+      this.logger.error(`Failed to emit task update events: ${error.message}`);
+    }
+
     return updatedTask;
   }
 
@@ -216,7 +245,15 @@ export class TasksService {
     }
     
     this.logger.log(`Deleted task: ${taskId} - "${existingTask.title}" by user ${deletedById}`);
-    
+
+    // Emit real-time task deletion event
+    try {
+      await this.taskEventsService.emitTaskDeleted(existingTask, deletedById);
+    } catch (error) {
+      // Don't fail task deletion if event emission fails
+      this.logger.error(`Failed to emit task deleted event: ${error.message}`);
+    }
+
     return { success: true, taskId };
   }
 
@@ -284,7 +321,24 @@ export class TasksService {
     }
 
     this.logger.log(`Bulk operation ${operationType} completed on ${taskIds.length} tasks by user ${operatorId}`);
-    
+
+    // Emit bulk task events for real-time updates
+    try {
+      const eventType = this.getBulkOperationEventType(operationType);
+      if (eventType && results.length > 0) {
+        const events = results.map(task => ({
+          type: eventType,
+          task,
+          userId: operatorId,
+          additionalData: data || {}
+        }));
+        await this.taskEventsService.emitBatchTaskEvents(events);
+      }
+    } catch (error) {
+      // Don't fail bulk operation if event emission fails
+      this.logger.error(`Failed to emit bulk operation events: ${error.message}`);
+    }
+
     return {
       success: true,
       affectedTasks: taskIds.length,
@@ -529,6 +583,25 @@ export class TasksService {
       // In a real system, you would check for admin permissions here
       // For now, we'll allow modification by creator and assignee only
       throw new ForbiddenException('You do not have permission to modify this task');
+    }
+  }
+
+  /**
+   * Get appropriate WebSocket event type for bulk operations
+   *
+   * @private
+   */
+  private getBulkOperationEventType(operationType: string): WebSocketEventType | null {
+    switch (operationType) {
+      case 'updateStatus':
+        return WebSocketEventType.TASK_STATUS_CHANGED;
+      case 'updatePriority':
+      case 'updateAssignee':
+        return WebSocketEventType.TASK_UPDATED;
+      case 'delete':
+        return WebSocketEventType.TASK_DELETED;
+      default:
+        return null;
     }
   }
 }

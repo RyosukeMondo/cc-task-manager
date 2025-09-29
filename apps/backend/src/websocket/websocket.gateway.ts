@@ -34,6 +34,7 @@ import {
   UserActivityEventData,
 } from './websocket-events.schemas';
 import { JWTPayload } from '../schemas/auth.schemas';
+import { UserChannelsService } from './channels/user-channels.service';
 
 /**
  * WebSocket Gateway for real-time communication
@@ -63,7 +64,10 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   private readonly logger = new Logger(WebSocketGateway.name);
   private connectedUsers = new Map<string, { userId: string; socket: Socket; rooms: Set<string> }>();
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly userChannelsService: UserChannelsService
+  ) {}
 
   /**
    * Initialize WebSocket gateway with logging
@@ -90,6 +94,9 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
         socket: client,
         rooms: new Set(),
       });
+
+      // Initialize user channels with permission-based access
+      await this.userChannelsService.initializeUserChannels(user.sub, user, this.server);
 
       // Join user-specific room
       const userRoom = this.getUserRoom(user.sub);
@@ -154,6 +161,9 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       for (const room of connection.rooms) {
         this.server.to(room).emit('event', disconnectionEvent);
       }
+
+      // Clean up user channels
+      await this.userChannelsService.cleanupUserChannels(connection.userId);
 
       // Clean up connection tracking
       this.connectedUsers.delete(client.id);
@@ -338,14 +348,36 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   }
 
   /**
-   * Public method to emit events to specific rooms
+   * Public method to emit events to specific rooms with permission filtering
    * Used by other services to send real-time updates
    */
-  emitToRoom(room: string, event: WebSocketEvent) {
+  async emitToRoom(room: string, event: WebSocketEvent) {
     try {
       const validatedEvent = validateWebSocketEvent(event);
-      this.server.to(room).emit('event', validatedEvent);
-      this.logger.debug(`Event emitted to room ${room}: ${event.eventType}`);
+
+      // Get users in the room and filter based on permissions
+      const roomUsers = this.userChannelsService.getChannelUsers(room);
+      const filteredSockets: Socket[] = [];
+
+      for (const userId of roomUsers) {
+        // Check if user has permission to receive this event
+        const canReceive = await this.userChannelsService.filterEventForUser(validatedEvent, userId);
+        if (canReceive) {
+          // Find user's sockets and add to filtered list
+          for (const [socketId, connection] of this.connectedUsers) {
+            if (connection.userId === userId && connection.rooms.has(room)) {
+              filteredSockets.push(connection.socket);
+            }
+          }
+        }
+      }
+
+      // Emit to filtered sockets only
+      for (const socket of filteredSockets) {
+        socket.emit('event', validatedEvent);
+      }
+
+      this.logger.debug(`Event emitted to room ${room} (${filteredSockets.length} filtered recipients): ${event.eventType}`);
     } catch (error) {
       this.logger.error(`Failed to emit event to room ${room}: ${error.message}`);
     }

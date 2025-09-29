@@ -9,7 +9,7 @@
   - _Requirements: 1.1, 1.2_
   - _Prompt: Implement the task for spec realtime-websocket-events, first run spec-workflow-guide to get the workflow guide then implement the task: Role: WebSocket Engineer with expertise in Socket.IO and NestJS real-time systems | Task: Create WebSocket gateway with Socket.IO following requirements 1.1 and 1.2, implementing secure connection handling and room management | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must implement proper authentication for WebSocket connections, handle connection failures gracefully, ensure scalability for concurrent connections, follow NestJS WebSocket patterns |  _Leverage: NestJS WebSocket documentation and Socket.IO best practices | Success: WebSocket gateway handles connections reliably, authentication working correctly, room management functional, connection scaling supports requirements, error handling robust | Instructions: Mark as in progress [-], create WebSocket gateway, implement connection handling, test authentication, mark complete [x]_
 
-- [ ] 2. Implement task lifecycle event emission system
+- [x] 2. Implement task lifecycle event emission system
   - File: apps/backend/src/websocket/events/task-events.service.ts
   - Create event emission service for task status changes and updates
   - Add event filtering and room-based broadcasting
@@ -18,7 +18,7 @@
   - _Requirements: 2.1, 2.2, 3.1_
   - _Prompt: Implement the task for spec realtime-websocket-events, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Event System Developer with expertise in real-time event broadcasting and task lifecycle management | Task: Implement task lifecycle event emission following requirements 2.1, 2.2, and 3.1, creating comprehensive event broadcasting system | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must emit events for all task lifecycle changes, implement proper event filtering based on user permissions, ensure event ordering, handle high-frequency events efficiently, maintain data consistency| _Leverage: task service from task-crud-api spec and existing event patterns | Success: Task events broadcast in real-time, event filtering respects permissions, event ordering maintained, high-frequency handling efficient, data consistency preserved | Instructions: Set to in progress [-], create event emission service, implement lifecycle events, test real-time broadcasting, mark complete [x]_
 
-- [ ] 3. Add user-specific event channels and permission-based filtering
+- [x] 3. Add user-specific event channels and permission-based filtering
   - File: apps/backend/src/websocket/channels/user-channels.service.ts
   - Implement user-specific channels for personalized event streams
   - Add permission-based event filtering and access control

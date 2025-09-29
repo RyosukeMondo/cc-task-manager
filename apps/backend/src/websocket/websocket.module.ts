@@ -5,6 +5,8 @@ import { AuthModule } from '../auth/auth.module';
 import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
 import { WebSocketAuthGuard } from './websocket-auth.guard';
+import { TaskEventsService } from './events/task-events.service';
+import { UserChannelsService } from './channels/user-channels.service';
 
 /**
  * WebSocket Module for real-time communication
@@ -51,12 +53,16 @@ import { WebSocketAuthGuard } from './websocket-auth.guard';
     WebSocketGateway,
     WebSocketService,
     WebSocketAuthGuard,
+    TaskEventsService,
+    UserChannelsService,
   ],
   
   exports: [
     // Export services for use in other modules
     WebSocketGateway,
     WebSocketService,
+    TaskEventsService,
+    UserChannelsService,
   ],
 })
 export class WebSocketModule {

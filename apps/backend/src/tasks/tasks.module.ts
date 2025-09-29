@@ -6,6 +6,7 @@ import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { TasksRepository } from './tasks.repository';
 import { QueueModule } from '../queue/queue.module';
+import { WebSocketModule } from '../websocket/websocket.module';
 
 /**
  * Task Management Module
@@ -30,7 +31,10 @@ import { QueueModule } from '../queue/queue.module';
  *    - Clean separation between HTTP, business, and data layers
  */
 @Module({
-  imports: [QueueModule], // Import QueueModule to use QueueService
+  imports: [
+    QueueModule, // Import QueueModule to use QueueService
+    WebSocketModule, // Import WebSocketModule for real-time event emission
+  ],
   controllers: [TasksController],
   providers: [
     TasksService,
