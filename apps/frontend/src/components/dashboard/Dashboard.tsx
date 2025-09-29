@@ -39,7 +39,9 @@ export function Dashboard({ tasks = [], realTimeUpdates = true }: DashboardProps
   // Calculate task metrics
   const taskMetrics = React.useMemo(() => {
     const statusCounts = taskData.reduce((acc, task) => {
-      acc[task.state] = (acc[task.state] || 0) + 1;
+      if (task.state) {
+        acc[task.state] = (acc[task.state] || 0) + 1;
+      }
       return acc;
     }, {} as Record<TaskState, number>);
 

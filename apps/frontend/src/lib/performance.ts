@@ -384,3 +384,273 @@ export function getPerformanceRating(
   if (value <= thresholds.poor) return 'needs-improvement';
   return 'poor';
 }
+
+/**
+ * Advanced lazy loading utilities for Next.js 14 optimization
+ */
+export const lazyLoadingUtils = {
+  /**
+   * Create a lazy loaded component with enhanced error handling
+   */
+  createLazyComponent: <T extends React.ComponentType<any>>(
+    importFn: () => Promise<{ default: T }>,
+    options: {
+      fallback?: React.ComponentType;
+      errorBoundary?: React.ComponentType<{ error: Error; retry: () => void }>;
+      retryAttempts?: number;
+      preload?: boolean;
+    } = {}
+  ) => {
+    const LazyComponent = React.lazy(async () => {
+      let attempts = 0;
+      const maxAttempts = options.retryAttempts || 3;
+
+      const loadWithRetry = async (): Promise<{ default: T }> => {
+        try {
+          const startTime = performance.now();
+          const module = await importFn();
+          const loadTime = performance.now() - startTime;
+
+          // Log slow loading in development
+          if (process.env.NODE_ENV === 'development' && loadTime > 2000) {
+            console.warn(`Slow lazy component load: ${loadTime}ms`);
+          }
+
+          return module;
+        } catch (error) {
+          attempts++;
+          if (attempts < maxAttempts) {
+            // Exponential backoff
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+            return loadWithRetry();
+          }
+          throw error;
+        }
+      };
+
+      return loadWithRetry();
+    });
+
+    // Preload if requested
+    if (options.preload && typeof window !== 'undefined') {
+      // Preload after page load
+      requestIdleCallback(() => {
+        importFn().catch(() => {
+          // Silently fail preloading
+        });
+      });
+    }
+
+    return LazyComponent;
+  },
+
+  /**
+   * Create intersection observer hook for lazy loading
+   */
+  createIntersectionObserver: (options: {
+    rootMargin?: string;
+    threshold?: number;
+  } = {}) => {
+    return {
+      observe: (element: HTMLElement, callback: (isIntersecting: boolean) => void) => {
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            callback(entry.isIntersecting);
+          },
+          {
+            rootMargin: options.rootMargin || '50px',
+            threshold: options.threshold || 0.1,
+          }
+        );
+        observer.observe(element);
+        return () => observer.disconnect();
+      }
+    };
+  },
+
+  /**
+   * Route-based code splitting utilities
+   */
+  routeBasedSplitting: {
+    /**
+     * Create lazy route component
+     */
+    createRoute: (importFn: () => Promise<{ default: React.ComponentType<any> }>) => {
+      return React.lazy(importFn);
+    },
+
+    /**
+     * Preload route components
+     */
+    preloadRoutes: (routes: Record<string, () => Promise<any>>) => {
+      if (typeof window === 'undefined') return;
+
+      requestIdleCallback(() => {
+        Object.entries(routes).forEach(([routeName, importFn]) => {
+          // Preload critical routes
+          const criticalRoutes = ['/dashboard', '/tasks', '/'];
+          if (criticalRoutes.some(route => routeName.includes(route))) {
+            importFn().catch(() => {
+              // Silently fail preloading
+            });
+          }
+        });
+      });
+    }
+  }
+};
+
+/**
+ * Advanced code splitting patterns for optimal performance
+ */
+export const codeSplittingPatterns = {
+  /**
+   * Split by feature modules
+   */
+  byFeature: {
+    // Lazy load dashboard components
+    TaskDashboard: lazyLoadingUtils.createLazyComponent(
+      () => import('@/components/dashboard/TaskDashboard'),
+      { preload: true }
+    ),
+    TaskTable: lazyLoadingUtils.createLazyComponent(
+      () => import('@/components/tables/TaskTable')
+    ),
+    ExecutionMonitor: lazyLoadingUtils.createLazyComponent(
+      () => import('@/components/monitoring/ExecutionMonitor')
+    ),
+    TaskFilters: lazyLoadingUtils.createLazyComponent(
+      () => import('@/components/tasks/TaskFilters')
+    ),
+    ContractForms: lazyLoadingUtils.createLazyComponent(
+      () => import('@/components/forms/ContractForms')
+    ),
+  },
+
+  /**
+   * Split by route/page
+   */
+  byRoute: {
+    Dashboard: lazyLoadingUtils.routeBasedSplitting.createRoute(
+      () => import('@/app/dashboard/page')
+    ),
+    Login: lazyLoadingUtils.routeBasedSplitting.createRoute(
+      () => import('@/app/login/page')
+    ),
+  },
+
+  /**
+   * Split heavy third-party libraries
+   */
+  byLibrary: {
+    Charts: lazyLoadingUtils.createLazyComponent(
+      () => import('@/components/dashboard/charts'),
+      { preload: false } // Only load when needed
+    ),
+  }
+};
+
+/**
+ * Bundle size optimization utilities
+ */
+export const bundleOptimization = {
+  /**
+   * Tree shaking helpers
+   */
+  treeShaking: {
+    /**
+     * Import specific functions to enable tree shaking
+     */
+    optimizedImports: {
+      // Example for lodash-es
+      debounce: () => import('lodash-es/debounce'),
+      throttle: () => import('lodash-es/throttle'),
+    }
+  },
+
+  /**
+   * Critical resource hints
+   */
+  resourceHints: {
+    /**
+     * Add preload hints for critical resources
+     */
+    addCriticalPreloads: () => {
+      if (typeof window === 'undefined') return;
+
+      const criticalResources = [
+        { href: '/fonts/inter-var.woff2', as: 'font', type: 'font/woff2', crossorigin: 'anonymous' },
+        { href: '/api/health', as: 'fetch' },
+      ];
+
+      criticalResources.forEach(resource => {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.href = resource.href;
+        link.as = resource.as;
+        if (resource.type) link.type = resource.type;
+        if (resource.crossorigin) link.crossOrigin = resource.crossorigin;
+        document.head.appendChild(link);
+      });
+    },
+
+    /**
+     * Add prefetch hints for likely next pages
+     */
+    addPrefetchHints: (currentRoute: string) => {
+      if (typeof window === 'undefined') return;
+
+      const routePrefetchMap: Record<string, string[]> = {
+        '/': ['/dashboard', '/login'],
+        '/login': ['/dashboard'],
+        '/dashboard': ['/tasks', '/monitoring'],
+      };
+
+      const prefetchRoutes = routePrefetchMap[currentRoute] || [];
+      prefetchRoutes.forEach(route => {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = route;
+        document.head.appendChild(link);
+      });
+    }
+  }
+};
+
+/**
+ * Next.js 14 specific performance optimizations
+ */
+export const nextjsOptimizations = {
+  /**
+   * Dynamic imports with Next.js
+   */
+  dynamicImports: {
+    /**
+     * Create Next.js dynamic component with options
+     */
+    createDynamic: <T = any>(
+      importFn: () => Promise<{ default: React.ComponentType<T> }>,
+      options: {
+        loading?: React.ComponentType;
+        ssr?: boolean;
+      } = {}
+    ) => {
+      // This would typically use Next.js dynamic, but for type safety we'll use React.lazy
+      return React.lazy(importFn);
+    }
+  },
+
+  /**
+   * App Router specific optimizations
+   */
+  appRouter: {
+    /**
+     * Configuration for loading components
+     */
+    loadingConfig: {
+      defaultMessage: 'Loading...',
+      className: 'flex items-center justify-center min-h-[200px]',
+      spinnerClassName: 'w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin'
+    }
+  }
+};

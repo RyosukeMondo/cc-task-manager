@@ -26,7 +26,7 @@ export function DashboardLayout({
     <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 ${className || ''}`}>
       <div className="container mx-auto p-4 space-y-6">
         {/* Header Section */}
-        <div className="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between md:space-y-0">
+        <header className="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div className="flex flex-col space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
               {title}
@@ -42,12 +42,12 @@ export function DashboardLayout({
               {headerActions}
             </div>
           )}
-        </div>
+        </header>
 
         {/* Main Content Area */}
-        <div className="grid gap-6">
+        <main id="main-content" className="grid gap-6" tabIndex={-1}>
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

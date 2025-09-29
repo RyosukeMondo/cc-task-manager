@@ -8,7 +8,8 @@ import { useFocusTrap, useFocusRestore } from './focus-management';
 import { useEscapeKey, useArrowNavigation } from './keyboard-navigation';
 import { LiveRegion } from './screen-reader';
 import { button, dialog, formField } from './aria-helpers';
-import { useWebVitals, useRenderPerformance, useReducedMotion } from './performance-hooks';
+import { useWebVitals, useRenderPerformance } from './performance-monitor';
+import { useReducedMotion } from './performance-hooks';
 
 /**
  * Accessible Skip Link component
