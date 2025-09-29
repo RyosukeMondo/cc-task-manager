@@ -4,6 +4,7 @@ import { ClaudeCommandService } from './claude-command.service';
 import { ClaudeSessionService } from './claude-session.service';
 import { ClaudeStreamService } from './claude-stream.service';
 import { ClaudeErrorService } from './claude-error.service';
+import { ClaudeCacheService } from './claude-cache.service';
 import { WebSocketModule } from '../websocket/websocket.module';
 
 /**
@@ -21,18 +22,17 @@ import { WebSocketModule } from '../websocket/websocket.module';
  * - ClaudeCommandService (task 2) - Command execution and response handling
  * - ClaudeSessionService (task 3) - Session lifecycle management and state tracking
  * - ClaudeStreamService (task 5) - Real-time output streaming and WebSocket integration
+ * - ClaudeErrorService (task 6) - Error handling and recovery mechanisms
+ * - ClaudeCacheService (task 10) - Performance optimization and caching
  *
- * Future services to be added:
- * - ClaudeQueueService (task 4) - COMPLETED
- * - ClaudeStreamService (task 5) - COMPLETED
- * - ClaudeErrorService (task 6) - COMPLETED
- * - ClaudeMetricsService (task 7)
- * - ClaudeConfigService (task 8)
- * - ClaudeCacheService (task 10)
+ * Completed services:
+ * - ClaudeQueueService (task 4) - BullMQ integration for task processing
+ * - ClaudeMetricsService (task 7) - Performance monitoring and metrics
+ * - ClaudeConfigService (task 8) - Configuration management and environment setup
  */
 @Module({
   imports: [WebSocketModule],
-  providers: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService, ClaudeStreamService, ClaudeErrorService],
-  exports: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService, ClaudeStreamService, ClaudeErrorService],
+  providers: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService, ClaudeStreamService, ClaudeErrorService, ClaudeCacheService],
+  exports: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService, ClaudeStreamService, ClaudeErrorService, ClaudeCacheService],
 })
 export class ClaudeModule {}
