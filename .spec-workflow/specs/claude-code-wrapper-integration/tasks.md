@@ -45,7 +45,7 @@
   - _Requirements: 3.1, 3.2, real-time requirements_
   - _Prompt: Implement the task for spec claude-code-wrapper-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Streaming Engineer with expertise in real-time data streaming and WebSocket integration | Task: Implement Claude Code output streaming and real-time updates following requirements 3.1, 3.2, and real-time requirements, integrating with WebSocket infrastructure | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must stream output in real-time without buffering delays, handle large output volumes efficiently, ensure WebSocket reliability, implement proper backpressure handling, maintain output formatting| _Leverage: WebSocket infrastructure from realtime-websocket-events spec and streaming patterns | Success: Claude Code output streams in real-time, WebSocket integration reliable, large outputs handled efficiently, backpressure prevents overload, output formatting preserved | Instructions: Mark in progress [-], create streaming service, implement WebSocket integration, test real-time streaming, mark complete [x]_
 
-- [ ] 6. Add Claude Code error handling and recovery mechanisms
+- [x] 6. Add Claude Code error handling and recovery mechanisms
   - File: apps/backend/src/claude/claude-error.service.ts
   - Implement comprehensive error handling for Claude Code integration
   - Add automatic retry logic and graceful degradation

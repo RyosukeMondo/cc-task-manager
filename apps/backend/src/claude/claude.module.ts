@@ -3,6 +3,7 @@ import { ClaudeWrapperService } from './claude-wrapper.service';
 import { ClaudeCommandService } from './claude-command.service';
 import { ClaudeSessionService } from './claude-session.service';
 import { ClaudeStreamService } from './claude-stream.service';
+import { ClaudeErrorService } from './claude-error.service';
 import { WebSocketModule } from '../websocket/websocket.module';
 
 /**
@@ -24,14 +25,14 @@ import { WebSocketModule } from '../websocket/websocket.module';
  * Future services to be added:
  * - ClaudeQueueService (task 4) - COMPLETED
  * - ClaudeStreamService (task 5) - COMPLETED
- * - ClaudeErrorService (task 6)
+ * - ClaudeErrorService (task 6) - COMPLETED
  * - ClaudeMetricsService (task 7)
  * - ClaudeConfigService (task 8)
  * - ClaudeCacheService (task 10)
  */
 @Module({
   imports: [WebSocketModule],
-  providers: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService, ClaudeStreamService],
-  exports: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService, ClaudeStreamService],
+  providers: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService, ClaudeStreamService, ClaudeErrorService],
+  exports: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService, ClaudeStreamService, ClaudeErrorService],
 })
 export class ClaudeModule {}
