@@ -36,6 +36,7 @@ import {
 import { JWTPayload } from '../schemas/auth.schemas';
 import { UserChannelsService } from './channels/user-channels.service';
 import { ConnectionManagerService } from './connection/connection-manager.service';
+import { EventReplayService } from './persistence/event-replay.service';
 
 /**
  * WebSocket Gateway for real-time communication
@@ -68,7 +69,8 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   constructor(
     private readonly jwtService: JwtService,
     private readonly userChannelsService: UserChannelsService,
-    private readonly connectionManager: ConnectionManagerService
+    private readonly connectionManager: ConnectionManagerService,
+    private readonly eventReplayService: EventReplayService
   ) {}
 
   /**
@@ -152,6 +154,22 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
         level: NotificationLevel.SUCCESS,
       });
 
+      // Record connection for event replay tracking
+      const userRooms = Array.from(this.connectedUsers.get(client.id)?.rooms || []);
+      await this.eventReplayService.recordConnection(
+        client.id,
+        user.sub,
+        client.handshake.headers['user-agent'],
+        client.handshake.address,
+        [userRoom, ...userRooms]
+      );
+
+      // Replay missed events for reconnecting user
+      const replayedCount = await this.eventReplayService.replayMissedEvents(client.id, user.sub);
+      if (replayedCount > 0) {
+        this.logger.log(`Replayed ${replayedCount} missed events for user ${user.username}`);
+      }
+
     } catch (error) {
       this.logger.error(`Connection failed for socket ${client.id}: ${error.message}`);
       client.disconnect(true);
@@ -193,6 +211,9 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
 
       // Clean up connection tracking
       this.connectedUsers.delete(client.id);
+
+      // Record disconnection for event replay tracking
+      await this.eventReplayService.recordDisconnection(client.id);
     }
 
     // Unregister from connection manager
@@ -407,6 +428,9 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       for (const socket of filteredSockets) {
         socket.emit('event', validatedEvent);
       }
+
+      // Persist event for offline client replay
+      await this.eventReplayService.persistEvent(validatedEvent);
 
       this.logger.debug(`Event emitted to room ${room} (${filteredSockets.length} filtered recipients): ${event.eventType}`);
     } catch (error) {
@@ -660,5 +684,25 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
    */
   getUserConnectionDetails(userId: string) {
     return this.connectionManager.getUserConnections(userId);
+  }
+
+  /**
+   * Emit event directly to a specific socket connection
+   * Used for event replay and targeted messages
+   */
+  emitToSocket(socketId: string, event: WebSocketEvent) {
+    try {
+      const validatedEvent = validateWebSocketEvent(event);
+      const socket = this.server.sockets.sockets.get(socketId);
+
+      if (socket && socket.connected) {
+        socket.emit('event', validatedEvent);
+        this.logger.debug(`Event emitted to socket ${socketId}: ${event.eventType}`);
+      } else {
+        this.logger.warn(`Socket not found or disconnected: ${socketId}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to emit to socket ${socketId}: ${error.message}`);
+    }
   }
 }

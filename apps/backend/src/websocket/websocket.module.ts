@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from '../auth/auth.module';
+import { PrismaService } from '../database/prisma.service';
 import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
 import { WebSocketAuthGuard } from './websocket-auth.guard';
@@ -11,6 +12,7 @@ import { ClaudeEventsService } from './events/claude-events.service';
 import { SystemEventsService } from './events/system-events.service';
 import { UserChannelsService } from './channels/user-channels.service';
 import { ConnectionManagerService } from './connection/connection-manager.service';
+import { EventReplayService } from './persistence/event-replay.service';
 
 /**
  * WebSocket Module for real-time communication
@@ -63,6 +65,8 @@ import { ConnectionManagerService } from './connection/connection-manager.servic
     SystemEventsService,
     UserChannelsService,
     ConnectionManagerService,
+    EventReplayService,
+    PrismaService,
   ],
   
   exports: [
@@ -75,6 +79,7 @@ import { ConnectionManagerService } from './connection/connection-manager.servic
     SystemEventsService,
     UserChannelsService,
     ConnectionManagerService,
+    EventReplayService,
   ],
 })
 export class WebSocketModule {

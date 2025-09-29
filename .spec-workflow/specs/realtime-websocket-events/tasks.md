@@ -54,7 +54,7 @@
   - _Requirements: 4.1, 4.2, monitoring requirements_
   - _Prompt: Implement the task for spec realtime-websocket-events, first run spec-workflow-guide to get the workflow guide then implement the task: Role: System Monitoring Engineer with expertise in health monitoring and real-time alerting | Task: Implement system health and monitoring event broadcasts following requirements 4.1, 4.2, and monitoring requirements, integrating with monitoring infrastructure | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must broadcast health status without affecting system performance, implement intelligent alerting to prevent notification overload, ensure monitoring accuracy, handle monitoring system failures gracefully| _Leverage: existing monitoring infrastructure and health check systems | Success: System health broadcasts accurately, performance monitoring real-time, alerting intelligent and not overwhelming, monitoring failures handled gracefully, administrative visibility complete | Instructions: Set to in progress [-], create system events service, implement health broadcasting, test monitoring integration, mark complete [x]_
 
-- [ ] 7. Create WebSocket connection management and scaling
+- [x] 7. Create WebSocket connection management and scaling
   - File: apps/backend/src/websocket/connection/connection-manager.service.ts
   - Implement connection pool management and scaling capabilities
   - Add connection health monitoring and automatic cleanup
@@ -63,7 +63,7 @@
   - _Requirements: 1.1, 1.2, scalability requirements_
   - _Prompt: Implement the task for spec realtime-websocket-events, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Connection Management Engineer with expertise in WebSocket scaling and resource management | Task: Create WebSocket connection management and scaling following requirements 1.1, 1.2, and scalability requirements, implementing efficient connection pooling | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must handle thousands of concurrent connections, implement efficient connection cleanup, monitor connection health, support horizontal scaling, optimize memory usage per connection| _Leverage: Socket.IO clustering capabilities and connection management patterns | Success: Connection management scales to requirements, cleanup prevents memory leaks, health monitoring identifies issues, horizontal scaling functional, memory usage optimized | Instructions: Set to in progress [-], create connection manager, implement scaling logic, test with high connection load, mark complete [x]_
 
-- [ ] 8. Add event replay and persistence for offline clients
+- [x] 8. Add event replay and persistence for offline clients
   - File: apps/backend/src/websocket/persistence/event-replay.service.ts
   - Implement event persistence and replay for clients that reconnect
   - Add missed event detection and intelligent replay mechanisms
