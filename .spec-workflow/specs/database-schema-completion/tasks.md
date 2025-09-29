@@ -72,7 +72,7 @@
   - _Requirements: Performance requirements from design document_
   - _Prompt: Implement the task for spec database-schema-completion, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Database Performance Engineer with expertise in PostgreSQL indexing and query optimization | Task: Add comprehensive indexes and performance optimizations to achieve sub-50ms query performance | Restrictions: Must follow SOLID principles (SRP for focused indexes, OCP for extensible indexing strategy), apply KISS principle for index design, ensure DRY/SSOT compliance with consistent indexing patterns, implement fail-fast performance validation, avoid over-indexing, consider repository query patterns | _Leverage: existing index conventions and patterns in current schema | Success: Indexing follows SOLID principles, KISS principle applied to design, DRY/SSOT maintained with consistent patterns, fail-fast performance validation working, <50ms query performance achieved, write performance preserved | Instructions: Design indexing contracts first, implement focused SRP indexes, validate performance with fail-fast checks, mark complete [x]_
 
-- [ ] 9. Create database testing utilities
+- [x] 9. Create database testing utilities
   - File: apps/backend/src/database/test-utils/database-test-helper.ts
   - Create utilities for database testing with transaction isolation
   - Add helper functions for creating test data and cleaning up
