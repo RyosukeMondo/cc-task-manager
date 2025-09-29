@@ -63,7 +63,7 @@
   - _Requirements: 4.1, 4.2, monitoring requirements_
   - _Prompt: Implement the task for spec claude-code-wrapper-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Performance Monitoring Engineer with expertise in metrics collection and system observability | Task: Create Claude Code performance monitoring and metrics following requirements 4.1, 4.2, and monitoring requirements, using existing monitoring infrastructure | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must collect meaningful performance metrics, implement low-overhead monitoring, ensure metrics accuracy, integrate with existing monitoring stack, provide actionable insights| _Leverage: existing monitoring and metrics infrastructure | Success: Performance metrics collected accurately, monitoring overhead minimal, integration with existing systems working, metrics provide actionable insights, alerting on performance issues functional | Instructions: Mark in progress [-], create metrics service, implement monitoring, test performance tracking, mark complete [x]_
 
-- [ ] 8. Add Claude Code configuration management and environment setup
+- [x] 8. Add Claude Code configuration management and environment setup
   - File: apps/backend/src/claude/claude-config.service.ts
   - Implement configuration management for Claude Code settings
   - Add environment-specific configuration and validation
