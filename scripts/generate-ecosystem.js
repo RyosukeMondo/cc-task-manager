@@ -1,7 +1,43 @@
 #!/usr/bin/env node
 
-// Import unified configuration
-const CONFIG = require('./config.js');
+const fs = require('fs');
+const path = require('path');
+const yaml = require('js-yaml');
+
+// Import unified configuration from YAML
+const configPath = path.join(__dirname, 'config.yaml');
+
+if (!fs.existsSync(configPath)) {
+  console.error('❌ config.yaml not found. Please run prepare_parallel_dev.py first.');
+  process.exit(1);
+}
+
+const CONFIG_RAW = yaml.load(fs.readFileSync(configPath, 'utf8'));
+
+// Transform YAML config to match the expected structure
+const CONFIG = {
+  baseCwd: CONFIG_RAW.base_cwd,
+  naming: {
+    automationPrefix: CONFIG_RAW.naming.automation_prefix,
+    dashboardPrefix: CONFIG_RAW.naming.dashboard_prefix
+  },
+  paths: {
+    ecosystemFile: CONFIG_RAW.paths.ecosystem_file,
+    logsDir: CONFIG_RAW.paths.logs_dir,
+    automationScript: CONFIG_RAW.paths.automation_script
+  },
+  pm2Defaults: CONFIG_RAW.pm2_defaults,
+  staticServices: CONFIG_RAW.static_services || [],
+  computed: {
+    availableProjects: CONFIG_RAW.projects.filter(p => p.available),
+    dashboardPorts: {}
+  }
+};
+
+// Calculate dashboard ports
+CONFIG.computed.availableProjects.forEach((project, index) => {
+  CONFIG.computed.dashboardPorts[project.name] = CONFIG_RAW.dashboard_port_base + index;
+});
 
 function generateEcosystemConfig() {
   const apps = [];
@@ -66,11 +102,9 @@ function generateEcosystemConfig() {
 
 // Generate and write the config
 const config = generateEcosystemConfig();
-const fs = require('fs');
-const path = require('path');
 
 const configContent = `module.exports = ${JSON.stringify(config, null, 2)};
 `;
 
 fs.writeFileSync(path.join(__dirname, `../${CONFIG.paths.ecosystemFile}`), configContent);
-console.log(`Generated ${CONFIG.paths.ecosystemFile}`);
+console.log(`✅ Generated ${CONFIG.paths.ecosystemFile} from config.yaml`);

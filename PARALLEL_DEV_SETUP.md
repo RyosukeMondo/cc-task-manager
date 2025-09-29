@@ -101,11 +101,17 @@ git push origin feature/task-crud-api
 ## 📋 Available Commands
 
 ```bash
-# Basic usage
+# Basic usage (creates worktrees + PM2 automation)
 python scripts/prepare_parallel_dev.py
 
 # Dry run (see what would happen)
 python scripts/prepare_parallel_dev.py --dry-run
+
+# Force cleanup all existing worktrees first
+python scripts/prepare_parallel_dev.py --force-cleanup
+
+# Skip PM2 automation (only create worktrees and MCP servers)
+python scripts/prepare_parallel_dev.py --skip-automation
 
 # Custom config file
 python scripts/prepare_parallel_dev.py --config my-config.yaml
@@ -116,6 +122,44 @@ python scripts/prepare_parallel_dev.py --create-config
 # Help
 python scripts/prepare_parallel_dev.py --help
 ```
+
+## 🔄 Integration with PM2 Automation
+
+The script now fully integrates with the existing PM2 automation infrastructure:
+
+1. **Generates config.yaml**: Updates `scripts/config.yaml` with worktree projects (automatically ignored by git)
+2. **Runs ecosystem generation**: Executes `node scripts/generate-ecosystem.js` (now reads from YAML config)
+3. **Manages PM2 processes**: Runs `scripts/remote-automation.sh delete` and `start`
+4. **Dependencies**: Automatically installs `js-yaml` dependency for YAML parsing
+
+This provides **complete end-to-end automation** - run one command to set up all development environments AND start all monitoring processes.
+
+### Migration from config.js
+- `scripts/config.js` is no longer used - all configuration now in `scripts/config.yaml`
+- `generate-ecosystem.js` has been updated to read from YAML format
+- Both `scripts/config.yaml` and `ecosystem.config.js` are automatically git-ignored as generated files
+
+## 🔒 Safety & Idempotent Operations
+
+The script includes several safety features and is designed to be **idempotent** (can be run multiple times safely):
+
+### Idempotent Features
+- **Existing worktrees**: Detects and reuses existing worktrees instead of recreating
+- **Branch handling**: Uses existing feature branches or creates new ones as needed
+- **Config preservation**: Preserves existing projects in config.yaml while adding worktrees
+- **Smart cleanup**: Only removes outdated worktrees, not ones in current configuration
+
+### Safety Checks
+- **Git state validation**: Ensures repository is clean and on main branch
+- **Dry run mode**: Test all operations without making changes (`--dry-run`)
+- **User confirmation**: Prompts before proceeding with uncommitted changes
+- **Error isolation**: Continues setup for other specs if one fails
+- **Graceful failures**: Non-critical operations (MCP servers, PM2) are warnings, not errors
+
+### Recovery Options
+- **Force cleanup**: Remove ALL existing worktrees with `--force-cleanup`
+- **Skip automation**: Create only worktrees with `--skip-automation`
+- **Selective retry**: Re-run safely after fixing configuration issues
 
 ## 🛠️ Advanced Configuration
 

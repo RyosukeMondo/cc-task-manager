@@ -4,10 +4,30 @@ Parallel Development Setup Script
 
 This script prepares isolated development environments for parallel implementation
 of atomic specifications. Each spec gets its own git worktree, feature branch,
-and configured MCP servers.
+and configured MCP servers. Optionally integrates with PM2 automation infrastructure.
+
+Features:
+    - Creates git worktrees for parallel development
+    - Sets up MCP servers for each specification
+    - Generates PM2 automation config and runs ecosystem setup
+    - Idempotent operation (can be run multiple times safely)
+    - Supports dry-run mode for testing
 
 Usage:
-    python scripts/prepare_parallel_dev.py [--config parallel.yaml] [--dry-run]
+    # Basic setup
+    python scripts/prepare_parallel_dev.py
+
+    # Dry run to see what would happen
+    python scripts/prepare_parallel_dev.py --dry-run
+
+    # Force cleanup all existing worktrees first
+    python scripts/prepare_parallel_dev.py --force-cleanup
+
+    # Skip PM2 automation (only create worktrees)
+    python scripts/prepare_parallel_dev.py --skip-automation
+
+    # Custom config file
+    python scripts/prepare_parallel_dev.py --config my-config.yaml
 """
 
 import os
@@ -45,10 +65,11 @@ class SpecConfig:
 class ParallelDevSetup:
     """Main class for setting up parallel development environments"""
 
-    def __init__(self, project_root: Path, config_file: Path, dry_run: bool = False):
+    def __init__(self, project_root: Path, config_file: Path, dry_run: bool = False, skip_automation: bool = False):
         self.project_root = project_root
         self.config_file = config_file
         self.dry_run = dry_run
+        self.skip_automation = skip_automation
         self.worktree_dir = project_root / "worktree"
 
         # Load configuration
@@ -165,15 +186,38 @@ class ParallelDevSetup:
         print("📥 Pulling latest changes...")
         self._run_command(['git', 'pull', 'origin', 'main'])
 
+    def _check_existing_branch(self, branch_name: str) -> bool:
+        """Check if a branch already exists"""
+        result = self._run_command(['git', 'branch', '--list', branch_name], check=False)
+        return bool(result.stdout.strip())
+
+    def _check_existing_worktree(self, worktree_path: Path) -> bool:
+        """Check if a worktree already exists at the given path"""
+        result = self._run_command(['git', 'worktree', 'list', '--porcelain'], check=False)
+        if result.returncode != 0:
+            return False
+
+        for line in result.stdout.split('\n'):
+            if line.startswith('worktree '):
+                existing_path = Path(line[9:])  # Remove 'worktree ' prefix
+                if existing_path == worktree_path:
+                    return True
+        return False
+
     def _create_worktree(self, spec: SpecConfig) -> Path:
         """Create git worktree for specification"""
         worktree_path = self.worktree_dir / spec.worktree_name
 
         print(f"🌳 Creating worktree: {spec.worktree_name}")
 
-        # Remove existing worktree if it exists
+        # Check if worktree already exists
+        if self._check_existing_worktree(worktree_path):
+            print(f"✅ Worktree already exists: {worktree_path}")
+            return worktree_path
+
+        # Remove existing worktree directory if it exists but not registered
         if worktree_path.exists():
-            print(f"♻️  Removing existing worktree: {worktree_path}")
+            print(f"♻️  Removing unregistered worktree directory: {worktree_path}")
             if not self.dry_run:
                 shutil.rmtree(worktree_path)
 
@@ -181,12 +225,25 @@ class ParallelDevSetup:
         if not self.dry_run:
             self.worktree_dir.mkdir(exist_ok=True)
 
-        # Create worktree with new branch
-        self._run_command([
-            'git', 'worktree', 'add',
-            str(worktree_path),
-            '-b', spec.feature_branch
-        ])
+        # Check if branch already exists
+        branch_exists = self._check_existing_branch(spec.feature_branch)
+
+        if branch_exists:
+            print(f"🌿 Branch {spec.feature_branch} already exists, creating worktree from it")
+            # Create worktree from existing branch
+            self._run_command([
+                'git', 'worktree', 'add',
+                str(worktree_path),
+                spec.feature_branch
+            ])
+        else:
+            print(f"🌿 Creating new branch: {spec.feature_branch}")
+            # Create worktree with new branch
+            self._run_command([
+                'git', 'worktree', 'add',
+                str(worktree_path),
+                '-b', spec.feature_branch
+            ])
 
         return worktree_path
 
@@ -207,7 +264,7 @@ class ParallelDevSetup:
                 cmd_parts = server.command.split()
                 # Replace $(pwd) with actual worktree path
                 cmd_parts = [part.replace('$(pwd)', str(worktree_path)) for part in cmd_parts]
-                cmd = ['claude', 'mcp', 'add', server.name] + cmd_parts[2:]  # Skip 'claude mcp add'
+                cmd = cmd_parts  # Use complete command as-is
             else:
                 # Parse command and build claude mcp add command
                 cmd_parts = server.command.split()
@@ -327,10 +384,8 @@ This specification enforces:
         print(f"✅ {spec.name} environment ready at: {worktree_path}")
         return worktree_path
 
-    def cleanup_worktrees(self):
-        """Clean up existing worktrees"""
-        print("🧹 Cleaning up existing worktrees...")
-
+    def cleanup_worktrees(self, force_cleanup: bool = False):
+        """Clean up existing worktrees (only removes ones not in current config unless forced)"""
         if not self.worktree_dir.exists():
             return
 
@@ -339,12 +394,28 @@ This specification enforces:
         if result.returncode != 0:
             return
 
-        worktrees_to_remove = []
+        existing_worktrees = []
         for line in result.stdout.split('\n'):
             if line.startswith('worktree '):
                 worktree_path = Path(line[9:])  # Remove 'worktree ' prefix
                 if worktree_path.parent == self.worktree_dir:
-                    worktrees_to_remove.append(worktree_path)
+                    existing_worktrees.append(worktree_path)
+
+        if not existing_worktrees:
+            return
+
+        # Get current spec worktree names
+        current_spec_paths = {self.worktree_dir / spec.worktree_name for spec in self.specs}
+
+        worktrees_to_remove = []
+        if force_cleanup:
+            worktrees_to_remove = existing_worktrees
+            print("🧹 Force cleaning up ALL existing worktrees...")
+        else:
+            # Only remove worktrees that are not in current configuration
+            worktrees_to_remove = [path for path in existing_worktrees if path not in current_spec_paths]
+            if worktrees_to_remove:
+                print("🧹 Cleaning up outdated worktrees...")
 
         for worktree_path in worktrees_to_remove:
             print(f"♻️  Removing worktree: {worktree_path.name}")
@@ -352,16 +423,144 @@ This specification enforces:
                 self._run_command(['git', 'worktree', 'remove', str(worktree_path)], check=False)
             except subprocess.CalledProcessError:
                 # Force remove if needed
-                if worktree_path.exists():
+                if worktree_path.exists() and not self.dry_run:
                     shutil.rmtree(worktree_path)
 
-    def run(self):
+    def _generate_config_yaml(self, setup_paths: List[tuple]):
+        """Generate or update the config.yaml file for PM2 automation"""
+        config_yaml_path = self.project_root / "scripts" / "config.yaml"
+
+        print("📝 Generating PM2 automation config...")
+
+        # Calculate dashboard ports incrementally
+        dashboard_port_base = 3401
+        projects = []
+
+        for i, (spec, path) in enumerate(setup_paths):
+            projects.append({
+                'name': spec.worktree_name,
+                'path': f"./worktree/{spec.worktree_name}",
+                'spec': spec.name,
+                'available': True
+            })
+
+        # Add the main project
+        projects.insert(0, {
+            'name': 'cc-task-manager',
+            'path': '.',
+            'spec': 'claude-code-wrapper-specs',
+            'available': False
+        })
+
+        # Load any existing additional projects from current config.yaml
+        existing_projects = []
+        if config_yaml_path.exists():
+            try:
+                with open(config_yaml_path, 'r') as f:
+                    existing_config = yaml.safe_load(f)
+                    existing_projects = [p for p in existing_config.get('projects', [])
+                                      if p.get('name') not in [proj['name'] for proj in projects]]
+            except Exception as e:
+                print(f"⚠️  Warning: Could not load existing config.yaml: {e}")
+
+        # Add existing projects that aren't worktrees
+        projects.extend(existing_projects)
+
+        config_data = {
+            'base_cwd': str(self.project_root),
+            'projects': projects,
+            'dashboard_port_base': dashboard_port_base,
+            'static_services': [
+                {
+                    'name': 'claude-code-viewer',
+                    'script': 'server.js',
+                    'cwd': '/home/rmondo/repos/claude-code-viewer/dist/standalone',
+                    'port': 3400
+                }
+            ],
+            'naming': {
+                'automation_prefix': 'spec-workflow-automation-',
+                'dashboard_prefix': 'spec-workflow-dashboard-'
+            },
+            'automation': {
+                'max_cycles': 50,
+                'max_session_time': 1800  # 30 minutes
+            },
+            'pm2_defaults': {
+                'instances': 1,
+                'watch': False,
+                'max_memory_restart': '1G',
+                'env': {
+                    'NODE_ENV': 'production'
+                },
+                'log_date_format': 'YYYY-MM-DD HH:mm:ss',
+                'merge_logs': True,
+                'time': True
+            },
+            'paths': {
+                'logs_dir': 'logs',
+                'ecosystem_file': 'ecosystem.config.js',
+                'automation_script': 'scripts/spec_workflow_automation.py'
+            }
+        }
+
+        if not self.dry_run:
+            config_yaml_path.parent.mkdir(exist_ok=True)
+            with open(config_yaml_path, 'w') as f:
+                yaml.dump(config_data, f, default_flow_style=False, sort_keys=False)
+
+        print(f"✅ Generated config.yaml with {len(projects)} projects")
+        return config_yaml_path
+
+    def _run_ecosystem_generation(self):
+        """Run the ecosystem generation script"""
+        print("⚙️  Generating PM2 ecosystem configuration...")
+
+        ecosystem_script = self.project_root / "scripts" / "generate-ecosystem.js"
+        if not ecosystem_script.exists():
+            print(f"⚠️  Warning: Ecosystem script not found: {ecosystem_script}")
+            return
+
+        try:
+            self._run_command(['node', 'scripts/generate-ecosystem.js'], cwd=self.project_root)
+            print("✅ PM2 ecosystem configuration generated")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Failed to generate ecosystem: {e}")
+            raise
+
+    def _run_pm2_automation(self):
+        """Run PM2 automation script with delete and start commands"""
+        print("🚀 Managing PM2 processes...")
+
+        automation_script = self.project_root / "scripts" / "remote-automation.sh"
+        if not automation_script.exists():
+            print(f"⚠️  Warning: Automation script not found: {automation_script}")
+            return
+
+        try:
+            # First, delete existing processes
+            print("🧹 Stopping existing PM2 processes...")
+            self._run_command(['scripts/remote-automation.sh', 'delete'], cwd=self.project_root)
+
+            # Then start new processes
+            print("▶️  Starting PM2 processes...")
+            self._run_command(['scripts/remote-automation.sh', 'start'], cwd=self.project_root)
+
+            print("✅ PM2 automation complete")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Failed to run PM2 automation: {e}")
+            raise
+
+    def run(self, force_cleanup: bool = False):
         """Execute the complete parallel development setup"""
         print("🏗️  Parallel Development Environment Setup")
         print("=" * 50)
 
         if self.dry_run:
             print("🔍 DRY RUN MODE - No actual changes will be made\n")
+
+        if self.skip_automation:
+            print("⏭️  SKIP AUTOMATION MODE - PM2 setup will be skipped\n")
 
         print(f"📁 Project Root: {self.project_root}")
         print(f"📋 Configuration: {self.config_file}")
@@ -372,7 +571,7 @@ This specification enforces:
         self._ensure_clean_git_state()
 
         # Clean up existing worktrees
-        self.cleanup_worktrees()
+        self.cleanup_worktrees(force_cleanup)
 
         # Set up each specification
         setup_paths = []
@@ -384,6 +583,26 @@ This specification enforces:
                 print(f"❌ Failed to set up {spec.name}: {e}")
                 continue
 
+        # Skip automation if requested
+        if not self.skip_automation:
+            # Generate PM2 automation config
+            try:
+                self._generate_config_yaml(setup_paths)
+            except Exception as e:
+                print(f"⚠️  Warning: Failed to generate config.yaml: {e}")
+
+            # Run ecosystem generation
+            try:
+                self._run_ecosystem_generation()
+            except Exception as e:
+                print(f"⚠️  Warning: Failed to generate ecosystem: {e}")
+
+            # Run PM2 automation
+            try:
+                self._run_pm2_automation()
+            except Exception as e:
+                print(f"⚠️  Warning: Failed to run PM2 automation: {e}")
+
         # Print summary
         print("\n" + "=" * 50)
         print("🎉 Parallel Development Setup Complete!")
@@ -392,11 +611,23 @@ This specification enforces:
         for spec, path in setup_paths:
             print(f"   🌳 {spec.name}: {path}")
 
+        next_steps = [
+            "1. Each developer can work in their assigned worktree",
+            "2. Follow the tasks in .spec-workflow/specs/[spec-name]/tasks.md"
+        ]
+
+        if not self.skip_automation:
+            next_steps.append("3. PM2 processes are running for automation and dashboards")
+            next_steps.append("4. Commit regularly and push to feature branches")
+            next_steps.append("5. Create PRs when specifications are complete")
+        else:
+            next_steps.append("3. Run with --no-skip-automation to set up PM2 processes")
+            next_steps.append("4. Commit regularly and push to feature branches")
+            next_steps.append("5. Create PRs when specifications are complete")
+
         print(f"\n💡 Next steps:")
-        print(f"   1. Each developer can work in their assigned worktree")
-        print(f"   2. Follow the tasks in .spec-workflow/specs/[spec-name]/tasks.md")
-        print(f"   3. Commit regularly and push to feature branches")
-        print(f"   4. Create PRs when specifications are complete")
+        for step in next_steps:
+            print(f"   {step}")
 
         return setup_paths
 
@@ -509,6 +740,16 @@ def main():
         action='store_true',
         help='Create a default configuration file'
     )
+    parser.add_argument(
+        '--force-cleanup',
+        action='store_true',
+        help='Force cleanup of ALL existing worktrees before setup'
+    )
+    parser.add_argument(
+        '--skip-automation',
+        action='store_true',
+        help='Skip PM2 automation setup (only create worktrees and MCP servers)'
+    )
 
     args = parser.parse_args()
 
@@ -528,8 +769,8 @@ def main():
 
     # Set up parallel development environments
     try:
-        setup = ParallelDevSetup(project_root, args.config, args.dry_run)
-        setup.run()
+        setup = ParallelDevSetup(project_root, args.config, args.dry_run, args.skip_automation)
+        setup.run(args.force_cleanup)
     except KeyboardInterrupt:
         print("\n⏹️  Setup interrupted by user")
         sys.exit(1)
