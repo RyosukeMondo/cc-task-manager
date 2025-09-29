@@ -9,7 +9,7 @@
     "dev:packages": "pnpm --filter '@cc-task-manager/types' --filter '@cc-task-manager/schemas' dev",
     "build": "pnpm build:packages && next build",
     "build:packages": "pnpm --filter '@cc-task-manager/types' --filter '@cc-task-manager/schemas' build",
-    "build:packages:dev": "pnpm --filter '@cc-task-manager/types' --filter '@cc-task-manager/schemas' build --silent",
+    "build:packages:dev": "pnpm --silent --filter '@cc-task-manager/types' --filter '@cc-task-manager/schemas' build",
     "build:analyze": "pnpm build:packages && ANALYZE=true next build",
     "build:production": "pnpm build:packages && NODE_ENV=production next build",
     "build:incremental": "tsc --build",

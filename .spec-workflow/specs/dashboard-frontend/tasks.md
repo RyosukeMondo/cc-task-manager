@@ -1,6 +1,6 @@
 # Tasks Document
 
-- [ ] 1. Create Next.js 14 app structure with TypeScript configuration
+- [x] 1. Create Next.js 14 app structure with TypeScript configuration
   - File: apps/frontend/app/layout.tsx, apps/frontend/next.config.js, apps/frontend/tsconfig.json
   - Set up Next.js 14 App Router with TypeScript and TailwindCSS
   - Configure project structure following Next.js 14 best practices
