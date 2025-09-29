@@ -1,6 +1,6 @@
 # Tasks Document
 
-- [ ] 1. Create Claude Code Python wrapper service
+- [x] 1. Create Claude Code Python wrapper service
   - File: apps/backend/src/claude/claude-wrapper.service.ts
   - Implement Node.js service to interface with Claude Code Python wrapper
   - Add STDIO communication protocol handling for Claude Code commands
