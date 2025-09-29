@@ -4,6 +4,7 @@ import { QueueService } from './queue.service';
 import { QueueManagerService } from './queue-manager.service';
 import { QueueMonitorService } from './queue-monitor.service';
 import { QueueController } from './queue.controller';
+import { QueueDashboardController } from './queue-dashboard.controller';
 import { QueueConfigService } from './queue.config';
 import { TaskProcessorWorker } from './processors/task-processor.worker';
 import { JobSchedulerService } from './scheduler/job-scheduler.service';
@@ -41,7 +42,7 @@ import { BackendSchemaRegistry } from '../schemas/schema-registry';
  */
 @Module({
   imports: [ConfigModule],
-  controllers: [QueueController],
+  controllers: [QueueController, QueueDashboardController],
   providers: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, JobSchedulerService, TaskProcessorWorker, BackendSchemaRegistry],
   exports: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, JobSchedulerService, TaskProcessorWorker],
 })

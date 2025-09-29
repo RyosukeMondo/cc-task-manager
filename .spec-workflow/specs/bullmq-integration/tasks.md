@@ -45,7 +45,7 @@
   - _Requirements: 2.1, 2.2, scheduling requirements_
   - _Prompt: Implement the task for spec bullmq-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Scheduling Engineer with expertise in cron systems and job orchestration | Task: Implement job scheduling with cron support following requirements 2.1, 2.2, and scheduling requirements, using existing scheduling infrastructure | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must handle timezone considerations, implement proper cron parsing, ensure schedule reliability, manage job dependencies correctly| _Leverage: existing scheduling patterns and cron implementations | Success: Cron-based scheduling working, delayed jobs execute correctly, job dependencies respected, timezone handling accurate, schedule persistence reliable | Instructions: Mark in progress [-], create scheduler service, implement cron parsing, test scheduling, mark complete [x]_
 
-- [ ] 6. Create queue dashboard and job management API
+- [x] 6. Create queue dashboard and job management API
   - File: apps/backend/src/queue/queue-dashboard.controller.ts
   - Implement REST API for queue management and job monitoring
   - Add endpoints for job control, queue statistics, and worker management
