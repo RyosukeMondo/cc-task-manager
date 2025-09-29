@@ -1,0 +1,1 @@
+stateDiagram-v2\n    completed --> [*]\n    state cancelled {\n        cancelled : ERROR\n    }\n    idle --> [*]\n    idle --> executing : run_started\n(2x)\n    executing --> completed : run_completed\n[reason=ok, outcome=completed]\n    completed --> idle : state\n    executing --> cancelled : run_cancelled\n[outcome=cancelled]\n    cancelled --> idle : state

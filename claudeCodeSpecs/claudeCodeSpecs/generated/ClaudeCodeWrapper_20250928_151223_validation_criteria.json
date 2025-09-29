@@ -1,0 +1,83 @@
+[
+  {
+    "criterion_id": "state_machine_compliance",
+    "description": "Implementation must follow defined state machine",
+    "test_type": "behavioral",
+    "validation_method": "state_transition_testing",
+    "acceptance_threshold": 1.0,
+    "test_scenarios": [
+      "Transition from idle to executing via run_started",
+      "Transition from executing to completed via run_completed",
+      "Transition from completed to idle via state",
+      "Transition from executing to cancelled via run_cancelled",
+      "Transition from cancelled to idle via state"
+    ]
+  },
+  {
+    "criterion_id": "pattern_cancellation_behavior_validation",
+    "description": "Implementation must exhibit cancellation_behavior pattern",
+    "test_type": "pattern_detection",
+    "validation_method": "runtime_pattern_analysis",
+    "acceptance_threshold": 0.9,
+    "pattern_triggers": [
+      "user_cancel",
+      "system_cancel"
+    ],
+    "expected_outcomes": [
+      "run_cancelled",
+      "cancel_ignored"
+    ]
+  },
+  {
+    "criterion_id": "pattern_normal_execution_timing_validation",
+    "description": "Implementation must exhibit normal_execution_timing pattern",
+    "test_type": "pattern_detection",
+    "validation_method": "runtime_pattern_analysis",
+    "acceptance_threshold": 0.9,
+    "pattern_triggers": [
+      "run_started"
+    ],
+    "expected_outcomes": [
+      "run_completed"
+    ]
+  },
+  {
+    "criterion_id": "pattern_standard_flow_sequence_validation",
+    "description": "Implementation must exhibit standard_flow_sequence pattern",
+    "test_type": "pattern_detection",
+    "validation_method": "runtime_pattern_analysis",
+    "acceptance_threshold": 0.9,
+    "pattern_triggers": [
+      "run_started"
+    ],
+    "expected_outcomes": [
+      "state"
+    ]
+  },
+  {
+    "criterion_id": "pattern_cancelled_flow_sequence_validation",
+    "description": "Implementation must exhibit cancelled_flow_sequence pattern",
+    "test_type": "pattern_detection",
+    "validation_method": "runtime_pattern_analysis",
+    "acceptance_threshold": 0.9,
+    "pattern_triggers": [
+      "run_started"
+    ],
+    "expected_outcomes": [
+      "state"
+    ]
+  },
+  {
+    "criterion_id": "performance_compliance",
+    "description": "Implementation must meet performance benchmarks",
+    "test_type": "performance",
+    "validation_method": "timing_analysis",
+    "acceptance_threshold": 0.9,
+    "benchmarks": {
+      "max_execution_time": 10.0,
+      "expected_execution_time": 10.0,
+      "acceptable_deviation": 0.0,
+      "timeout_threshold": 300
+    }
+  }
+]
