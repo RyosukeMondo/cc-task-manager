@@ -45,7 +45,7 @@
   - _Requirements: 4.1, 4.2, real-time requirements_
   - _Prompt: Implement the task for spec task-crud-api, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Real-time Developer with expertise in WebSocket events and NestJS event emitters | Task: Create task events service for real-time WebSocket updates following requirements 4.1, 4.2, and real-time requirements | Restrictions: Must follow SOLID principles (SRP for focused event responsibilities, DIP with event abstractions, ISP for event interfaces), apply KISS principle for event logic, ensure DRY/SSOT compliance with centralized event schemas, implement contract-driven event interfaces first, apply fail-fast event validation, ensure <100ms delivery | _Leverage: existing WebSocket gateway and event patterns in apps/backend/src/websocket/ | Success: Events service follows SOLID principles, KISS principle applied, DRY/SSOT maintained for event schemas, contract-driven interfaces implemented, fail-fast validation working, <100ms delivery achieved, permission filtering secure, real-time updates functional | Instructions: Design event contracts first, implement SOLID event structure, validate fail-fast event processing, test real-time performance, mark complete [x]_
 
-- [ ] 6. Create task filtering and pagination utilities
+- [x] 6. Create task filtering and pagination utilities
   - File: apps/backend/src/tasks/utils/task-query.utils.ts
   - Implement utilities for complex task filtering, sorting, and pagination
   - Support date range filters, status filters, and full-text search
