@@ -10,6 +10,7 @@ import { QueueEventsService } from './events/queue-events.service';
 import { ClaudeEventsService } from './events/claude-events.service';
 import { SystemEventsService } from './events/system-events.service';
 import { UserChannelsService } from './channels/user-channels.service';
+import { ConnectionManagerService } from './connection/connection-manager.service';
 
 /**
  * WebSocket Module for real-time communication
@@ -61,6 +62,7 @@ import { UserChannelsService } from './channels/user-channels.service';
     ClaudeEventsService,
     SystemEventsService,
     UserChannelsService,
+    ConnectionManagerService,
   ],
   
   exports: [
@@ -72,6 +74,7 @@ import { UserChannelsService } from './channels/user-channels.service';
     ClaudeEventsService,
     SystemEventsService,
     UserChannelsService,
+    ConnectionManagerService,
   ],
 })
 export class WebSocketModule {

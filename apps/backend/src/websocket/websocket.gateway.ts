@@ -35,6 +35,7 @@ import {
 } from './websocket-events.schemas';
 import { JWTPayload } from '../schemas/auth.schemas';
 import { UserChannelsService } from './channels/user-channels.service';
+import { ConnectionManagerService } from './connection/connection-manager.service';
 
 /**
  * WebSocket Gateway for real-time communication
@@ -66,7 +67,8 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
 
   constructor(
     private readonly jwtService: JwtService,
-    private readonly userChannelsService: UserChannelsService
+    private readonly userChannelsService: UserChannelsService,
+    private readonly connectionManager: ConnectionManagerService
   ) {}
 
   /**
@@ -84,11 +86,34 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   async handleConnection(client: Socket) {
     try {
       this.logger.log(`Client attempting connection: ${client.id}`);
-      
+
       // Socket is already authenticated by middleware
       const user = client.data.user as JWTPayload;
-      
-      // Store connection information
+
+      // Check if connection manager can accept new connections
+      if (!this.connectionManager.canAcceptConnections()) {
+        this.logger.warn(`Connection rejected for ${user.username}: capacity reached`);
+        client.emit('error', {
+          error: 'Server at capacity, please try again later',
+          code: 'CAPACITY_EXCEEDED',
+        });
+        client.disconnect(true);
+        return;
+      }
+
+      // Register connection with connection manager
+      const registered = this.connectionManager.registerConnection(client, user);
+      if (!registered) {
+        this.logger.warn(`Failed to register connection for ${user.username}`);
+        client.emit('error', {
+          error: 'Connection registration failed',
+          code: 'REGISTRATION_FAILED',
+        });
+        client.disconnect(true);
+        return;
+      }
+
+      // Store connection information (keeping for backward compatibility)
       this.connectedUsers.set(client.id, {
         userId: user.sub,
         socket: client,
@@ -102,6 +127,7 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       const userRoom = this.getUserRoom(user.sub);
       await client.join(userRoom);
       this.addUserToRoom(client.id, userRoom);
+      this.connectionManager.addToRoom(client.id, userRoom);
 
       // Emit connection event
       const connectionEvent = createUserActivityEvent(
@@ -116,9 +142,9 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       );
 
       this.server.to(userRoom).emit('event', connectionEvent);
-      
+
       this.logger.log(`User ${user.username} (${user.sub}) connected with socket ${client.id}`);
-      
+
       // Send welcome notification
       this.sendNotificationToUser(user.sub, {
         title: 'Connected',
@@ -138,10 +164,10 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
    */
   async handleDisconnect(client: Socket) {
     const connection = this.connectedUsers.get(client.id);
-    
+
     if (connection) {
       this.logger.log(`User ${connection.userId} disconnected (socket: ${client.id})`);
-      
+
       // Leave all rooms
       for (const room of connection.rooms) {
         await client.leave(room);
@@ -168,6 +194,9 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       // Clean up connection tracking
       this.connectedUsers.delete(client.id);
     }
+
+    // Unregister from connection manager
+    this.connectionManager.unregisterConnection(client.id);
   }
 
   /**
@@ -198,6 +227,7 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       // Join the room
       await client.join(room);
       this.addUserToRoom(client.id, room);
+      this.connectionManager.addToRoom(client.id, room);
 
       // Notify room members
       const joinEvent = createUserActivityEvent(
@@ -249,6 +279,7 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
 
       await client.leave(room);
       this.removeUserFromRoom(client.id, room);
+      this.connectionManager.removeFromRoom(client.id, room);
 
       // Notify room members
       const leaveEvent = createUserActivityEvent(
@@ -587,5 +618,47 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       }
     }
     return false;
+  }
+
+  /**
+   * Get detailed connection pool statistics from connection manager
+   */
+  getDetailedConnectionStats() {
+    return this.connectionManager.getPoolStats();
+  }
+
+  /**
+   * Get connection manager scaling configuration
+   */
+  getScalingConfiguration() {
+    return this.connectionManager.getScalingConfig();
+  }
+
+  /**
+   * Update connection manager scaling configuration
+   */
+  updateScalingConfiguration(updates: any) {
+    return this.connectionManager.updateScalingConfig(updates);
+  }
+
+  /**
+   * Check if the gateway can accept new connections
+   */
+  canAcceptNewConnections(): boolean {
+    return this.connectionManager.canAcceptConnections();
+  }
+
+  /**
+   * Get connections for a specific room using connection manager
+   */
+  getConnectionsInRoom(room: string) {
+    return this.connectionManager.getRoomConnections(room);
+  }
+
+  /**
+   * Get all connections for a specific user using connection manager
+   */
+  getUserConnectionDetails(userId: string) {
+    return this.connectionManager.getUserConnections(userId);
   }
 }
