@@ -1,15 +1,15 @@
 import { z } from 'zod';
-import { 
+import {
   ProcessConfigSchema,
   ClaudeCodeOptionsSchema,
   TaskExecutionRequestSchema,
   WorkerConfigSchema,
   TaskStatusSchema,
   TaskState
-} from '@cc-task-manager/schemas';
+} from '../../schemas/dist';
 
 // Re-export TaskState for convenience
-export { TaskState } from '@cc-task-manager/schemas';
+export { TaskState } from '../../schemas/dist';
 
 /**
  * TypeScript type exports derived from Zod schemas

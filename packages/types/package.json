@@ -8,6 +8,9 @@
     "build": "tsc",
     "dev": "tsc --watch"
   },
+  "dependencies": {
+    "@cc-task-manager/schemas": "../schemas"
+  },
   "devDependencies": {
     "typescript": "^5.1.3"
   }
