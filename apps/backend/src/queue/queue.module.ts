@@ -6,6 +6,7 @@ import { QueueMonitorService } from './queue-monitor.service';
 import { QueueController } from './queue.controller';
 import { QueueConfigService } from './queue.config';
 import { TaskProcessorWorker } from './processors/task-processor.worker';
+import { JobSchedulerService } from './scheduler/job-scheduler.service';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 
 /**
@@ -33,6 +34,7 @@ import { BackendSchemaRegistry } from '../schemas/schema-registry';
  * - QueueManagerService: Advanced queue management with comprehensive job control
  * - QueueMonitorService: Comprehensive queue monitoring and metrics collection
  * - QueueConfigService: Centralized configuration management
+ * - JobSchedulerService: Advanced job scheduling with cron expressions and dependencies
  * - TaskProcessorWorker: Worker for processing Claude Code task execution
  *
  * Exports services for use by other modules.
@@ -40,7 +42,7 @@ import { BackendSchemaRegistry } from '../schemas/schema-registry';
 @Module({
   imports: [ConfigModule],
   controllers: [QueueController],
-  providers: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, TaskProcessorWorker, BackendSchemaRegistry],
-  exports: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, TaskProcessorWorker],
+  providers: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, JobSchedulerService, TaskProcessorWorker, BackendSchemaRegistry],
+  exports: [QueueService, QueueManagerService, QueueMonitorService, QueueConfigService, JobSchedulerService, TaskProcessorWorker],
 })
 export class QueueModule {}

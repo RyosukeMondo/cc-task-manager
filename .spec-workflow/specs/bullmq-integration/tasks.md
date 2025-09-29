@@ -36,7 +36,7 @@
   - _Requirements: 3.1, 3.2, monitoring requirements_
   - _Prompt: Implement the task for spec bullmq-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: DevOps Engineer specializing in monitoring and observability systems | Task: Create comprehensive queue monitoring and metrics collection following requirements 3.1, 3.2, and monitoring requirements, using existing monitoring infrastructure | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must collect meaningful metrics, implement real-time monitoring, ensure low overhead, integrate with existing monitoring stack| _Leverage: existing monitoring patterns and metrics collection systems | Success: Queue health monitoring active, job statistics collected accurately, failure analysis available, performance metrics tracked, monitoring integration working | Instructions: Set to in progress [-], create monitoring service, implement metrics collection, test monitoring data, mark complete [x]_
 
-- [ ] 5. Add job scheduling and cron-based task execution
+- [x] 5. Add job scheduling and cron-based task execution
   - File: apps/backend/src/queue/scheduler/job-scheduler.service.ts
   - Implement job scheduling with cron expressions for recurring tasks
   - Add delayed job execution and job dependency management
