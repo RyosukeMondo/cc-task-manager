@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClaudeWrapperService } from './claude-wrapper.service';
 import { ClaudeCommandService } from './claude-command.service';
+import { ClaudeSessionService } from './claude-session.service';
 
 /**
  * Claude Code integration module
@@ -15,9 +16,9 @@ import { ClaudeCommandService } from './claude-command.service';
  * Implemented services:
  * - ClaudeWrapperService (task 1) - STDIO protocol communication
  * - ClaudeCommandService (task 2) - Command execution and response handling
+ * - ClaudeSessionService (task 3) - Session lifecycle management and state tracking
  *
  * Future services to be added:
- * - ClaudeSessionService (task 3)
  * - ClaudeQueueService (task 4)
  * - ClaudeStreamService (task 5)
  * - ClaudeErrorService (task 6)
@@ -26,7 +27,7 @@ import { ClaudeCommandService } from './claude-command.service';
  * - ClaudeCacheService (task 10)
  */
 @Module({
-  providers: [ClaudeWrapperService, ClaudeCommandService],
-  exports: [ClaudeWrapperService, ClaudeCommandService],
+  providers: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService],
+  exports: [ClaudeWrapperService, ClaudeCommandService, ClaudeSessionService],
 })
 export class ClaudeModule {}

@@ -9,7 +9,7 @@
   - _Requirements: 1.1, 1.2_
   - _Prompt: Implement the task for spec claude-code-wrapper-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Integration Engineer with expertise in Python-Node.js interprocess communication | Task: Create Claude Code wrapper service following requirements 1.1 and 1.2, implementing STDIO protocol communication with existing Python wrapper | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must handle STDIO protocol correctly, implement proper error handling for process communication, ensure process lifecycle management, follow existing wrapper patterns |  _Leverage: scripts/claude_wrapper.py STDIO patterns and existing service architecture | Success: Node.js service communicates reliably with Python wrapper, STDIO protocol implemented correctly, process management robust, error handling comprehensive, communication latency minimized | Instructions: Mark as in progress [-], create wrapper service, implement STDIO communication, test Python integration, mark complete [x]_
 
-- [ ] 2. Implement Claude Code command execution and response handling
+- [x] 2. Implement Claude Code command execution and response handling
   - File: apps/backend/src/claude/claude-command.service.ts
   - Create service for executing Claude Code commands with proper response parsing
   - Add command validation and response transformation logic
@@ -18,7 +18,7 @@
   - _Requirements: 1.1, 1.2, 2.1_
   - _Prompt: Implement the task for spec claude-code-wrapper-integration, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Command Interface Developer with expertise in Claude Code protocol and type safety | Task: Implement Claude Code command execution and response handling following requirements 1.1, 1.2, and 2.1, using STDIO protocol specification | Restrictions: Must follow SOLID principles (SRP, OCP, LSP, ISP, DIP), apply KISS principle for simple solutions, ensure DRY/SSOT compliance with no duplication, implement contract-driven design with interfaces first, apply fail-fast validation and error handling,  Must validate all commands before execution, implement proper response parsing, handle all command types from specification, ensure type safety throughout| _Leverage: Claude Code STDIO protocol documentation and existing command patterns | Success: All Claude Code commands execute correctly, response parsing accurate, command validation prevents errors, type safety maintained, error handling comprehensive | Instructions: Set to in progress [-], create command service, implement execution logic, test all command types, mark complete [x]_
 
-- [ ] 3. Add Claude Code session management and state tracking
+- [x] 3. Add Claude Code session management and state tracking
   - File: apps/backend/src/claude/claude-session.service.ts
   - Implement session lifecycle management for Claude Code instances
   - Add state tracking for active sessions and session cleanup

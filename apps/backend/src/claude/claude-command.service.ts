@@ -415,7 +415,7 @@ export class ClaudeCommandService {
    */
   private handleWrapperError(error: Error): void {
     // Propagate error to all active commands
-    for (const [runId, context] of this.activeCommands.entries()) {
+    for (const [runId, context] of Array.from(this.activeCommands.entries())) {
       if (context.status === 'running') {
         context.status = 'failed';
         context.endTime = new Date();
