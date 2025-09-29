@@ -22,3 +22,4 @@ export {
   SelectScrollUpButton,
   SelectScrollDownButton,
 } from './select';
+export { SkipNav, SkipNavContainer, SkipNavPatterns, useSkipNavTarget } from './skip-nav';
