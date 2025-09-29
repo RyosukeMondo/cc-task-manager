@@ -3,16 +3,17 @@ import { JWTPayload } from '../schemas/auth.schemas';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TasksRepository, ITasksRepository } from './tasks.repository';
 import { QueueService } from '../queue/queue.service';
-import { 
-  TaskBase, 
-  CreateTask, 
-  UpdateTask, 
+import { TaskEventsService } from './events/task-events.service';
+import {
+  TaskBase,
+  CreateTask,
+  UpdateTask,
   TaskQueryFilters,
   TaskStatus,
   TaskPriority,
   TaskCategory,
   TaskStatistics,
-  BulkTaskOperation 
+  BulkTaskOperation
 } from '../schemas/task.schemas';
 
 /**
@@ -49,6 +50,7 @@ export class TasksService {
     private readonly tasksRepository: ITasksRepository,
     private readonly schemaRegistry: BackendSchemaRegistry,
     private readonly queueService: QueueService,
+    private readonly taskEventsService: TaskEventsService,
   ) {}
 
   /**
@@ -77,6 +79,14 @@ export class TasksService {
     const createdTask = await this.tasksRepository.create(validation.data, createdById);
 
     this.logger.log(`Created task: ${createdTask.id} - "${createdTask.title}" by user ${createdById}`);
+
+    // Emit real-time event for task creation
+    try {
+      await this.taskEventsService.emitTaskCreated(createdTask, createdById);
+    } catch (error) {
+      // Don't fail task creation if event emission fails
+      this.logger.error(`Failed to emit task created event: ${error.message}`);
+    }
 
     // Queue task notification job for assignee if assigned
     if (createdTask.assigneeId) {
@@ -259,9 +269,22 @@ export class TasksService {
         taskId,
       });
     }
-    
+
     this.logger.log(`Updated task: ${taskId} - "${updatedTask.title}" by user ${updatedById}`);
-    
+
+    // Emit real-time event for task update
+    try {
+      await this.taskEventsService.emitTaskUpdated(
+        existingTask,
+        updatedTask,
+        updatedById,
+        validation.data
+      );
+    } catch (error) {
+      // Don't fail task update if event emission fails
+      this.logger.error(`Failed to emit task updated event: ${error.message}`);
+    }
+
     return updatedTask;
   }
 
@@ -288,9 +311,17 @@ export class TasksService {
         taskId,
       });
     }
-    
+
     this.logger.log(`Deleted task: ${taskId} - "${existingTask.title}" by user ${deletedById}`);
-    
+
+    // Emit real-time event for task deletion
+    try {
+      await this.taskEventsService.emitTaskDeleted(existingTask, deletedById);
+    } catch (error) {
+      // Don't fail task deletion if event emission fails
+      this.logger.error(`Failed to emit task deleted event: ${error.message}`);
+    }
+
     return { success: true, taskId };
   }
 
@@ -358,7 +389,15 @@ export class TasksService {
     }
 
     this.logger.log(`Bulk operation ${operationType} completed on ${taskIds.length} tasks by user ${operatorId}`);
-    
+
+    // Emit real-time events for bulk operation
+    try {
+      await this.taskEventsService.emitBulkTaskOperation(results.length > 0 ? results : [], operationType, operatorId);
+    } catch (error) {
+      // Don't fail bulk operation if event emission fails
+      this.logger.error(`Failed to emit bulk operation events: ${error.message}`);
+    }
+
     return {
       success: true,
       affectedTasks: taskIds.length,

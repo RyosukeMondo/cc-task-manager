@@ -6,7 +6,9 @@ import { TaskController } from './task.controller';
 import { TasksService } from './tasks.service';
 import { TasksRepository } from './tasks.repository';
 import { TaskOwnershipGuard } from './guards/task-ownership.guard';
+import { TaskEventsService } from './events/task-events.service';
 import { QueueModule } from '../queue/queue.module';
+import { WebSocketModule } from '../websocket/websocket.module';
 import { CaslAbilityFactory } from '../auth/casl-ability.factory';
 
 /**
@@ -32,11 +34,15 @@ import { CaslAbilityFactory } from '../auth/casl-ability.factory';
  *    - Clean separation between HTTP, business, and data layers
  */
 @Module({
-  imports: [QueueModule], // Import QueueModule to use QueueService
+  imports: [
+    QueueModule, // Import QueueModule to use QueueService
+    WebSocketModule, // Import WebSocketModule for real-time events
+  ],
   controllers: [TaskController],
   providers: [
     TasksService,
     TasksRepository,
+    TaskEventsService,
     TaskOwnershipGuard,
     CaslAbilityFactory,
 
@@ -46,6 +52,6 @@ import { CaslAbilityFactory } from '../auth/casl-ability.factory';
     ContractValidationPipe,
     BackendSchemaRegistry,
   ],
-  exports: [TasksService, TasksRepository],
+  exports: [TasksService, TasksRepository, TaskEventsService],
 })
 export class TasksModule {}

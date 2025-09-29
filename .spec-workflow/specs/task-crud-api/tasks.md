@@ -36,7 +36,7 @@
   - _Requirements: 3.1, 3.2, security requirements_
   - _Prompt: Implement the task for spec task-crud-api, first run spec-workflow-guide to get the workflow guide then implement the task: Role: Security Engineer with expertise in NestJS guards and authorization patterns | Task: Create task ownership guards and authorization validation following requirements 3.1, 3.2, and security requirements | Restrictions: Must follow SOLID principles (SRP for focused guard responsibilities, ISP for authorization interfaces), apply KISS principle for authorization logic, ensure DRY/SSOT compliance with centralized authorization rules, implement contract-driven security interfaces first, apply fail-fast authorization validation, prevent unauthorized access completely | _Leverage: existing authentication patterns and guard implementations in apps/backend/src/auth/ | Success: Guards follow SOLID principles with clear separation, KISS principle applied to authorization, DRY/SSOT maintained for security rules, contract-driven interfaces implemented, fail-fast authorization working, ownership validation secure, integration complete | Instructions: Design security contracts first, implement SOLID guard structure, validate fail-fast authorization, test security thoroughly, mark complete [x]_
 
-- [ ] 5. Implement WebSocket event emission for real-time updates
+- [x] 5. Implement WebSocket event emission for real-time updates
   - File: apps/backend/src/tasks/events/task-events.service.ts
   - Create service for emitting task lifecycle events via WebSocket
   - Integrate with task service to emit events on CRUD operations
