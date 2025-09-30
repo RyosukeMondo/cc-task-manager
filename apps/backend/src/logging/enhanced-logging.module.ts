@@ -1,4 +1,5 @@
 import { Module, Global } from '@nestjs/common';
+import { LoggerModule } from 'nestjs-pino';
 import { EnhancedLoggerService } from './enhanced-logger.service';
 
 /**
@@ -7,6 +8,7 @@ import { EnhancedLoggerService } from './enhanced-logger.service';
  */
 @Global()
 @Module({
+  imports: [LoggerModule],
   providers: [EnhancedLoggerService],
   exports: [EnhancedLoggerService],
 })

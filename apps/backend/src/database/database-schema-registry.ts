@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Optional } from '@nestjs/common';
 import { ContractRegistry } from '@contracts/ContractRegistry';
 import {
   UserEntitySchema,
@@ -36,28 +36,34 @@ export class DatabaseSchemaRegistry implements OnModuleInit {
   private readonly logger = new Logger(DatabaseSchemaRegistry.name);
   private registeredSchemas: string[] = [];
 
-  constructor(private readonly contractRegistry: ContractRegistry) {}
+  constructor(@Optional() private readonly contractRegistry?: ContractRegistry) {}
 
   /**
    * Register all database schemas with the existing ContractRegistry
    * Executed during module initialization
    */
   async onModuleInit(): Promise<void> {
+    // Skip registration if ContractRegistry is not available
+    if (!this.contractRegistry) {
+      this.logger.warn('ContractRegistry not available, skipping database schema registration');
+      return;
+    }
+
     try {
       this.logger.log('Registering database schemas with ContractRegistry');
-      
+
       // Register entity schemas
       await this.registerEntitySchemas();
-      
+
       // Register input/output schemas
       await this.registerInputOutputSchemas();
-      
+
       // Register query schemas
       await this.registerQuerySchemas();
-      
+
       this.logger.log(`Successfully registered ${this.registeredSchemas.length} database schemas`);
       this.logger.debug('Registered schemas:', this.registeredSchemas);
-      
+
     } catch (error) {
       this.logger.error('Failed to register database schemas', {
         error: error.message,

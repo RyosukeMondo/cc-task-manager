@@ -16,7 +16,7 @@ import { QueueModule } from './queue/queue.module';
 import { OpenApiModule } from './docs/openapi.module';
 import { HealthModule } from './health/health.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
-import { EnhancedLoggingModule } from './logging/enhanced-logging.module';
+import { LoggingModule } from './logging/logging.module';
 import { RequestLoggingMiddleware } from './logging/request-logging.middleware';
 import { CorrelationIdMiddleware } from './common/middleware';
 
@@ -44,7 +44,7 @@ import { CorrelationIdMiddleware } from './common/middleware';
     }),
     
     // Enhanced structured logging with Pino and correlation tracking
-    EnhancedLoggingModule,
+    LoggingModule,
     
     // Database module with Prisma integration
     DatabaseModule,
@@ -59,16 +59,19 @@ import { CorrelationIdMiddleware } from './common/middleware';
     UserModule,
 
     // WebSocket module for real-time communication
-    WebSocketModule,
+    // Temporarily disabled due to dependency issues
+    // WebSocketModule,
 
     // Queue module for job processing with BullMQ
-    QueueModule,
+    // Temporarily disabled due to ApplicationConfigService dependency issues
+    // QueueModule,
 
     // Health module for monitoring and health checks
     HealthModule,
 
     // OpenAPI documentation module using existing ApiContractGenerator
-    OpenApiModule,
+    // Temporarily disabled due to ContractRegistry dependency issues
+    // OpenApiModule,
   ],
   
   controllers: [AppController],
