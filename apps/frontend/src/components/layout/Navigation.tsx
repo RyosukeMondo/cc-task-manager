@@ -48,13 +48,12 @@ const navigationItems = [
     icon: DashboardIcon,
     description: 'Main dashboard with task overview and statistics'
   },
-  // Temporarily commented out until pages are implemented
-  // {
-  //   href: '/tasks',
-  //   label: 'Tasks',
-  //   icon: TaskIcon,
-  //   description: 'Task management and monitoring'
-  // },
+  {
+    href: '/tasks',
+    label: 'Tasks',
+    icon: TaskIcon,
+    description: 'Task management and monitoring'
+  },
   // {
   //   href: '/settings',
   //   label: 'Settings',
