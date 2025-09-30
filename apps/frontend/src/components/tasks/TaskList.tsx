@@ -1,212 +1,151 @@
-'use client';
+'use client'
 
-import React, { useState, useMemo } from 'react';
-import { TaskStatus, TaskState } from '@cc-task-manager/types';
-import { TaskDisplay } from './TaskDisplay';
-import { TaskFilters, TaskFilters as TaskFiltersType, TaskSorting, TaskPriority } from './TaskFilters';
-import { TaskSearch } from './TaskSearch';
-import { cn } from '../../lib/utils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import {
-  RefreshCw,
-  Filter,
-  Clock
-} from 'lucide-react';
+import * as React from 'react'
+import { useTasks, useUpdateTask, useDeleteTask } from '@/hooks/useTasks'
+import { TaskItem } from './TaskItem'
+import { Task, TaskStatus, TaskPriority, type TaskFilter } from '@/types/task'
+import { Alert } from '@/components/ui/alert'
+import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
-interface TaskListProps {
-  tasks: TaskStatus[];
-  onRefresh?: () => void;
-  onTaskSelect?: (task: TaskStatus) => void;
-  isLoading?: boolean;
-  className?: string;
-  showFilters?: boolean;
-  showSearch?: boolean;
+export interface TaskListProps {
+  initialFilters?: TaskFilter
+  onTaskEdit?: (taskId: string) => void
+  className?: string
 }
 
 /**
- * TaskList component following Single Responsibility Principle
- * Now uses modular TaskFilters and TaskSearch components
- * Responsible only for orchestrating task display and coordinating filters
+ * TaskList - Container component for displaying and managing a list of tasks
+ *
+ * Features:
+ * - Fetches tasks using useTasks hook with filtering support
+ * - Renders TaskItem components for each task
+ * - Handles loading, error, and empty states
+ * - Manages task status updates and deletions
+ * - Real-time updates via WebSocket integration
+ * - Accessible with proper ARIA labels and keyboard navigation
+ *
+ * Requirements: 1.1, 1.2, 1.3, 3.1, 3.2
  */
-export function TaskList({
-  tasks,
-  onRefresh,
-  onTaskSelect,
-  isLoading = false,
+export const TaskList = React.memo<TaskListProps>(({
+  initialFilters,
+  onTaskEdit,
   className,
-  showFilters = true,
-  showSearch = true
-}: TaskListProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredBySearch, setFilteredBySearch] = useState<TaskStatus[]>(tasks);
-  const [filters, setFilters] = useState<TaskFiltersType>({
-    status: [],
-    priority: [],
-    dateRange: { start: null, end: null },
-    search: ''
-  });
-  const [sorting, setSorting] = useState<TaskSorting>({
-    field: 'lastActivity',
-    direction: 'desc'
-  });
+}) => {
+  const { tasks, isLoading, isError, error, filters, setFilters } = useTasks(initialFilters)
+  const updateTaskMutation = useUpdateTask()
+  const deleteTaskMutation = useDeleteTask()
 
-  // Apply comprehensive filtering logic
-  const finalFilteredTasks = useMemo(() => {
-    let filtered = filteredBySearch;
+  // Handle status change
+  const handleStatusChange = React.useCallback(
+    async (taskId: string, status: TaskStatus) => {
+      try {
+        await updateTaskMutation.mutateAsync({
+          taskId,
+          updates: { status },
+        })
+      } catch (error) {
+        console.error('Failed to update task status:', error)
+      }
+    },
+    [updateTaskMutation]
+  )
 
-    // Apply status filters
-    if (filters.status.length > 0) {
-      filtered = filtered.filter(task => filters.status.includes(task.state));
-    }
-
-    // Apply date range filters
-    if (filters.dateRange.start || filters.dateRange.end) {
-      filtered = filtered.filter(task => {
-        const taskDate = new Date(task.lastActivity);
-        const startMatch = !filters.dateRange.start || taskDate >= filters.dateRange.start;
-        const endMatch = !filters.dateRange.end || taskDate <= filters.dateRange.end;
-        return startMatch && endMatch;
-      });
-    }
-
-    // Note: Priority filtering would need to be added to TaskStatus type
-    // For now, we'll skip priority filtering since it's not in the current schema
-
-    return filtered;
-  }, [filteredBySearch, filters]);
-
-  // Apply sorting
-  const sortedTasks = useMemo(() => {
-    const sorted = [...finalFilteredTasks];
-
-    sorted.sort((a, b) => {
-      let comparison = 0;
-
-      switch (sorting.field) {
-        case 'lastActivity':
-          comparison = new Date(a.lastActivity).getTime() - new Date(b.lastActivity).getTime();
-          break;
-        case 'taskId':
-          comparison = a.taskId.localeCompare(b.taskId);
-          break;
-        case 'state':
-          comparison = a.state.localeCompare(b.state);
-          break;
-        case 'priority':
-          // Priority sorting would be implemented here when priority is added to schema
-          comparison = 0;
-          break;
+  // Handle task deletion
+  const handleDelete = React.useCallback(
+    async (taskId: string) => {
+      if (!window.confirm('Are you sure you want to delete this task?')) {
+        return
       }
 
-      return sorting.direction === 'asc' ? comparison : -comparison;
-    });
+      try {
+        await deleteTaskMutation.mutateAsync(taskId)
+      } catch (error) {
+        console.error('Failed to delete task:', error)
+      }
+    },
+    [deleteTaskMutation]
+  )
 
-    return sorted;
-  }, [finalFilteredTasks, sorting]);
+  // Loading state
+  if (isLoading) {
+    return (
+      <div
+        className={cn('space-y-4', className)}
+        role="status"
+        aria-label="Loading tasks"
+      >
+        {[...Array(3)].map((_, i) => (
+          <Card key={i} className="animate-pulse">
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <div className="h-5 bg-muted rounded w-3/4" />
+                <div className="h-4 bg-muted rounded w-1/2" />
+                <div className="h-4 bg-muted rounded w-1/4" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        <span className="sr-only">Loading tasks...</span>
+      </div>
+    )
+  }
 
-  // Get task counts for each state
-  const taskCounts = useMemo(() => {
-    const counts = {} as Record<TaskState, number>;
-    Object.values(TaskState).forEach(state => {
-      counts[state] = tasks.filter(task => task.state === state).length;
-    });
-    return counts;
-  }, [tasks]);
+  // Error state
+  if (isError) {
+    return (
+      <Alert
+        className={cn('border-destructive', className)}
+        role="alert"
+        aria-live="assertive"
+      >
+        <div className="font-semibold">Failed to load tasks</div>
+        <div className="text-sm text-muted-foreground mt-1">
+          {error instanceof Error ? error.message : 'An unexpected error occurred'}
+        </div>
+      </Alert>
+    )
+  }
 
-  // Handle search results from TaskSearch component
-  const handleSearchResults = (results: TaskStatus[]) => {
-    setFilteredBySearch(results);
-  };
-
-  return (
-    <div className={cn('w-full space-y-4', className)}>
-      {/* Search Component */}
-      {showSearch && (
-        <TaskSearch
-          tasks={tasks}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          onSearchResults={handleSearchResults}
-          placeholder="Search tasks by ID, progress, or error..."
-          showAdvancedOptions={true}
-          debounceMs={300}
-        />
-      )}
-
-      {/* Filters Component */}
-      {showFilters && (
-        <TaskFilters
-          filters={filters}
-          sorting={sorting}
-          onFiltersChange={setFilters}
-          onSortingChange={setSorting}
-          taskCounts={taskCounts}
-          showPresets={true}
-        />
-      )}
-
-      {/* Task List Display */}
-      <Card className="w-full">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Task List</CardTitle>
-              <CardDescription>
-                {tasks.length} total tasks • {sortedTasks.length} filtered
-              </CardDescription>
-            </div>
-            {onRefresh && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onRefresh}
-                disabled={isLoading}
-              >
-                <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-              </Button>
-            )}
+  // Empty state
+  if (!tasks || tasks.length === 0) {
+    return (
+      <Card className={cn('border-dashed', className)} role="status">
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="text-5xl mb-4" aria-hidden="true">
+            📋
           </div>
-        </CardHeader>
-
-        <CardContent>
-          {sortedTasks.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              {searchTerm || filters.status.length > 0 || filters.dateRange.start || filters.dateRange.end ? (
-                <div>
-                  <Filter className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No tasks match your current filters</p>
-                  <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
-                </div>
-              ) : (
-                <div>
-                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No tasks found</p>
-                  <p className="text-sm mt-1">Tasks will appear here when they are created</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sortedTasks.map((task) => (
-                <div
-                  key={task.taskId}
-                  className={cn(
-                    'transition-opacity',
-                    onTaskSelect && 'cursor-pointer hover:opacity-80'
-                  )}
-                  onClick={() => onTaskSelect?.(task)}
-                >
-                  <TaskDisplay
-                    task={task}
-                    showDetails={true}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <h3 className="text-lg font-semibold mb-2">No tasks found</h3>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            {filters ?
+              'Try adjusting your filters to see more tasks.' :
+              'Get started by creating your first task.'
+            }
+          </p>
         </CardContent>
       </Card>
+    )
+  }
+
+  // Task list
+  return (
+    <div
+      className={cn('space-y-4', className)}
+      role="feed"
+      aria-label="Task list"
+      aria-busy={updateTaskMutation.isPending || deleteTaskMutation.isPending}
+    >
+      {tasks.map((task) => (
+        <TaskItem
+          key={task.id}
+          task={task}
+          onStatusChange={handleStatusChange}
+          onEdit={onTaskEdit}
+          onDelete={handleDelete}
+        />
+      ))}
     </div>
-  );
-}
+  )
+})
+
+TaskList.displayName = 'TaskList'
