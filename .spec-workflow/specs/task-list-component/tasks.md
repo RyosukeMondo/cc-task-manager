@@ -31,7 +31,7 @@ All tasks must follow contract-driven development. Task 0 MUST be completed befo
   - _Requirements: 1.1, 1.2, 3.1_
   - _Prompt: Role: React Developer with expertise in custom hooks and data fetching | Task: Implement useTasks custom hook following requirements 1.1, 1.2, and 3.1, integrating with existing API client and WebSocket context for real-time updates | Restrictions: Must handle loading, error, and success states, follow existing hook patterns, implement proper cleanup | Success: Hook provides tasks data with loading/error states, supports filtering, and updates in real-time via WebSocket_
 
-- [ ] 3. Create TaskItem presentational component
+- [x] 3. Create TaskItem presentational component
   - File: apps/frontend/src/components/tasks/TaskItem.tsx
   - Implement single task display component with status badges and actions
   - Purpose: Reusable component for rendering individual tasks
