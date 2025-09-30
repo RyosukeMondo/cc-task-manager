@@ -96,7 +96,7 @@ Task 0 MUST be completed before any other tasks. All settings functionality depe
   - _Requirements: All requirements_
   - _Prompt: Role: QA Engineer | Task: Create comprehensive tests for settings page covering all requirements, testing forms, validation, saving, and user interactions | Restrictions: Must test user-facing behavior, mock API calls, follow test patterns | Success: Tests cover all settings functionality, forms, validation, persistence, and are reliable_
 
-- [ ] 11. Add E2E tests for settings workflow
+- [x] 11. Add E2E tests for settings workflow
   - File: apps/frontend/e2e/settings.spec.ts
   - Write end-to-end tests for complete settings workflow
   - Purpose: Verify complete user journey works
