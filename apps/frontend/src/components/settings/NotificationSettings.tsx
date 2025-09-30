@@ -3,7 +3,16 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { NotificationSettingsSchema, type NotificationSettings } from '@/types/settings';
+import { z } from 'zod';
+import { type NotificationSettings } from '@/types/settings';
+
+// Temporary workaround: define schema inline until import issue is resolved
+const NotificationSettingsSchema = z.object({
+  emailNotifications: z.boolean(),
+  pushNotifications: z.boolean(),
+  taskReminders: z.boolean(),
+  dailyDigest: z.boolean(),
+});
 import { SwitchField } from '@/components/forms/FormField';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

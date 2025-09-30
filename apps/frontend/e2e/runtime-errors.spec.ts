@@ -49,7 +49,7 @@ function setupErrorListeners(page: Page): RuntimeError[] {
     }
   });
 
-  // Listen for console errors
+  // Listen for console errors and logs
   page.on('console', (msg) => {
     if (msg.type() === 'error') {
       const text = msg.text();
@@ -64,6 +64,10 @@ function setupErrorListeners(page: Page): RuntimeError[] {
         });
         console.error(`\n⚠️  Console Error on ${page.url()}: ${text}`);
       }
+    }
+    // Also log console.log messages for debugging
+    if (msg.type() === 'log') {
+      console.log(`📝 Browser console.log: ${msg.text()}`);
     }
   });
 

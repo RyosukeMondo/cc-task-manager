@@ -6,9 +6,11 @@
 1. [Overview](#overview)
 2. [Automatic Error Detection](#automatic-error-detection)
 3. [Common Runtime Errors & Fixes](#common-runtime-errors--fixes)
-4. [Testing Strategy](#testing-strategy)
-5. [Best Practices](#best-practices)
-6. [Troubleshooting](#troubleshooting)
+4. [Critical Lessons Learned](#critical-lessons-learned)
+5. [Testing Strategy](#testing-strategy)
+6. [Best Practices](#best-practices)
+7. [UI/UX Error Handling](#uiux-error-handling)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -269,6 +271,338 @@ await page.waitForTimeout(1000);
 ```
 
 **File:** `e2e/fixtures/auth.ts`
+
+---
+
+## Critical Lessons Learned
+
+### Lesson 1: Test User Interactions, Not Just Page Loads
+
+**The Problem:**
+Initial testing only checked if pages loaded without errors. However, clicking tabs, buttons, or interacting with forms revealed **hidden runtime errors** that only trigger on user interaction.
+
+**Real Example:**
+```typescript
+// ❌ INSUFFICIENT: Only tests page load
+test('Settings page loads', async ({ page }) => {
+  await page.goto('/settings');
+  expect(errors).toHaveLength(0); // ✅ Passes!
+});
+
+// ✅ COMPREHENSIVE: Tests actual user interactions
+test('Settings tabs work', async ({ page }) => {
+  await page.goto('/settings');
+
+  // Click Preferences tab
+  await page.locator('[role="tab"]', { hasText: /Preferences/i }).click();
+  // ❌ CRASHES: Theme.SYSTEM is undefined!
+
+  expect(errors).toHaveLength(0); // Test would have failed here
+});
+```
+
+**Bug Discovered:**
+When clicking the Preferences tab, `Theme.SYSTEM` was undefined because TypeScript enums from `@cc-task-manager/schemas` weren't resolving in the browser (webpack bundling issue).
+
+**Fix:**
+Define enums inline in the component as a workaround until proper ESM module resolution is configured.
+
+**Lesson:**
+**Always test user interactions**, not just initial page renders. Create interaction tests:
+- Click all tabs/buttons
+- Fill out forms
+- Toggle switches
+- Select dropdowns
+- Submit forms
+
+---
+
+### Lesson 2: Monorepo Package Import Issues
+
+**The Problem:**
+Schemas and enums imported from shared packages (`@cc-task-manager/schemas`) were `undefined` in browser context, even though:
+- ✅ Package builds successfully
+- ✅ Types work in IDE
+- ✅ Node.js can require the package
+- ❌ **Webpack fails to bundle it for the browser**
+
+**Root Cause:**
+CommonJS packages with `main: "dist/index.js"` don't provide proper ESM exports for modern bundlers.
+
+**Detection:**
+```typescript
+// Add debugging to component (temporarily)
+console.log('UserProfileSchema:', UserProfileSchema);
+// Output in browser: undefined
+// Output in Node: { _def: {...}, parse: [Function] }
+```
+
+**Fix (Temporary Workaround):**
+```typescript
+// Define schemas inline until package.json exports are fixed
+const UserProfileSchema = z.object({
+  name: z.string().min(1).max(100).trim(),
+  email: z.string().email().max(255).trim().toLowerCase(),
+  avatar: z.string().url().max(2048).optional().nullable(),
+  bio: z.string().max(500).trim().optional().nullable(),
+});
+```
+
+**Fix (Proper Solution):**
+Update `packages/schemas/package.json`:
+```json
+{
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false
+}
+```
+
+**Lesson:**
+- Test imports in **browser context**, not just Node.js
+- Add console.log debugging in components to verify imports
+- Use `exports` field for modern package resolution
+
+---
+
+### Lesson 3: Test ALL Imports at Component Initialization
+
+**The Problem:**
+Schemas were imported but **only used inside form initialization** (inside component function). E2E tests that just loaded the page didn't trigger the form code path.
+
+**Example:**
+```typescript
+export function ProfileSettings() {
+  // ✅ Component renders - page loads successfully
+
+  const form = useForm({
+    // ❌ ERROR HERE: UserProfileSchema is undefined
+    // But this only executes when component actually mounts!
+    resolver: zodResolver(UserProfileSchema),
+  });
+
+  return <div>...</div>;
+}
+```
+
+**Why Tests Passed:**
+```typescript
+// Test loaded /settings page
+await page.goto('/settings');
+// ProfileSettings component rendered
+// But the Profile tab content was LAZY loaded
+// Form initialization never happened!
+```
+
+**Fix:**
+```typescript
+// Add test that actually clicks tabs and triggers component mount
+test('Settings Preferences tab works', async ({ page }) => {
+  await page.goto('/settings');
+
+  // Click the tab - THIS triggers component mount + form init
+  await page.locator('[role="tab"]', { hasText: /Preferences/i }).click();
+
+  // Now the error would be caught
+  expect(errors).toHaveLength(0);
+});
+```
+
+**Lesson:**
+Create E2E tests for **tab switches**, **modal opens**, **accordion expands**, and any lazy-loaded content.
+
+---
+
+### Lesson 4: UI/UX for Missing/Error States
+
+**The Problem:**
+When no user settings exist in the database, the UI shows:
+```
+HTTP 404: Not Found
+```
+
+This is technically correct (no resource exists) but creates a **terrible user experience**.
+
+**Better Approaches:**
+
+**Option 1: Initialize Default Settings (Backend)**
+```typescript
+// backend/src/settings/settings.service.ts
+async getSettings(userId: string) {
+  let settings = await this.db.findOne({ userId });
+
+  // Auto-create if not exists
+  if (!settings) {
+    settings = await this.db.create({
+      userId,
+      profile: { name: '', email: '' },
+      preferences: { theme: 'system', language: 'en', ... },
+      notifications: { emailNotifications: true, ... },
+    });
+  }
+
+  return settings;
+}
+```
+
+**Option 2: Handle in Frontend (Empty State UI)**
+```typescript
+// frontend/src/app/settings/page.tsx
+function SettingsPage() {
+  const { data, error, isLoading } = useSettings();
+
+  if (isLoading) return <LoadingSpinner />;
+
+  if (error?.status === 404) {
+    return (
+      <EmptyState
+        icon={<Settings />}
+        title="Welcome! Let's set up your preferences"
+        description="Create your profile and customize your experience"
+        action={
+          <Button onClick={createDefaultSettings}>
+            Get Started
+          </Button>
+        }
+      />
+    );
+  }
+
+  return <SettingsForm data={data} />;
+}
+```
+
+**Lesson:**
+- Never show raw HTTP errors to users
+- 404 = Create empty state with helpful guidance
+- 500 = Show "Something went wrong" with retry button
+- Missing data = Auto-initialize or guide user to create it
+
+---
+
+### Lesson 5: Why Initial Testing Missed These Issues
+
+**Root Cause Analysis:**
+
+1. **Incomplete Test Coverage**
+   - ❌ Only tested page loads
+   - ❌ Didn't test tab clicks, button clicks, form interactions
+   - ❌ Didn't test API error responses (404, 500)
+
+2. **Narrow Error Scope**
+   - ❌ Assumed working in Node = working in browser
+   - ❌ Didn't verify imports in browser console
+   - ❌ Didn't test lazy-loaded components
+
+3. **Missing UI/UX Review**
+   - ❌ Didn't think about "What if no data exists?"
+   - ❌ Didn't consider user experience for error states
+   - ❌ Focused on "does it work?" not "is it usable?"
+
+**How to Be More Thorough:**
+
+✅ **Comprehensive E2E Test Matrix:**
+```typescript
+// For each page:
+✅ Page loads without errors
+✅ All tabs/accordions can be opened
+✅ All buttons can be clicked
+✅ All forms can be filled and submitted
+✅ Error states render properly
+✅ Empty states render properly
+✅ Loading states work
+✅ Network errors are handled gracefully
+```
+
+✅ **Test in Browser DevTools:**
+```javascript
+// Open browser console on each page
+// Check for:
+console.log('Check imports:', {
+  schema: UserProfileSchema, // Should NOT be undefined
+  enum: Theme.SYSTEM, // Should be 'system'
+});
+
+// Click every interactive element
+// Watch console for errors
+```
+
+✅ **Think Like a User:**
+- What happens if I'm a new user with no data?
+- What happens if the API is down?
+- What happens if I spam-click buttons?
+- What happens on slow internet?
+
+---
+
+### Lesson 6: The Test-Driven Detection Mindset
+
+**Old Mindset:** Build feature → Manually test → Find bugs → Fix → Repeat
+
+**New Mindset:** Build feature → Write E2E test → Test finds bugs → Fix → Test passes → Done
+
+**Example Workflow:**
+
+```bash
+# 1. Build feature
+git checkout -b feature/settings-page
+
+# 2. Write comprehensive E2E test FIRST
+cat > e2e/settings-full-flow.spec.ts << 'EOF'
+test('Complete settings workflow', async ({ page }) => {
+  // Load page
+  await page.goto('/settings');
+
+  // Test Profile tab
+  await page.click('[role="tab"]:has-text("Profile")');
+  await page.fill('input[name="name"]', 'John Doe');
+  await page.click('button:has-text("Save")');
+  await expect(page.locator('text=saved successfully')).toBeVisible();
+
+  // Test Preferences tab
+  await page.click('[role="tab"]:has-text("Preferences")');
+  await page.selectOption('select[name="theme"]', 'dark');
+  await page.click('button:has-text("Save")');
+
+  // Test Notifications tab
+  await page.click('[role="tab"]:has-text("Notifications")');
+  await page.check('input[name="emailNotifications"]');
+  await page.click('button:has-text("Save")');
+
+  // Verify no errors occurred
+  expect(errors).toHaveLength(0);
+});
+EOF
+
+# 3. Run test (will fail with specific errors)
+pnpm test:e2e settings-full-flow
+
+# 4. Fix errors one by one
+# - Fix Theme.SYSTEM undefined
+# - Fix schema imports
+# - Add proper error handling
+
+# 5. Re-run test until it passes
+pnpm test:e2e settings-full-flow
+
+# 6. Commit with confidence
+git commit -m "feat: settings page with full E2E coverage"
+```
+
+**Benefits:**
+- ✅ Bugs found **before** code review
+- ✅ Prevents regressions
+- ✅ Documents expected behavior
+- ✅ Faster development (no manual testing)
 
 ---
 

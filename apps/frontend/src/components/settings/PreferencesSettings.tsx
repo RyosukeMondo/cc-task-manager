@@ -3,15 +3,62 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  AppPreferencesSchema,
-  type AppPreferences,
-  Theme,
-  Language,
-  DateFormat,
-  TimeFormat,
-  DefaultView,
-} from '@/types/settings';
+import { z } from 'zod';
+import type { AppPreferences } from '@/types/settings';
+
+// Temporary workaround: define enums and schemas inline until import issue is resolved
+enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark',
+  SYSTEM = 'system',
+}
+
+enum Language {
+  EN = 'en',
+  ES = 'es',
+  FR = 'fr',
+  DE = 'de',
+  IT = 'it',
+  PT = 'pt',
+  JA = 'ja',
+  ZH = 'zh',
+  KO = 'ko',
+  RU = 'ru',
+}
+
+enum DateFormat {
+  MM_DD_YYYY = 'MM/DD/YYYY',
+  DD_MM_YYYY = 'DD/MM/YYYY',
+  YYYY_MM_DD = 'YYYY-MM-DD',
+  MMM_DD_YYYY = 'MMM DD, YYYY',
+  DD_MMM_YYYY = 'DD MMM YYYY',
+}
+
+enum TimeFormat {
+  TWELVE_HOUR = '12h',
+  TWENTY_FOUR_HOUR = '24h',
+}
+
+enum DefaultView {
+  DASHBOARD = 'dashboard',
+  TASKS = 'tasks',
+  CALENDAR = 'calendar',
+  SETTINGS = 'settings',
+}
+
+const ThemeSchema = z.nativeEnum(Theme);
+const LanguageSchema = z.nativeEnum(Language);
+const DateFormatSchema = z.nativeEnum(DateFormat);
+const TimeFormatSchema = z.nativeEnum(TimeFormat);
+const DefaultViewSchema = z.nativeEnum(DefaultView);
+
+const AppPreferencesSchema = z.object({
+  theme: ThemeSchema,
+  language: LanguageSchema,
+  dateFormat: DateFormatSchema,
+  timeFormat: TimeFormatSchema,
+  defaultView: DefaultViewSchema,
+});
 import { SelectField } from '@/components/forms/FormField';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

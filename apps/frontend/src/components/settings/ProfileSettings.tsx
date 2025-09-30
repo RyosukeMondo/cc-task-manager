@@ -3,13 +3,37 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { UserProfileSchema, type UserProfile } from '@/types/settings';
+import { z } from 'zod';
+import { type UserProfile } from '@cc-task-manager/schemas';
 import { TextField, TextareaField } from '@/components/forms/FormField';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, User, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Temporary workaround: define schema inline until import issue is resolved
+const UserProfileSchema = z.object({
+  name: z.string()
+    .min(1, 'Name is required')
+    .max(100, 'Name must not exceed 100 characters')
+    .trim(),
+  email: z.string()
+    .email('Invalid email address')
+    .max(255, 'Email must not exceed 255 characters')
+    .trim()
+    .toLowerCase(),
+  avatar: z.string()
+    .url('Avatar must be a valid URL')
+    .max(2048, 'Avatar URL must not exceed 2048 characters')
+    .optional()
+    .nullable(),
+  bio: z.string()
+    .max(500, 'Bio must not exceed 500 characters')
+    .trim()
+    .optional()
+    .nullable(),
+});
 
 /**
  * ProfileSettings component props
