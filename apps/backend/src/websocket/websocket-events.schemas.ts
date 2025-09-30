@@ -23,6 +23,25 @@ export enum WebSocketEventType {
   // System events
   NOTIFICATION = 'system:notification',
   ALERT = 'system:alert',
+  SYSTEM_HEALTH_STATUS = 'system:health_status',
+  SYSTEM_PERFORMANCE_METRICS = 'system:performance_metrics',
+  SYSTEM_ALERT = 'system:alert_notification',
+
+  // Queue job events
+  QUEUE_JOB_STARTED = 'queue:job_started',
+  QUEUE_JOB_PROGRESS = 'queue:job_progress',
+  QUEUE_JOB_COMPLETED = 'queue:job_completed',
+  QUEUE_JOB_FAILED = 'queue:job_failed',
+  QUEUE_JOB_STALLED = 'queue:job_stalled',
+
+  // Claude Code execution events
+  CLAUDE_EXECUTION_STARTED = 'claude:execution_started',
+  CLAUDE_EXECUTION_PROGRESS = 'claude:execution_progress',
+  CLAUDE_EXECUTION_OUTPUT = 'claude:execution_output',
+  CLAUDE_EXECUTION_COMPLETED = 'claude:execution_completed',
+  CLAUDE_EXECUTION_FAILED = 'claude:execution_failed',
+  CLAUDE_EXECUTION_PAUSED = 'claude:execution_paused',
+  CLAUDE_EXECUTION_RESUMED = 'claude:execution_resumed',
   
   // Room events
   JOIN_ROOM = 'room:join',
@@ -105,12 +124,144 @@ export const NotificationEventDataSchema = z.object({
 });
 
 /**
+ * System health status enumeration
+ */
+export enum SystemHealthStatus {
+  HEALTHY = 'healthy',
+  DEGRADED = 'degraded',
+  UNHEALTHY = 'unhealthy',
+  CRITICAL = 'critical',
+}
+
+/**
+ * System health event data schema
+ */
+export const SystemHealthEventDataSchema = z.object({
+  service: z.string().min(1, 'Service name is required'),
+  status: z.nativeEnum(SystemHealthStatus),
+  message: z.string().optional(),
+  details: z.record(z.any()).optional(),
+  timestamp: z.date().default(() => new Date()),
+
+  // Health check metadata
+  responseTime: z.number().min(0).optional(), // milliseconds
+  uptime: z.number().min(0).optional(), // seconds
+  version: z.string().optional(),
+  environment: z.string().optional(),
+
+  // Previous status for tracking changes
+  previousStatus: z.nativeEnum(SystemHealthStatus).optional(),
+});
+
+/**
+ * System performance metrics event data schema
+ */
+export const SystemPerformanceEventDataSchema = z.object({
+  // CPU metrics
+  cpuUsage: z.number().min(0).max(100).optional(), // percentage
+  cpuLoadAverage: z.array(z.number().min(0)).optional(), // 1min, 5min, 15min
+
+  // Memory metrics
+  memoryUsage: z.number().min(0).optional(), // bytes
+  memoryTotal: z.number().min(0).optional(), // bytes
+  memoryPercentage: z.number().min(0).max(100).optional(), // percentage
+  heapUsed: z.number().min(0).optional(), // bytes
+  heapTotal: z.number().min(0).optional(), // bytes
+
+  // Disk metrics
+  diskUsage: z.number().min(0).optional(), // bytes
+  diskTotal: z.number().min(0).optional(), // bytes
+  diskPercentage: z.number().min(0).max(100).optional(), // percentage
+
+  // Network metrics
+  networkBytesIn: z.number().min(0).optional(),
+  networkBytesOut: z.number().min(0).optional(),
+
+  // Application metrics
+  activeConnections: z.number().int().min(0).optional(),
+  requestsPerSecond: z.number().min(0).optional(),
+  averageResponseTime: z.number().min(0).optional(), // milliseconds
+  errorRate: z.number().min(0).max(100).optional(), // percentage
+
+  // Database metrics
+  dbConnections: z.number().int().min(0).optional(),
+  dbQueryTime: z.number().min(0).optional(), // milliseconds
+  dbQueueSize: z.number().int().min(0).optional(),
+
+  // Queue metrics
+  queueSize: z.number().int().min(0).optional(),
+  queueProcessingRate: z.number().min(0).optional(), // jobs/second
+  queueFailureRate: z.number().min(0).max(100).optional(), // percentage
+
+  timestamp: z.date().default(() => new Date()),
+  service: z.string().min(1, 'Service name is required'),
+  environment: z.string().optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
+/**
+ * System alert event data schema
+ */
+export const SystemAlertEventDataSchema = z.object({
+  alertId: z.string().min(1, 'Alert ID is required'),
+  title: z.string().min(1, 'Alert title is required').max(100, 'Title must not exceed 100 characters'),
+  message: z.string().min(1, 'Alert message is required').max(1000, 'Message must not exceed 1000 characters'),
+  severity: z.enum(['low', 'medium', 'high', 'critical']),
+  category: z.enum(['performance', 'security', 'availability', 'error', 'custom']),
+
+  // Alert source information
+  service: z.string().min(1, 'Service name is required'),
+  component: z.string().optional(),
+  environment: z.string().optional(),
+
+  // Alert timing
+  triggeredAt: z.date().default(() => new Date()),
+  resolvedAt: z.date().optional(),
+  acknowledged: z.boolean().default(false),
+  acknowledgedBy: z.string().uuid().optional(),
+  acknowledgedAt: z.date().optional(),
+
+  // Alert rules and thresholds
+  rule: z.string().optional(),
+  threshold: z.number().optional(),
+  currentValue: z.number().optional(),
+
+  // Alert metadata
+  tags: z.array(z.string()).optional(),
+  runbook: z.string().url().optional(),
+  actionRequired: z.boolean().default(false),
+  autoResolve: z.boolean().default(false),
+  escalated: z.boolean().default(false),
+
+  metadata: z.record(z.any()).optional(),
+});
+
+/**
  * Room management event data schema
  */
 export const RoomEventDataSchema = z.object({
   roomId: z.string().min(1, 'Room ID is required'),
   roomType: z.nativeEnum(WebSocketRoomType),
   action: z.enum(['join', 'leave']),
+  metadata: z.record(z.any()).optional(),
+});
+
+/**
+ * Queue job event data schema
+ */
+export const QueueJobEventDataSchema = z.object({
+  jobId: z.string().min(1, 'Job ID is required'),
+  queueName: z.string().min(1, 'Queue name is required'),
+  jobType: z.string().min(1, 'Job type is required'),
+  status: z.enum(['started', 'progress', 'completed', 'failed', 'stalled']),
+  progress: z.number().min(0).max(100).optional(),
+  result: z.any().optional(),
+  error: z.string().optional(),
+  attemptsMade: z.number().int().min(0).optional(),
+  maxAttempts: z.number().int().min(1).optional(),
+  processingTime: z.number().min(0).optional(), // milliseconds
+  startedAt: z.date().optional(),
+  completedAt: z.date().optional(),
   metadata: z.record(z.any()).optional(),
 });
 
@@ -122,6 +273,55 @@ export const ConnectionEventDataSchema = z.object({
   userAgent: z.string().max(1000, 'User agent must not exceed 1000 characters').optional(),
   ipAddress: z.string().ip('Invalid IP address').optional(),
   connectedAt: z.date().default(() => new Date()),
+});
+
+/**
+ * Claude execution event data schema
+ */
+export const ClaudeExecutionEventDataSchema = z.object({
+  executionId: z.string().min(1, 'Execution ID is required'),
+  taskId: z.string().uuid('Task ID must be a valid UUID').optional(),
+  sessionId: z.string().min(1, 'Session ID is required').optional(),
+  status: z.enum(['started', 'progress', 'output', 'completed', 'failed', 'paused', 'resumed']),
+  progress: z.number().min(0).max(100).optional(),
+
+  // Output data
+  output: z.string().optional(),
+  outputType: z.enum(['stdout', 'stderr', 'tool_use', 'tool_result', 'user_message', 'assistant_message']).optional(),
+  outputChunk: z.string().optional(), // For streaming large outputs
+  chunkIndex: z.number().int().min(0).optional(),
+  totalChunks: z.number().int().min(1).optional(),
+
+  // Execution metadata
+  command: z.string().optional(),
+  workingDirectory: z.string().optional(),
+  environment: z.record(z.string()).optional(),
+
+  // Performance metrics
+  tokensUsed: z.number().int().min(0).optional(),
+  executionTime: z.number().min(0).optional(), // milliseconds
+  memoryUsage: z.number().min(0).optional(), // bytes
+  cpuUsage: z.number().min(0).max(100).optional(), // percentage
+
+  // Result data
+  result: z.any().optional(),
+  error: z.string().optional(),
+  errorCode: z.string().optional(),
+  exitCode: z.number().int().optional(),
+
+  // Control flags
+  isStreamable: z.boolean().default(true),
+  isComplete: z.boolean().default(false),
+  canPause: z.boolean().default(false),
+  canResume: z.boolean().default(false),
+
+  // Additional metadata
+  metadata: z.record(z.any()).optional(),
+
+  // Timestamps
+  startedAt: z.date().optional(),
+  completedAt: z.date().optional(),
+  lastOutputAt: z.date().optional(),
 });
 
 /**
@@ -177,6 +377,46 @@ export const WebSocketEventSchema = BaseWebSocketEventSchema.and(
         WebSocketEventType.ALERT,
       ]),
       data: NotificationEventDataSchema,
+    }),
+
+    // System health and monitoring events
+    z.object({
+      eventType: z.literal(WebSocketEventType.SYSTEM_HEALTH_STATUS),
+      data: SystemHealthEventDataSchema,
+    }),
+    z.object({
+      eventType: z.literal(WebSocketEventType.SYSTEM_PERFORMANCE_METRICS),
+      data: SystemPerformanceEventDataSchema,
+    }),
+    z.object({
+      eventType: z.literal(WebSocketEventType.SYSTEM_ALERT),
+      data: SystemAlertEventDataSchema,
+    }),
+
+    // Queue job events
+    z.object({
+      eventType: z.enum([
+        WebSocketEventType.QUEUE_JOB_STARTED,
+        WebSocketEventType.QUEUE_JOB_PROGRESS,
+        WebSocketEventType.QUEUE_JOB_COMPLETED,
+        WebSocketEventType.QUEUE_JOB_FAILED,
+        WebSocketEventType.QUEUE_JOB_STALLED,
+      ]),
+      data: QueueJobEventDataSchema,
+    }),
+
+    // Claude execution events
+    z.object({
+      eventType: z.enum([
+        WebSocketEventType.CLAUDE_EXECUTION_STARTED,
+        WebSocketEventType.CLAUDE_EXECUTION_PROGRESS,
+        WebSocketEventType.CLAUDE_EXECUTION_OUTPUT,
+        WebSocketEventType.CLAUDE_EXECUTION_COMPLETED,
+        WebSocketEventType.CLAUDE_EXECUTION_FAILED,
+        WebSocketEventType.CLAUDE_EXECUTION_PAUSED,
+        WebSocketEventType.CLAUDE_EXECUTION_RESUMED,
+      ]),
+      data: ClaudeExecutionEventDataSchema,
     }),
     
     // Room management events
@@ -246,8 +486,13 @@ export type BaseWebSocketEvent = z.infer<typeof BaseWebSocketEventSchema>;
 export type TaskEventData = z.infer<typeof TaskEventDataSchema>;
 export type UserActivityEventData = z.infer<typeof UserActivityEventDataSchema>;
 export type NotificationEventData = z.infer<typeof NotificationEventDataSchema>;
+export type SystemHealthEventData = z.infer<typeof SystemHealthEventDataSchema>;
+export type SystemPerformanceEventData = z.infer<typeof SystemPerformanceEventDataSchema>;
+export type SystemAlertEventData = z.infer<typeof SystemAlertEventDataSchema>;
+export type QueueJobEventData = z.infer<typeof QueueJobEventDataSchema>;
 export type RoomEventData = z.infer<typeof RoomEventDataSchema>;
 export type ConnectionEventData = z.infer<typeof ConnectionEventDataSchema>;
+export type ClaudeExecutionEventData = z.infer<typeof ClaudeExecutionEventDataSchema>;
 export type WebSocketEvent = z.infer<typeof WebSocketEventSchema>;
 export type ClientWebSocketEvent = z.infer<typeof ClientWebSocketEventSchema>;
 export type WebSocketAuth = z.infer<typeof WebSocketAuthSchema>;
@@ -324,5 +569,82 @@ export const createUserActivityEvent = (
     room,
     roomType,
     data: activityData,
+  });
+};
+
+export const createQueueJobEvent = (
+  eventType: WebSocketEventType,
+  userId: string,
+  queueJobData: QueueJobEventData,
+  room?: string,
+  roomType?: WebSocketRoomType
+): WebSocketEvent => {
+  return validateWebSocketEvent({
+    eventType,
+    userId,
+    room,
+    roomType,
+    data: queueJobData,
+  });
+};
+
+export const createClaudeExecutionEvent = (
+  eventType: WebSocketEventType,
+  userId: string,
+  claudeExecutionData: ClaudeExecutionEventData,
+  room?: string,
+  roomType?: WebSocketRoomType
+): WebSocketEvent => {
+  return validateWebSocketEvent({
+    eventType,
+    userId,
+    room,
+    roomType,
+    data: claudeExecutionData,
+  });
+};
+
+export const createSystemHealthEvent = (
+  userId: string,
+  systemHealthData: SystemHealthEventData,
+  room?: string,
+  roomType?: WebSocketRoomType
+): WebSocketEvent => {
+  return validateWebSocketEvent({
+    eventType: WebSocketEventType.SYSTEM_HEALTH_STATUS,
+    userId,
+    room,
+    roomType,
+    data: systemHealthData,
+  });
+};
+
+export const createSystemPerformanceEvent = (
+  userId: string,
+  performanceData: SystemPerformanceEventData,
+  room?: string,
+  roomType?: WebSocketRoomType
+): WebSocketEvent => {
+  return validateWebSocketEvent({
+    eventType: WebSocketEventType.SYSTEM_PERFORMANCE_METRICS,
+    userId,
+    room,
+    roomType,
+    data: performanceData,
+  });
+};
+
+export const createSystemAlertEvent = (
+  userId: string,
+  alertData: SystemAlertEventData,
+  room?: string,
+  roomType?: WebSocketRoomType
+): WebSocketEvent => {
+  return validateWebSocketEvent({
+    eventType: WebSocketEventType.SYSTEM_ALERT,
+    userId,
+    room,
+    roomType,
+    data: alertData,
   });
 };

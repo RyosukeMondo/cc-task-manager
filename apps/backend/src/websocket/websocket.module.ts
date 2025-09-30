@@ -1,10 +1,20 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthModule } from '../auth/auth.module';
+import { PrismaService } from '../database/prisma.service';
 import { WebSocketGateway } from './websocket.gateway';
 import { WebSocketService } from './websocket.service';
 import { WebSocketAuthGuard } from './websocket-auth.guard';
+import { TaskEventsService } from './events/task-events.service';
+import { QueueEventsService } from './events/queue-events.service';
+import { ClaudeEventsService } from './events/claude-events.service';
+import { SystemEventsService } from './events/system-events.service';
+import { UserChannelsService } from './channels/user-channels.service';
+import { ConnectionManagerService } from './connection/connection-manager.service';
+import { EventReplayService } from './persistence/event-replay.service';
+import { WebSocketMetricsService } from './monitoring/websocket-metrics.service';
 
 /**
  * WebSocket Module for real-time communication
@@ -32,6 +42,9 @@ import { WebSocketAuthGuard } from './websocket-auth.guard';
   imports: [
     // Import AuthModule to leverage existing JWT infrastructure
     AuthModule,
+
+    // Import EventEmitterModule for metrics events
+    EventEmitterModule.forRoot(),
     
     // Configure JWT module for WebSocket authentication
     JwtModule.registerAsync({
@@ -51,12 +64,29 @@ import { WebSocketAuthGuard } from './websocket-auth.guard';
     WebSocketGateway,
     WebSocketService,
     WebSocketAuthGuard,
+    TaskEventsService,
+    QueueEventsService,
+    ClaudeEventsService,
+    SystemEventsService,
+    UserChannelsService,
+    ConnectionManagerService,
+    EventReplayService,
+    WebSocketMetricsService,
+    PrismaService,
   ],
   
   exports: [
     // Export services for use in other modules
     WebSocketGateway,
     WebSocketService,
+    TaskEventsService,
+    QueueEventsService,
+    ClaudeEventsService,
+    SystemEventsService,
+    UserChannelsService,
+    ConnectionManagerService,
+    EventReplayService,
+    WebSocketMetricsService,
   ],
 })
 export class WebSocketModule {

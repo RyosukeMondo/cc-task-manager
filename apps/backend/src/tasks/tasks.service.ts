@@ -11,7 +11,8 @@ import { JWTPayload } from '../schemas/auth.schemas';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TasksRepository, ITasksRepository } from './tasks.repository';
 import { QueueService } from '../queue/queue.service';
-import { TaskEventsService } from './events/task-events.service';
+import { TaskEventsService } from '../websocket/events/task-events.service';
+import { WebSocketEventType } from '../websocket/websocket-events.schemas';
 import {
   TaskBase,
   CreateTask,
@@ -88,7 +89,7 @@ export class TasksService {
 
     this.logger.log(`Created task: ${createdTask.id} - "${createdTask.title}" by user ${createdById}`);
 
-    // Emit real-time event for task creation
+    // Emit real-time task creation event
     try {
       await this.taskEventsService.emitTaskCreated(createdTask, createdById);
     } catch (error) {
@@ -273,17 +274,22 @@ export class TasksService {
 
     this.logger.log(`Updated task: ${taskId} - "${updatedTask.title}" by user ${updatedById}`);
 
-    // Emit real-time event for task update
+    // Emit real-time task update events
     try {
-      await this.taskEventsService.emitTaskUpdated(
-        existingTask,
-        updatedTask,
-        updatedById,
-        validation.data
-      );
+      await this.taskEventsService.emitTaskUpdated(updatedTask, existingTask, updatedById);
+
+      // Emit specific status change event if status changed
+      if (existingTask.status !== updatedTask.status) {
+        await this.taskEventsService.emitTaskStatusChanged(updatedTask, existingTask.status, updatedById);
+      }
+
+      // Emit assignment event if assignee changed
+      if (existingTask.assigneeId !== updatedTask.assigneeId) {
+        await this.taskEventsService.emitTaskAssigned(updatedTask, existingTask.assigneeId, updatedById);
+      }
     } catch (error) {
       // Don't fail task update if event emission fails
-      this.logger.error(`Failed to emit task updated event: ${error.message}`);
+      this.logger.error(`Failed to emit task update events: ${error.message}`);
     }
 
     return updatedTask;
@@ -311,7 +317,7 @@ export class TasksService {
 
     this.logger.log(`Deleted task: ${taskId} - "${existingTask.title}" by user ${deletedById}`);
 
-    // Emit real-time event for task deletion
+    // Emit real-time task deletion event
     try {
       await this.taskEventsService.emitTaskDeleted(existingTask, deletedById);
     } catch (error) {
@@ -399,9 +405,18 @@ export class TasksService {
 
     this.logger.log(`Bulk operation ${operationType} completed on ${taskIds.length} tasks by user ${operatorId}`);
 
-    // Emit real-time events for bulk operation
+    // Emit bulk task events for real-time updates
     try {
-      await this.taskEventsService.emitBulkTaskOperation(results.length > 0 ? results : [], operationType, operatorId);
+      const eventType = this.getBulkOperationEventType(operationType);
+      if (eventType && results.length > 0) {
+        const events = results.map(task => ({
+          type: eventType,
+          task,
+          userId: operatorId,
+          additionalData: data || {}
+        }));
+        await this.taskEventsService.emitBatchTaskEvents(events);
+      }
     } catch (error) {
       // Don't fail bulk operation if event emission fails
       this.logger.error(`Failed to emit bulk operation events: ${error.message}`);
@@ -687,6 +702,25 @@ export class TasksService {
         'modify',
         'You do not have permission to modify this task'
       );
+    }
+  }
+
+  /**
+   * Get appropriate WebSocket event type for bulk operations
+   *
+   * @private
+   */
+  private getBulkOperationEventType(operationType: string): WebSocketEventType | null {
+    switch (operationType) {
+      case 'updateStatus':
+        return WebSocketEventType.TASK_STATUS_CHANGED;
+      case 'updatePriority':
+      case 'updateAssignee':
+        return WebSocketEventType.TASK_UPDATED;
+      case 'delete':
+        return WebSocketEventType.TASK_DELETED;
+      default:
+        return null;
     }
   }
 }

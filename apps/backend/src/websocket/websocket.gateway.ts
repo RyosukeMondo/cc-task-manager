@@ -34,6 +34,9 @@ import {
   UserActivityEventData,
 } from './websocket-events.schemas';
 import { JWTPayload } from '../schemas/auth.schemas';
+import { UserChannelsService } from './channels/user-channels.service';
+import { ConnectionManagerService } from './connection/connection-manager.service';
+import { EventReplayService } from './persistence/event-replay.service';
 
 /**
  * WebSocket Gateway for real-time communication
@@ -63,7 +66,12 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   private readonly logger = new Logger(WebSocketGateway.name);
   private connectedUsers = new Map<string, { userId: string; socket: Socket; rooms: Set<string> }>();
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly userChannelsService: UserChannelsService,
+    private readonly connectionManager: ConnectionManagerService,
+    private readonly eventReplayService: EventReplayService
+  ) {}
 
   /**
    * Initialize WebSocket gateway with logging
@@ -80,21 +88,48 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   async handleConnection(client: Socket) {
     try {
       this.logger.log(`Client attempting connection: ${client.id}`);
-      
+
       // Socket is already authenticated by middleware
       const user = client.data.user as JWTPayload;
-      
-      // Store connection information
+
+      // Check if connection manager can accept new connections
+      if (!this.connectionManager.canAcceptConnections()) {
+        this.logger.warn(`Connection rejected for ${user.username}: capacity reached`);
+        client.emit('error', {
+          error: 'Server at capacity, please try again later',
+          code: 'CAPACITY_EXCEEDED',
+        });
+        client.disconnect(true);
+        return;
+      }
+
+      // Register connection with connection manager
+      const registered = this.connectionManager.registerConnection(client, user);
+      if (!registered) {
+        this.logger.warn(`Failed to register connection for ${user.username}`);
+        client.emit('error', {
+          error: 'Connection registration failed',
+          code: 'REGISTRATION_FAILED',
+        });
+        client.disconnect(true);
+        return;
+      }
+
+      // Store connection information (keeping for backward compatibility)
       this.connectedUsers.set(client.id, {
         userId: user.sub,
         socket: client,
         rooms: new Set(),
       });
 
+      // Initialize user channels with permission-based access
+      await this.userChannelsService.initializeUserChannels(user.sub, user, this.server);
+
       // Join user-specific room
       const userRoom = this.getUserRoom(user.sub);
       await client.join(userRoom);
       this.addUserToRoom(client.id, userRoom);
+      this.connectionManager.addToRoom(client.id, userRoom);
 
       // Emit connection event
       const connectionEvent = createUserActivityEvent(
@@ -109,15 +144,31 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       );
 
       this.server.to(userRoom).emit('event', connectionEvent);
-      
+
       this.logger.log(`User ${user.username} (${user.sub}) connected with socket ${client.id}`);
-      
+
       // Send welcome notification
       this.sendNotificationToUser(user.sub, {
         title: 'Connected',
         message: 'Successfully connected to real-time updates',
         level: NotificationLevel.SUCCESS,
       });
+
+      // Record connection for event replay tracking
+      const userRooms = Array.from(this.connectedUsers.get(client.id)?.rooms || []);
+      await this.eventReplayService.recordConnection(
+        client.id,
+        user.sub,
+        client.handshake.headers['user-agent'],
+        client.handshake.address,
+        [userRoom, ...userRooms]
+      );
+
+      // Replay missed events for reconnecting user
+      const replayedCount = await this.eventReplayService.replayMissedEvents(client.id, user.sub);
+      if (replayedCount > 0) {
+        this.logger.log(`Replayed ${replayedCount} missed events for user ${user.username}`);
+      }
 
     } catch (error) {
       this.logger.error(`Connection failed for socket ${client.id}: ${error.message}`);
@@ -131,10 +182,10 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
    */
   async handleDisconnect(client: Socket) {
     const connection = this.connectedUsers.get(client.id);
-    
+
     if (connection) {
       this.logger.log(`User ${connection.userId} disconnected (socket: ${client.id})`);
-      
+
       // Leave all rooms
       for (const room of connection.rooms) {
         await client.leave(room);
@@ -155,9 +206,18 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
         this.server.to(room).emit('event', disconnectionEvent);
       }
 
+      // Clean up user channels
+      await this.userChannelsService.cleanupUserChannels(connection.userId);
+
       // Clean up connection tracking
       this.connectedUsers.delete(client.id);
+
+      // Record disconnection for event replay tracking
+      await this.eventReplayService.recordDisconnection(client.id);
     }
+
+    // Unregister from connection manager
+    this.connectionManager.unregisterConnection(client.id);
   }
 
   /**
@@ -188,6 +248,7 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       // Join the room
       await client.join(room);
       this.addUserToRoom(client.id, room);
+      this.connectionManager.addToRoom(client.id, room);
 
       // Notify room members
       const joinEvent = createUserActivityEvent(
@@ -239,6 +300,7 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
 
       await client.leave(room);
       this.removeUserFromRoom(client.id, room);
+      this.connectionManager.removeFromRoom(client.id, room);
 
       // Notify room members
       const leaveEvent = createUserActivityEvent(
@@ -337,19 +399,6 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
     client.emit('heartbeat-ack', { timestamp: new Date() });
   }
 
-  /**
-   * Public method to emit events to specific rooms
-   * Used by other services to send real-time updates
-   */
-  emitToRoom(room: string, event: WebSocketEvent) {
-    try {
-      const validatedEvent = validateWebSocketEvent(event);
-      this.server.to(room).emit('event', validatedEvent);
-      this.logger.debug(`Event emitted to room ${room}: ${event.eventType}`);
-    } catch (error) {
-      this.logger.error(`Failed to emit event to room ${room}: ${error.message}`);
-    }
-  }
 
   /**
    * Public method to send notifications to specific users
@@ -466,6 +515,13 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   }
 
   /**
+   * Helper method to generate global room name for system-wide events
+   */
+  getGlobalRoom(): string {
+    return `global:system`;
+  }
+
+  /**
    * Helper method to track user room memberships
    */
   private addUserToRoom(socketId: string, room: string) {
@@ -493,6 +549,39 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
   }
 
   /**
+   * Alias for getConnectedUsersCount for compatibility
+   */
+  getConnectionCount(): number {
+    return this.getConnectedUsersCount();
+  }
+
+  /**
+   * Get connection statistics for monitoring
+   */
+  getConnectionStats(): Record<string, any> {
+    const roomStats: Record<string, number> = {};
+
+    for (const connection of this.connectedUsers.values()) {
+      for (const room of connection.rooms) {
+        roomStats[room] = (roomStats[room] || 0) + 1;
+      }
+    }
+
+    return {
+      totalConnections: this.connectedUsers.size,
+      roomStats,
+      timestamp: new Date(),
+    };
+  }
+
+  /**
+   * Helper method to generate admin room name
+   */
+  getAdminRoom(): string {
+    return 'admin:system';
+  }
+
+  /**
    * Get connected users by room for debugging
    */
   getUsersByRoom(room: string): string[] {
@@ -515,5 +604,88 @@ export class WebSocketGateway implements OnGatewayInit, OnGatewayConnection, OnG
       }
     }
     return false;
+  }
+
+  /**
+   * Get detailed connection pool statistics from connection manager
+   */
+  getDetailedConnectionStats() {
+    return this.connectionManager.getPoolStats();
+  }
+
+  /**
+   * Get connection manager scaling configuration
+   */
+  getScalingConfiguration() {
+    return this.connectionManager.getScalingConfig();
+  }
+
+  /**
+   * Update connection manager scaling configuration
+   */
+  updateScalingConfiguration(updates: any) {
+    return this.connectionManager.updateScalingConfig(updates);
+  }
+
+  /**
+   * Check if the gateway can accept new connections
+   */
+  canAcceptNewConnections(): boolean {
+    return this.connectionManager.canAcceptConnections();
+  }
+
+  /**
+   * Get connections for a specific room using connection manager
+   */
+  getConnectionsInRoom(room: string) {
+    return this.connectionManager.getRoomConnections(room);
+  }
+
+  /**
+   * Get all connections for a specific user using connection manager
+   */
+  getUserConnectionDetails(userId: string) {
+    return this.connectionManager.getUserConnections(userId);
+  }
+
+  /**
+   * Emit event to all clients in a specific room
+   * Used by event services for real-time broadcasting
+   */
+  emitToRoom(room: string, event: WebSocketEvent | any) {
+    try {
+      if (event.eventType) {
+        // It's a WebSocket event, validate it
+        const validatedEvent = validateWebSocketEvent(event);
+        this.server.to(room).emit('event', validatedEvent);
+        this.logger.debug(`Event emitted to room ${room}: ${event.eventType}`);
+      } else {
+        // It's a raw event (like batched events), emit directly
+        this.server.to(room).emit('event', event);
+        this.logger.debug(`Raw event emitted to room ${room}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to emit to room ${room}: ${error.message}`);
+    }
+  }
+
+  /**
+   * Emit event directly to a specific socket connection
+   * Used for event replay and targeted messages
+   */
+  emitToSocket(socketId: string, event: WebSocketEvent) {
+    try {
+      const validatedEvent = validateWebSocketEvent(event);
+      const socket = this.server.sockets.sockets.get(socketId);
+
+      if (socket && socket.connected) {
+        socket.emit('event', validatedEvent);
+        this.logger.debug(`Event emitted to socket ${socketId}: ${event.eventType}`);
+      } else {
+        this.logger.warn(`Socket not found or disconnected: ${socketId}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to emit to socket ${socketId}: ${error.message}`);
+    }
   }
 }
