@@ -3,7 +3,7 @@
 ## ⚠️ MANDATORY: Contract-First Development
 Task 0 MUST be completed before any other tasks. All settings functionality depends on shared API contracts.
 
-- [ ] 0. Define Settings API contract in shared schemas package
+- [x] 0. Define Settings API contract in shared schemas package
   - File: packages/schemas/src/settings/settings.schemas.ts
   - Define all Zod schemas: SettingsSchema, UserProfileSchema, AppPreferencesSchema, NotificationSettingsSchema, ThemeSchema, LanguageSchema
   - Export from packages/schemas/src/settings/index.ts and packages/schemas/src/index.ts
