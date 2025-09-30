@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Performance optimization hooks
  * Implements Core Web Vitals monitoring and optimization strategies

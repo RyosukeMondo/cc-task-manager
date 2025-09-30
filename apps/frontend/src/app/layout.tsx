@@ -7,6 +7,7 @@ import { WebSocketProvider } from '@/lib/websocket/context'
 import { ReactQueryProvider } from '@/lib/api/providers'
 import { PerformanceMonitor } from '@/lib/accessibility/components'
 import { PWAProvider } from '@/lib/pwa'
+import { SkipNavPatterns } from '@/components/ui/skip-nav'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -44,6 +45,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
       </head>
       <body className={inter.className}>
+        <SkipNavPatterns.Complete />
         <PWAProvider>
           <ThemeProvider>
             <ReactQueryProvider>

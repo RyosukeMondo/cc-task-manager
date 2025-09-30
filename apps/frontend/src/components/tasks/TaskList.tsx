@@ -1,25 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TaskStatus, TaskState } from '@cc-task-manager/types';
 import { TaskDisplay } from './TaskDisplay';
+import { TaskFilters, TaskFilters as TaskFiltersType, TaskSorting, TaskPriority } from './TaskFilters';
+import { TaskSearch } from './TaskSearch';
 import { cn } from '../../lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import {
-  Search,
-  Filter,
   RefreshCw,
-  SortAsc,
-  SortDesc,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Play,
-  Pause
+  Filter,
+  Clock
 } from 'lucide-react';
 
 interface TaskListProps {
@@ -28,223 +20,193 @@ interface TaskListProps {
   onTaskSelect?: (task: TaskStatus) => void;
   isLoading?: boolean;
   className?: string;
+  showFilters?: boolean;
+  showSearch?: boolean;
 }
-
-type SortField = 'lastActivity' | 'taskId' | 'state';
-type SortDirection = 'asc' | 'desc';
 
 /**
  * TaskList component following Single Responsibility Principle
- * Responsible only for displaying and filtering a list of tasks
- * Uses existing contract-validated TaskStatus types
+ * Now uses modular TaskFilters and TaskSearch components
+ * Responsible only for orchestrating task display and coordinating filters
  */
 export function TaskList({
   tasks,
   onRefresh,
   onTaskSelect,
   isLoading = false,
-  className
+  className,
+  showFilters = true,
+  showSearch = true
 }: TaskListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterState, setFilterState] = useState<TaskState | 'all'>('all');
-  const [sortField, setSortField] = useState<SortField>('lastActivity');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-
-  // Filter tasks based on search term and state filter
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.taskId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.progress?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesState = filterState === 'all' || task.state === filterState;
-    return matchesSearch && matchesState;
+  const [filteredBySearch, setFilteredBySearch] = useState<TaskStatus[]>(tasks);
+  const [filters, setFilters] = useState<TaskFiltersType>({
+    status: [],
+    priority: [],
+    dateRange: { start: null, end: null },
+    search: ''
+  });
+  const [sorting, setSorting] = useState<TaskSorting>({
+    field: 'lastActivity',
+    direction: 'desc'
   });
 
-  // Sort filtered tasks
-  const sortedTasks = filteredTasks.sort((a, b) => {
-    let comparison = 0;
+  // Apply comprehensive filtering logic
+  const finalFilteredTasks = useMemo(() => {
+    let filtered = filteredBySearch;
 
-    switch (sortField) {
-      case 'lastActivity':
-        comparison = new Date(a.lastActivity).getTime() - new Date(b.lastActivity).getTime();
-        break;
-      case 'taskId':
-        comparison = a.taskId.localeCompare(b.taskId);
-        break;
-      case 'state':
-        comparison = a.state.localeCompare(b.state);
-        break;
+    // Apply status filters
+    if (filters.status.length > 0) {
+      filtered = filtered.filter(task => filters.status.includes(task.state));
     }
 
-    return sortDirection === 'asc' ? comparison : -comparison;
-  });
-
-  const getStateCount = (state: TaskState): number => {
-    return tasks.filter(task => task.state === state).length;
-  };
-
-  const getStateIcon = (state: TaskState) => {
-    switch (state) {
-      case TaskState.COMPLETED:
-        return <CheckCircle className="h-3 w-3" />;
-      case TaskState.FAILED:
-        return <XCircle className="h-3 w-3" />;
-      case TaskState.RUNNING:
-      case TaskState.ACTIVE:
-        return <Play className="h-3 w-3" />;
-      case TaskState.IDLE:
-        return <Pause className="h-3 w-3" />;
-      default:
-        return <Clock className="h-3 w-3" />;
+    // Apply date range filters
+    if (filters.dateRange.start || filters.dateRange.end) {
+      filtered = filtered.filter(task => {
+        const taskDate = new Date(task.lastActivity);
+        const startMatch = !filters.dateRange.start || taskDate >= filters.dateRange.start;
+        const endMatch = !filters.dateRange.end || taskDate <= filters.dateRange.end;
+        return startMatch && endMatch;
+      });
     }
-  };
 
-  const toggleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('desc');
-    }
+    // Note: Priority filtering would need to be added to TaskStatus type
+    // For now, we'll skip priority filtering since it's not in the current schema
+
+    return filtered;
+  }, [filteredBySearch, filters]);
+
+  // Apply sorting
+  const sortedTasks = useMemo(() => {
+    const sorted = [...finalFilteredTasks];
+
+    sorted.sort((a, b) => {
+      let comparison = 0;
+
+      switch (sorting.field) {
+        case 'lastActivity':
+          comparison = new Date(a.lastActivity).getTime() - new Date(b.lastActivity).getTime();
+          break;
+        case 'taskId':
+          comparison = a.taskId.localeCompare(b.taskId);
+          break;
+        case 'state':
+          comparison = a.state.localeCompare(b.state);
+          break;
+        case 'priority':
+          // Priority sorting would be implemented here when priority is added to schema
+          comparison = 0;
+          break;
+      }
+
+      return sorting.direction === 'asc' ? comparison : -comparison;
+    });
+
+    return sorted;
+  }, [finalFilteredTasks, sorting]);
+
+  // Get task counts for each state
+  const taskCounts = useMemo(() => {
+    const counts = {} as Record<TaskState, number>;
+    Object.values(TaskState).forEach(state => {
+      counts[state] = tasks.filter(task => task.state === state).length;
+    });
+    return counts;
+  }, [tasks]);
+
+  // Handle search results from TaskSearch component
+  const handleSearchResults = (results: TaskStatus[]) => {
+    setFilteredBySearch(results);
   };
 
   return (
-    <Card className={cn('w-full', className)}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Task Management</CardTitle>
-            <CardDescription>
-              {tasks.length} total tasks • {sortedTasks.length} filtered
-            </CardDescription>
-          </div>
-          {onRefresh && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRefresh}
-              disabled={isLoading}
-            >
-              <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-            </Button>
-          )}
-        </div>
+    <div className={cn('w-full space-y-4', className)}>
+      {/* Search Component */}
+      {showSearch && (
+        <TaskSearch
+          tasks={tasks}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onSearchResults={handleSearchResults}
+          placeholder="Search tasks by ID, progress, or error..."
+          showAdvancedOptions={true}
+          debounceMs={300}
+        />
+      )}
 
-        {/* State Summary */}
-        <div className="flex flex-wrap gap-2 mt-4">
-          {Object.values(TaskState).map(state => {
-            const count = getStateCount(state);
-            if (count === 0) return null;
+      {/* Filters Component */}
+      {showFilters && (
+        <TaskFilters
+          filters={filters}
+          sorting={sorting}
+          onFiltersChange={setFilters}
+          onSortingChange={setSorting}
+          taskCounts={taskCounts}
+          showPresets={true}
+        />
+      )}
 
-            return (
-              <Badge
-                key={state}
+      {/* Task List Display */}
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Task List</CardTitle>
+              <CardDescription>
+                {tasks.length} total tasks • {sortedTasks.length} filtered
+              </CardDescription>
+            </div>
+            {onRefresh && (
+              <Button
                 variant="outline"
-                className="flex items-center gap-1 cursor-pointer"
-                onClick={() => setFilterState(filterState === state ? 'all' : state)}
+                size="sm"
+                onClick={onRefresh}
+                disabled={isLoading}
               >
-                {getStateIcon(state)}
-                {state} ({count})
-              </Badge>
-            );
-          })}
-        </div>
-
-        {/* Search and Filter Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 mt-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search tasks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Select value={filterState} onValueChange={(value) => setFilterState(value as TaskState | 'all')}>
-              <SelectTrigger className="w-[140px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All States</SelectItem>
-                {Object.values(TaskState).map(state => (
-                  <SelectItem key={state} value={state}>
-                    {state}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toggleSort('lastActivity')}
-              className="flex items-center gap-1"
-            >
-              {sortDirection === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-              Time
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toggleSort('taskId')}
-              className="flex items-center gap-1"
-            >
-              {sortField === 'taskId' && sortDirection === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
-              ID
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent>
-        {sortedTasks.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            {searchTerm || filterState !== 'all' ? (
-              <div>
-                <Filter className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No tasks match your current filters</p>
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setFilterState('all');
-                  }}
-                  className="mt-2"
-                >
-                  Clear filters
-                </Button>
-              </div>
-            ) : (
-              <div>
-                <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No tasks found</p>
-              </div>
+                <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+              </Button>
             )}
           </div>
-        ) : (
-          <div className="space-y-3">
-            {sortedTasks.map((task) => (
-              <div
-                key={task.taskId}
-                className={cn(
-                  'transition-opacity',
-                  onTaskSelect && 'cursor-pointer hover:opacity-80'
-                )}
-                onClick={() => onTaskSelect?.(task)}
-              >
-                <TaskDisplay
-                  task={task}
-                  showDetails={true}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardHeader>
+
+        <CardContent>
+          {sortedTasks.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              {searchTerm || filters.status.length > 0 || filters.dateRange.start || filters.dateRange.end ? (
+                <div>
+                  <Filter className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No tasks match your current filters</p>
+                  <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
+                </div>
+              ) : (
+                <div>
+                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No tasks found</p>
+                  <p className="text-sm mt-1">Tasks will appear here when they are created</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {sortedTasks.map((task) => (
+                <div
+                  key={task.taskId}
+                  className={cn(
+                    'transition-opacity',
+                    onTaskSelect && 'cursor-pointer hover:opacity-80'
+                  )}
+                  onClick={() => onTaskSelect?.(task)}
+                >
+                  <TaskDisplay
+                    task={task}
+                    showDetails={true}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Keyboard navigation utilities
  * Implements WCAG 2.1 AA keyboard accessibility requirements

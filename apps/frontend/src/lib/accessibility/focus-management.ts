@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Focus management utilities for accessibility
  * Implements WCAG 2.1 AA focus management requirements

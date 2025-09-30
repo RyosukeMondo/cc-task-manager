@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Performance monitoring utilities for Core Web Vitals
  * Implements performance optimization and monitoring for WCAG 2.1 AA compliance

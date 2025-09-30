@@ -2,6 +2,9 @@ import { useCallback, useMemo } from 'react';
 import { useAuth } from './context';
 import { Role, Permission } from './types';
 
+// Re-export useAuth for convenience
+export { useAuth } from './context';
+
 /**
  * Hook for simplified permission checks
  */

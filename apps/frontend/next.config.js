@@ -46,7 +46,7 @@ const nextConfig = {
     optimizeCss: true,
     optimizePackageImports: ['@cc-task-manager/schemas', '@cc-task-manager/types'],
     optimizeServerReact: true,
-    serverComponentsExternalPackages: ['@cc-task-manager/schemas'],
+    serverComponentsExternalPackages: [],
     turbo: {
       rules: {
         '*.svg': {

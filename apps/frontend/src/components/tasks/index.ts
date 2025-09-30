@@ -6,7 +6,8 @@
  *
  * Components follow Single Responsibility Principle:
  * - TaskDisplay: Displays task status information only
- * - TaskForm: Handles task creation/editing with contract validation
+ * - TaskForm: Handles task creation with contract validation
+ * - TaskEditor: Handles task editing with comprehensive validation
  * - TaskList: Manages task list display, filtering, and sorting
  *
  * All components leverage:
@@ -18,6 +19,7 @@
 
 export { TaskDisplay } from './TaskDisplay';
 export { TaskForm } from './TaskForm';
+export { TaskEditor } from './TaskEditor';
 export { TaskList } from './TaskList';
 
 // Re-export types for convenience
