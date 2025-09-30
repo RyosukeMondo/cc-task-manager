@@ -44,21 +44,25 @@ export async function login(
 ): Promise<void> {
   const user = TEST_USERS[userRole];
 
-  // Navigate to login page
-  await page.goto('/login');
+  // Navigate to login page and wait for network to be idle
+  await page.goto('/login', { waitUntil: 'networkidle', timeout: 30000 });
 
-  // Wait for page to load
-  await page.waitForLoadState('networkidle');
+  // Wait for client-side JavaScript to load and render the form
+  // The page uses RSC streaming, so form is rendered client-side
+  await page.waitForSelector('#email', { state: 'visible', timeout: 30000 });
 
-  // Fill in login form
-  await page.fill('input[type="email"]', user.email);
-  await page.fill('input[type="password"]', user.password);
+  // Extra wait for hydration to complete
+  await page.waitForTimeout(1000);
+
+  // Fill in login form using IDs
+  await page.fill('#email', user.email);
+  await page.fill('#password', user.password);
 
   // Submit form
   await page.click('button[type="submit"]');
 
   // Wait for navigation to complete
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('networkidle', { timeout: 30000 });
 
   // Verify we're logged in by checking we're NOT on login page
   await expect(page).not.toHaveURL(/\/login/);
@@ -112,9 +116,10 @@ export async function setupAuthenticatedSession(
   userRole: TestUserRole = 'user'
 ): Promise<void> {
   const user = TEST_USERS[userRole];
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.11.26:3005';
 
-  // First, get auth token by logging in
-  const response = await page.request.post('/api/auth/login', {
+  // First, get auth token by logging in via backend API
+  const response = await page.request.post(`${apiUrl}/api/auth/login`, {
     data: {
       identifier: user.email,
       password: user.password,
@@ -129,13 +134,13 @@ export async function setupAuthenticatedSession(
 
   // Set auth token in storage
   await page.goto('/');
-  await page.evaluate((token) => {
-    localStorage.setItem('auth_token', token);
+  await page.evaluate((data) => {
+    localStorage.setItem('auth_token', data.token);
     localStorage.setItem('user', JSON.stringify({
-      email: user.email,
-      role: user.role,
+      email: data.email,
+      role: data.role,
     }));
-  }, authData.token);
+  }, { token: authData.token, email: user.email, role: user.role });
 
   // Reload to apply authentication
   await page.reload();

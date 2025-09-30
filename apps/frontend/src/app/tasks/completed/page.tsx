@@ -51,8 +51,3 @@ export default function CompletedTasksPage() {
     </AppLayout>
   );
 }
-
-export const metadata = {
-  title: 'Completed Tasks',
-  description: 'View all completed tasks'
-};

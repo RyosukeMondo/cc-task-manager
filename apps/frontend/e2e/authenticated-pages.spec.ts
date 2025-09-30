@@ -11,7 +11,7 @@ import { login } from './fixtures/auth';
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3006';
 
 test.describe('Authenticated Pages', () => {
-  // Login before each test
+  // Login before each test using UI
   test.beforeEach(async ({ page }) => {
     // Listen for errors
     page.on('console', (msg) => {
@@ -24,7 +24,7 @@ test.describe('Authenticated Pages', () => {
       console.error(`❌ Page Error on ${page.url()}: ${error.message}`);
     });
 
-    // Login as standard user
+    // Login via UI
     await login(page, 'user');
   });
 

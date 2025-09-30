@@ -1,15 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright Configuration for CC Task Manager Frontend
- *
- * To use this configuration:
- * 1. Install Playwright: pnpm add -D @playwright/test
- * 2. Install browsers: pnpm exec playwright install
- * 3. Start dev server: pnpm dev (runs on port 3006)
- * 4. Run tests: pnpm exec playwright test
+ * Playwright config for manual server (server already running)
  */
-
 export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.ts',
@@ -49,10 +42,5 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: 'pnpm dev',
-    url: 'http://localhost:3006',
-    reuseExistingServer: true, // Always reuse existing server
-    timeout: 120000,
-  },
+  // No webServer - use existing server
 });
