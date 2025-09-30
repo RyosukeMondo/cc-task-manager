@@ -1,12 +1,27 @@
 # Tasks Document - Settings Page
 
-- [ ] 1. Create settings types
+## ⚠️ MANDATORY: Contract-First Development
+Task 0 MUST be completed before any other tasks. All settings functionality depends on shared API contracts.
+
+- [ ] 0. Define Settings API contract in shared schemas package
+  - File: packages/schemas/src/settings/settings.schemas.ts
+  - Define all Zod schemas: SettingsSchema, UserProfileSchema, AppPreferencesSchema, NotificationSettingsSchema, ThemeSchema, LanguageSchema
+  - Export from packages/schemas/src/settings/index.ts and packages/schemas/src/index.ts
+  - Build schemas package (cd packages/schemas && pnpm build)
+  - Register contracts in ContractRegistry
+  - Purpose: Establish single source of truth for settings data contracts before any implementation
+  - _Leverage: packages/schemas/src/auth/auth.schemas.ts pattern, existing ContractRegistry_
+  - _Requirements: 1.1, 2.1, 3.1, 3.3, 3.4_
+  - _Prompt: Role: API Architect with expertise in user settings, contract-driven development, Zod schemas, and TypeScript | Task: Define complete Settings API contract in packages/schemas/src/settings/settings.schemas.ts following the auth.schemas.ts pattern, including SettingsSchema (composite of all settings with userId, timestamps), UserProfileSchema (name, email, avatar, bio with string validations), AppPreferencesSchema (theme enum (light/dark/system), language, dateFormat, timeFormat, defaultView), NotificationSettingsSchema (emailNotifications, pushNotifications, taskReminders, dailyDigest as booleans), ThemeSchema enum (light, dark, system), LanguageSchema enum (en, es, fr, de, etc.) with full Zod validation rules including email format, string min/max lengths, URL validation for avatars, enum constraints, and comprehensive JSDoc documentation for all fields explaining purposes and valid values | Restrictions: Must use Zod for all schemas, follow existing schema patterns from auth, include comprehensive validation (email format validation, name length limits, bio character limits, valid theme/language options), document all fields with JSDoc explaining behavior and constraints, ensure schemas compile without errors, export all types and schemas properly from settings/index.ts and main index.ts, register contracts in ContractRegistry with versioning (v1.0.0), include both individual setting schemas and composite SettingsSchema | Success: Settings schemas defined and compiled successfully, all exports accessible from @cc-task-manager/schemas and @schemas/settings, contracts registered in registry with proper versioning, both backend and frontend can import without errors, validation rules are comprehensive covering all setting types, TypeScript types auto-generated from schemas, JSDoc documentation explains all settings and their constraints, schemas support both individual settings updates and bulk operations_
+
+- [ ] 1. Import settings types from shared schemas instead of defining locally
   - File: apps/frontend/src/types/settings.ts
-  - Define TypeScript interfaces for Settings, UserProfile, AppPreferences, NotificationSettings
-  - Purpose: Establish type safety for settings data structures
-  - _Leverage: Existing type patterns_
-  - _Requirements: 1.1, 2.1, 3.1_
-  - _Prompt: Role: TypeScript Developer | Task: Create comprehensive TypeScript type definitions for settings data structures following requirements 1.1, 2.1, and 3.1 | Restrictions: Ensure compatibility with backend API, follow naming conventions, include validation schemas | Success: All settings types are well-defined, compile without errors, include Zod schemas_
+  - Import settings types from @cc-task-manager/schemas instead of defining locally
+  - Re-export for convenience: export type { Settings, UserProfile, AppPreferences, NotificationSettings, Theme, Language } from '@cc-task-manager/schemas'
+  - Purpose: Use shared contract types to ensure frontend-backend consistency for settings data
+  - _Leverage: packages/schemas/src/settings/settings.schemas.ts (from Task 0)_
+  - _Requirements: 1.1, 2.1, 3.1, 3.3_
+  - _Prompt: Role: TypeScript Developer specializing in type systems and contract-driven development | Task: Create type re-export file at apps/frontend/src/types/settings.ts that imports and re-exports Settings, UserProfile, AppPreferences, NotificationSettings, Theme, Language, and other settings-related types from @cc-task-manager/schemas following requirements 1.1, 2.1, 3.1, and 3.3 | Restrictions: Must import from @cc-task-manager/schemas only, do not define any types locally, only re-export for convenience, ensure tsconfig.json references schemas package, verify types are accessible, do not duplicate settings type definitions | Success: All settings types imported from shared schemas, re-exported for frontend use, TypeScript compiles without errors, no duplicate type definitions, frontend has full type coverage from shared contracts for all settings including user profile, preferences, and notifications_
 
 - [ ] 2. Create useSettings hook
   - File: apps/frontend/src/hooks/useSettings.ts
@@ -64,13 +79,14 @@
   - _Requirements: 4.1, 4.2, 4.3_
   - _Prompt: Role: Frontend Developer | Task: Uncomment the Settings navigation item in Navigation.tsx (lines 58-63) following requirements 4.1-4.3 | Restrictions: Ensure mobile navigation also works, verify no errors | Success: Settings link appears in navigation, navigates correctly, mobile menu works_
 
-- [ ] 9. Add form validation schemas
+- [ ] 9. Add form validation schemas (note: these should ideally be part of shared contract from Task 0)
   - File: apps/frontend/src/schemas/settings.ts
-  - Create Zod validation schemas for all settings forms
-  - Purpose: Centralize validation logic
-  - _Leverage: Zod library, existing validation patterns_
+  - Import and re-use Zod validation schemas from shared contract (@cc-task-manager/schemas)
+  - Add client-side specific validation refinements if needed (UI-only validations)
+  - Purpose: Use shared contract validation with optional UI-specific enhancements
+  - _Leverage: packages/schemas/src/settings/settings.schemas.ts (from Task 0), Zod library_
   - _Requirements: 2.2, 2.4_
-  - _Prompt: Role: TypeScript Developer | Task: Create Zod validation schemas for settings forms following requirements 2.2 and 2.4 | Restrictions: Must validate all inputs properly, provide clear error messages, follow validation patterns | Success: All settings forms have proper validation schemas, validation works correctly, error messages are clear_
+  - _Prompt: Role: TypeScript Developer specializing in form validation | Task: Create frontend validation at apps/frontend/src/schemas/settings.ts by importing and re-exporting Zod schemas from @cc-task-manager/schemas for settings forms following requirements 2.2 and 2.4, add client-side specific refinements only if needed for UI validations not relevant to backend (e.g., password confirmation matching, real-time field validation) | Restrictions: Must import base schemas from @cc-task-manager/schemas, do not duplicate validation logic already in shared contract, only add UI-specific refinements using .refine() or .superRefine(), provide clear error messages, note that ideally all validation should be in shared contract from Task 0 | Success: Form validation uses shared contract schemas as foundation, client-specific refinements are minimal and clearly justified, validation works correctly in forms, error messages are clear, no duplicate validation logic between frontend and shared contract_
 
 - [ ] 10. Add tests for settings page
   - File: apps/frontend/src/app/settings/__tests__/page.test.tsx

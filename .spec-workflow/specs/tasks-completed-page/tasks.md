@@ -1,5 +1,19 @@
 # Tasks Document - Tasks Completed Page
 
+## ⚠️ MANDATORY: Contract-First Development
+Task 0 from task-list-component spec MUST be completed first. The Task API contract must support completed status and completedAt field for this page to function correctly.
+
+- [ ] 0. Verify Task API contract supports completed status and completedAt field
+  - File: packages/schemas/src/tasks/task.schemas.ts (verify)
+  - Verify TaskStatus enum includes 'completed' status
+  - Verify TaskSchema includes completedAt timestamp field (optional Date)
+  - Verify TaskFilterSchema supports status='completed' filtering
+  - Verify sorting by completedAt is supported in contract
+  - Purpose: Ensure Task API contract supports completed task tracking with timestamps before implementing Completed Tasks page
+  - _Leverage: packages/schemas/src/tasks/ contract from task-list-component Task 0_
+  - _Requirements: 1.1, 1.2, 1.4, 2.1_
+  - _Prompt: Role: API Contract Verifier with expertise in temporal data and completion tracking | Task: Verify that the Task API contract supports completed task functionality by confirming TaskStatus enum includes 'completed' status, TaskSchema includes completedAt field as optional Date/timestamp with proper Zod validation (.datetime() or .date().optional()), TaskFilterSchema supports status='completed' filtering, contract allows sorting by completedAt field in descending order (most recent first), completion timestamp is automatically set when status changes to completed - check packages/schemas/src/tasks/task.schemas.ts for completedAt field definition, verify Zod schema validates timestamp format correctly, ensure JSDoc documents completedAt behavior | Restrictions: Do not modify task-list-component schemas unless completedAt field is completely missing, only verify completed status and timestamp support exists, if completedAt field or sorting support is missing document what needs to be added to task-list-component Task 0, ensure timestamp validation is proper ISO format | Success: Task API contract confirmed to support completed status with completedAt timestamp, TaskStatus enum includes 'completed', TaskSchema has completedAt optional field with proper date validation, TaskFilterSchema supports completed status filtering, sorting by completedAt is supported, frontend can safely display completed tasks sorted by completion date using shared contract_
+
 - [ ] 1. Create completed tasks page file
   - File: apps/frontend/src/app/tasks/completed/page.tsx
   - Create page component with TaskList filtered by completed status

@@ -1,12 +1,27 @@
 # Tasks Document - Analytics Performance Page
 
-- [ ] 1. Create performance metrics types
+## ⚠️ MANDATORY: Contract-First Development
+Task 0 MUST be completed before any other tasks. All analytics functionality depends on shared API contracts.
+
+- [ ] 0. Define Analytics API contract in shared schemas package
+  - File: packages/schemas/src/analytics/analytics.schemas.ts
+  - Define all Zod schemas: PerformanceMetricsSchema, KPIDataSchema, ChartDataSchema, TimeSeriesDataSchema, DateRangeSchema, AnalyticsFilterSchema
+  - Export from packages/schemas/src/analytics/index.ts and packages/schemas/src/index.ts
+  - Build schemas package (cd packages/schemas && pnpm build)
+  - Register contracts in ContractRegistry
+  - Purpose: Establish single source of truth for analytics data contracts before any implementation
+  - _Leverage: packages/schemas/src/tasks/task.schemas.ts pattern, existing ContractRegistry_
+  - _Requirements: 1.1, 1.4, 2.1, 2.2, 2.3, 2.4_
+  - _Prompt: Role: API Architect with expertise in analytics systems, contract-driven development, Zod schemas, and TypeScript | Task: Define complete Analytics API contract in packages/schemas/src/analytics/analytics.schemas.ts following the task.schemas.ts pattern, including PerformanceMetricsSchema (completionRate, averageCompletionTime, throughput, efficiency, taskVelocity with comprehensive fields and timestamps), KPIDataSchema (value, change, trend, label), ChartDataSchema (labels, datasets, metadata), TimeSeriesDataSchema (timestamp, value, category), DateRangeSchema (startDate, endDate with validation), AnalyticsFilterSchema (dateRange, groupBy, metrics) with full Zod validation rules including number ranges, date formats, array constraints, and comprehensive JSDoc documentation for all fields | Restrictions: Must use Zod for all schemas, follow existing schema patterns from tasks, include comprehensive validation (min/max values, date range validation, enum values for trend/groupBy), document all fields with JSDoc explaining calculation methods and units, ensure schemas compile without errors, export all types and schemas properly from analytics/index.ts and main index.ts, register contracts in ContractRegistry with versioning (v1.0.0), include metadata schemas for chart configuration and display preferences | Success: Analytics schemas defined and compiled successfully, all exports accessible from @cc-task-manager/schemas and @schemas/analytics, contracts registered in registry with proper versioning, both backend and frontend can import without errors, validation rules are comprehensive covering all analytics data types, TypeScript types auto-generated from schemas, JSDoc documentation explains all metrics and calculations, schemas support date range filtering and multiple aggregation options_
+
+- [ ] 1. Import performance metrics types from shared schemas instead of defining locally
   - File: apps/frontend/src/types/analytics.ts
-  - Define TypeScript interfaces for performance metrics and analytics data
-  - Purpose: Establish type safety for analytics data structures
-  - _Leverage: Existing type patterns_
-  - _Requirements: 1.1_
-  - _Prompt: Role: TypeScript Developer | Task: Create comprehensive TypeScript type definitions for PerformanceMetrics and related analytics types following requirement 1.1 | Restrictions: Ensure compatibility with backend API, follow naming conventions | Success: All analytics types are well-defined and compile without errors_
+  - Import analytics types from @cc-task-manager/schemas instead of defining locally
+  - Re-export for convenience: export type { PerformanceMetrics, KPIData, ChartData, TimeSeriesData, DateRange, AnalyticsFilter } from '@cc-task-manager/schemas'
+  - Purpose: Use shared contract types to ensure frontend-backend consistency for analytics data
+  - _Leverage: packages/schemas/src/analytics/analytics.schemas.ts (from Task 0)_
+  - _Requirements: 1.1, 1.4_
+  - _Prompt: Role: TypeScript Developer specializing in type systems and contract-driven development | Task: Create type re-export file at apps/frontend/src/types/analytics.ts that imports and re-exports PerformanceMetrics, KPIData, ChartData, TimeSeriesData, DateRange, AnalyticsFilter, and other analytics-related types from @cc-task-manager/schemas following requirements 1.1 and 1.4 | Restrictions: Must import from @cc-task-manager/schemas only, do not define any types locally, only re-export for convenience, ensure tsconfig.json references schemas package, verify types are accessible, do not duplicate analytics type definitions | Success: All analytics types imported from shared schemas, re-exported for frontend use, TypeScript compiles without errors, no duplicate type definitions, frontend has full type coverage from shared contracts for all performance metrics and chart data_
 
 - [ ] 2. Create usePerformanceMetrics hook
   - File: apps/frontend/src/hooks/usePerformanceMetrics.ts

@@ -1,12 +1,26 @@
 # Tasks Document - Analytics Trends Page
 
-- [ ] 1. Create trend data types
+## ⚠️ MANDATORY: Contract-First Development
+Task 0 from analytics-performance-page spec MUST be completed first. The Analytics API contract defines all metrics and trend data structures that this page depends on.
+
+- [ ] 0. Verify Analytics API contract exists and supports trend data
+  - File: packages/schemas/src/analytics/analytics.schemas.ts (verify)
+  - Verify Analytics contract from analytics-performance-page Task 0 includes TimeSeriesDataSchema for trend visualization
+  - Verify contract supports time period grouping (day/week/month)
+  - Confirm TrendComparisonSchema exists for period-over-period analysis
+  - Purpose: Ensure Analytics API contract supports trend analysis and time-series data before implementing Trends page
+  - _Leverage: packages/schemas/src/analytics/ contract from analytics-performance-page Task 0_
+  - _Requirements: 1.1, 1.4, 2.1, 2.3_
+  - _Prompt: Role: API Contract Verifier with expertise in time-series analytics and trend analysis | Task: Verify that the Analytics API contract supports trend functionality by confirming TimeSeriesDataSchema exists with timestamp, value, and category fields, AnalyticsFilterSchema supports groupBy field with options for 'day', 'week', 'month' time periods, contract includes TrendComparisonSchema for comparing current vs previous period metrics with percentage changes, contract supports aggregation of metrics over time periods, trend direction indicators (up/down/stable) are included - check packages/schemas/src/analytics/analytics.schemas.ts for time-series schemas, verify Zod validation includes proper date grouping logic, ensure JSDoc documents trend calculation methodology | Restrictions: Do not modify analytics-performance-page schemas unless trend support is completely missing, only verify trend analysis capabilities exist, if time-series or comparison schemas are inadequate document what needs to be added to analytics-performance-page Task 0, ensure groupBy validation includes all required time periods | Success: Analytics API contract confirmed to support trend analysis with TimeSeriesDataSchema, AnalyticsFilterSchema includes groupBy field with day/week/month options, TrendComparisonSchema exists for period comparisons, time-series data properly typed with timestamps, frontend can safely display trends and period comparisons using shared contract_
+
+- [ ] 1. Extend analytics types from shared schemas instead of defining new trend types
   - File: apps/frontend/src/types/analytics.ts (extend from task 1 of performance page)
-  - Add TypeScript interfaces for trend data structures
-  - Purpose: Extend analytics types with trend-specific data
-  - _Leverage: Existing analytics types_
-  - _Requirements: 1.1_
-  - _Prompt: Role: TypeScript Developer | Task: Extend analytics types with TrendData and related interfaces following requirement 1.1 | Restrictions: Maintain compatibility with existing types, follow naming conventions | Success: Trend types are well-defined and integrate with existing analytics types_
+  - Import additional trend-specific types from shared schemas if not already included
+  - Re-export trend types: export type { TimeSeriesData, TrendComparison, AnalyticsFilter } from '@cc-task-manager/schemas'
+  - Purpose: Ensure all trend-specific types from shared contract are accessible in frontend
+  - _Leverage: packages/schemas/src/analytics/analytics.schemas.ts (from analytics-performance-page Task 0)_
+  - _Requirements: 1.1, 1.4_
+  - _Prompt: Role: TypeScript Developer specializing in contract-driven development | Task: Extend apps/frontend/src/types/analytics.ts to include trend-specific type re-exports from @cc-task-manager/schemas (if not already included from performance page task 1), ensuring TimeSeriesData, TrendComparison, and time-period-related types are accessible following requirements 1.1 and 1.4 | Restrictions: Must import from @cc-task-manager/schemas only, do not define any new types locally, only add re-exports for trend types if they weren't included in performance page type file, maintain compatibility with existing analytics type exports, verify all trend types are accessible | Success: All trend-specific types imported from shared schemas and re-exported, no duplicate type definitions, TypeScript compiles without errors, frontend has full type coverage for time-series and trend comparison data from shared contracts_
 
 - [ ] 2. Create useTrendData hook
   - File: apps/frontend/src/hooks/useTrendData.ts

@@ -1,12 +1,27 @@
 # Tasks Document - Task List Component
 
-- [ ] 1. Create Task type definitions
+## ⚠️ MANDATORY: Contract-First Development
+All tasks must follow contract-driven development. Task 0 MUST be completed before any other tasks.
+
+- [ ] 0. Define Task API contract in shared schemas package
+  - File: packages/schemas/src/tasks/task.schemas.ts
+  - Define all Zod schemas: TaskSchema, TaskStatus, TaskPriority, TaskFilterSchema, TaskCreateSchema, TaskUpdateSchema, TaskListResponseSchema
+  - Export from packages/schemas/src/tasks/index.ts and packages/schemas/src/index.ts
+  - Build schemas package (cd packages/schemas && pnpm build)
+  - Register contracts in ContractRegistry
+  - Purpose: Establish single source of truth for task data contracts before any implementation
+  - _Leverage: packages/schemas/src/auth/auth.schemas.ts pattern, existing ContractRegistry_
+  - _Requirements: ALL (contract is foundation for all requirements)_
+  - _Prompt: Role: API Architect with expertise in contract-driven development, Zod schemas, and TypeScript | Task: Define complete Task API contract in packages/schemas/src/tasks/task.schemas.ts following the auth.schemas.ts pattern, including TaskSchema (id, title, description, status, priority, timestamps), TaskStatus enum (pending, active, completed, failed), TaskPriority enum (low, medium, high), TaskFilterSchema (status, priority, searchTerm, dateRange), TaskCreateSchema, TaskUpdateSchema, and TaskListResponseSchema with full Zod validation rules and JSDoc documentation | Restrictions: Must use Zod for all schemas, follow existing schema patterns from auth, include comprehensive validation (min/max lengths, date formats, enum values), document all fields with JSDoc, ensure schemas compile without errors, export all types and schemas properly, register contracts in ContractRegistry with versioning | Success: Task schemas defined and compiled successfully, all exports accessible from @cc-task-manager/schemas and @schemas/tasks, contracts registered in registry, both backend and frontend can import without errors, validation rules are comprehensive and documented, TypeScript types auto-generated from schemas_
+
+- [ ] 1. Import Task types from shared schemas (replaces local type definitions)
   - File: apps/frontend/src/types/task.ts
-  - Define TypeScript interfaces for Task, TaskStatus, TaskPriority, and TaskFilter
-  - Purpose: Establish type safety for task-related data structures
-  - _Leverage: Existing type patterns in apps/frontend/src/types/_
+  - Import Task types from @cc-task-manager/schemas instead of defining locally
+  - Re-export for convenience: export type { Task, TaskStatus, TaskPriority, TaskFilter } from '@cc-task-manager/schemas'
+  - Purpose: Use shared contract types to ensure frontend-backend consistency
+  - _Leverage: packages/schemas/src/tasks/task.schemas.ts (from Task 0)_
   - _Requirements: 1.1, 2.1_
-  - _Prompt: Role: TypeScript Developer specializing in type systems | Task: Create comprehensive TypeScript type definitions for Task, TaskStatus, TaskPriority, and TaskFilter interfaces following requirements 1.1 and 2.1, using existing type patterns from apps/frontend/src/types/ | Restrictions: Do not modify existing types, ensure compatibility with backend API schemas, follow project naming conventions | Success: All types are well-defined, compile without errors, and provide full type coverage for task domain_
+  - _Prompt: Role: TypeScript Developer specializing in type systems and contract-driven development | Task: Create type re-export file at apps/frontend/src/types/task.ts that imports and re-exports Task, TaskStatus, TaskPriority, TaskFilter, and other task-related types from @cc-task-manager/schemas following requirement 1.1 and 2.1 | Restrictions: Must import from @cc-task-manager/schemas only, do not define any types locally, only re-export for convenience, ensure tsconfig.json references schemas package, verify types are accessible | Success: All task types imported from shared schemas, re-exported for frontend use, TypeScript compiles without errors, no duplicate type definitions, frontend has full type coverage from shared contracts_
 
 - [ ] 2. Create useTasks custom hook
   - File: apps/frontend/src/hooks/useTasks.ts
