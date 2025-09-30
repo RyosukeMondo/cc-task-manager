@@ -65,30 +65,29 @@ const sidebarSections = [
       }
     ]
   },
-  // Temporarily commented out until pages are implemented
-  // {
-  //   title: 'Tasks',
-  //   items: [
-  //     {
-  //       href: '/tasks',
-  //       label: 'All Tasks',
-  //       icon: TaskIcon,
-  //       description: 'View and manage all tasks'
-  //     },
-  //     {
-  //       href: '/tasks/active',
-  //       label: 'Active Tasks',
-  //       icon: ListIcon,
-  //       description: 'Currently running tasks'
-  //     },
-  //     {
-  //       href: '/tasks/completed',
-  //       label: 'Completed',
-  //       icon: ListIcon,
-  //       description: 'Finished tasks'
-  //     }
-  //   ]
-  // },
+  {
+    title: 'Tasks',
+    items: [
+      {
+        href: '/tasks',
+        label: 'All Tasks',
+        icon: TaskIcon,
+        description: 'View and manage all tasks'
+      },
+      {
+        href: '/tasks/active',
+        label: 'Active Tasks',
+        icon: ListIcon,
+        description: 'Currently running tasks'
+      },
+      {
+        href: '/tasks/completed',
+        label: 'Completed',
+        icon: ListIcon,
+        description: 'Finished tasks'
+      }
+    ]
+  },
   {
     title: 'Analytics',
     items: [
