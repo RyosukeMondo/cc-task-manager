@@ -3,7 +3,7 @@
 ## ⚠️ MANDATORY: Contract-First Development
 All tasks must follow contract-driven development. Task 0 MUST be completed before any other tasks.
 
-- [ ] 0. Define Task API contract in shared schemas package
+- [x] 0. Define Task API contract in shared schemas package
   - File: packages/schemas/src/tasks/task.schemas.ts
   - Define all Zod schemas: TaskSchema, TaskStatus, TaskPriority, TaskFilterSchema, TaskCreateSchema, TaskUpdateSchema, TaskListResponseSchema
   - Export from packages/schemas/src/tasks/index.ts and packages/schemas/src/index.ts
