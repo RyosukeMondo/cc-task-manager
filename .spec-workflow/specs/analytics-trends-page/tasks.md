@@ -62,7 +62,7 @@ Task 0 from analytics-performance-page spec MUST be completed first. The Analyti
   - _Requirements: 3.1, 3.2, 3.3_
   - _Prompt: Role: QA Engineer | Task: Verify that Analytics section in Sidebar shows both Performance and Trends links and they navigate correctly following requirements 3.1-3.3 | Restrictions: Only verify, do not modify navigation | Success: Both analytics links work, navigate without errors, active states highlight correctly_
 
-- [ ] 7. Add tests for trends page
+- [x] 7. Add tests for trends page
   - File: apps/frontend/src/app/analytics/trends/__tests__/page.test.tsx
   - Write comprehensive tests for trends page
   - Purpose: Ensure page and trend visualizations work correctly
