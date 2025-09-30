@@ -80,6 +80,20 @@ class SecureStorage implements ITokenStorage, IUserStorage {
     }
   }
 
+  // Cookie management helper
+  private setCookie(name: string, value: string, days: number = 7): void {
+    if (typeof document === 'undefined') return; // SSR check
+
+    const expires = new Date();
+    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+  }
+
+  private removeCookie(name: string): void {
+    if (typeof document === 'undefined') return; // SSR check
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
+  }
+
   // Token management
   getToken(): string | null {
     return this.getItem(TOKEN_KEY);
@@ -87,10 +101,13 @@ class SecureStorage implements ITokenStorage, IUserStorage {
 
   setToken(token: string): void {
     this.setItem(TOKEN_KEY, token);
+    // Also set cookie for middleware access
+    this.setCookie(TOKEN_KEY, token, 7);
   }
 
   removeToken(): void {
     this.removeItem(TOKEN_KEY);
+    this.removeCookie(TOKEN_KEY);
   }
 
   // Refresh token management
@@ -100,10 +117,13 @@ class SecureStorage implements ITokenStorage, IUserStorage {
 
   setRefreshToken(token: string): void {
     this.setItem(REFRESH_TOKEN_KEY, token);
+    // Also set cookie for potential future use
+    this.setCookie(REFRESH_TOKEN_KEY, token, 30);
   }
 
   removeRefreshToken(): void {
     this.removeItem(REFRESH_TOKEN_KEY);
+    this.removeCookie(REFRESH_TOKEN_KEY);
   }
 
   // User data management

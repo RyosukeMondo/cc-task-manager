@@ -28,7 +28,7 @@ export class WebSocketClient implements IWebSocketClient, IEventEmitter, IRoomMa
 
   constructor(config: Partial<WebSocketConfig> = {}) {
     this.config = {
-      url: process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'ws://localhost:3001',
+      url: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3005',
       autoReconnect: true,
       reconnectInterval: 1000,
       maxReconnectAttempts: 5,

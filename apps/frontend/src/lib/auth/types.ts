@@ -1,30 +1,44 @@
 import { z } from 'zod';
+import {
+  LoginRequestSchema,
+  AuthResponseSchema as BackendAuthResponseSchema,
+  UserBaseSchema,
+  JWTPayloadSchema as BackendJWTPayloadSchema,
+  UserRegistrationSchema,
+  UserRole,
+} from '@cc-task-manager/schemas';
+
+/**
+ * Re-export shared schemas from backend for consistent contract enforcement
+ * These are the SINGLE SOURCE OF TRUTH for auth types
+ */
+export { LoginRequestSchema, UserRegistrationSchema, UserBaseSchema };
 
 /**
  * JWT payload structure for authentication tokens
+ * Using backend schema as source of truth
  */
-export const JWTPayloadSchema = z.object({
-  sub: z.string(), // User ID
-  email: z.string().email(),
-  role: z.enum(['admin', 'user', 'viewer']),
-  permissions: z.array(z.string()),
-  iat: z.number(),
-  exp: z.number(),
-});
-
+export const JWTPayloadSchema = BackendJWTPayloadSchema;
 export type JWTPayload = z.infer<typeof JWTPayloadSchema>;
 
 /**
- * User information derived from JWT token
+ * User information derived from backend schema
+ * Using backend UserBaseSchema as source of truth
+ * Note: Simplified for frontend use - omits timestamp fields
  */
 export const UserSchema = z.object({
   id: z.string(),
   email: z.string().email(),
-  role: z.enum(['admin', 'user', 'viewer']),
-  permissions: z.array(z.string()),
+  username: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  role: z.nativeEnum(UserRole),
 });
 
 export type User = z.infer<typeof UserSchema>;
+
+// Re-export UserRole enum for convenience
+export { UserRole };
 
 /**
  * Authentication state interface
@@ -39,21 +53,22 @@ export interface AuthState {
 
 /**
  * Login credentials interface
+ * IMPORTANT: Backend expects 'identifier' field, not 'email'
+ * Use LoginRequestSchema for validation, this is for UI convenience
  */
-export const LoginCredentialsSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-export type LoginCredentials = z.infer<typeof LoginCredentialsSchema>;
+export interface LoginCredentials {
+  email: string;  // Frontend uses email for UX
+  password: string;
+}
 
 /**
  * Authentication response from backend
+ * Mapped to match backend contract with accessToken -> token alias
  */
 export const AuthResponseSchema = z.object({
   token: z.string(),
   user: UserSchema,
-  expiresIn: z.number(),
+  expiresIn: z.number().optional(),
 });
 
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;

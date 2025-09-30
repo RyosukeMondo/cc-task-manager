@@ -6,7 +6,7 @@ import { TokenUtils } from './lib/auth/token-storage';
  */
 const AUTH_CONFIG = {
   // Routes that require authentication
-  protectedRoutes: ['/dashboard', '/tasks', '/profile', '/admin'],
+  protectedRoutes: ['/', '/dashboard', '/tasks', '/profile', '/admin'],
 
   // Routes that require specific roles
   roleProtectedRoutes: {
@@ -19,11 +19,10 @@ const AUTH_CONFIG = {
   permissionProtectedRoutes: {
     '/tasks/create': ['tasks:create'],
     '/tasks/edit': ['tasks:update'],
-    '/dashboard': ['dashboard:read'],
   },
 
   // Public routes (no authentication required)
-  publicRoutes: ['/', '/login', '/register', '/forgot-password'],
+  publicRoutes: ['/login', '/register', '/forgot-password', '/unauthorized'],
 
   // Auth routes (redirect if already authenticated)
   authRoutes: ['/login', '/register'],
@@ -121,7 +120,10 @@ function hasRequiredRole(userRole: string, requiredRoles: string[]): boolean {
 /**
  * Check if user has required permissions
  */
-function hasRequiredPermissions(userPermissions: string[], requiredPermissions: string[]): boolean {
+function hasRequiredPermissions(userPermissions: string[] | undefined, requiredPermissions: string[]): boolean {
+  // If no permissions provided, return false
+  if (!userPermissions || !Array.isArray(userPermissions)) return false;
+
   // Admin has all permissions
   if (userPermissions.includes('*')) return true;
 

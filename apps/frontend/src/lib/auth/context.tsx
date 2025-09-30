@@ -141,30 +141,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     dispatch({ type: 'AUTH_START' });
 
     try {
-      const response = await fetch(`${apiBaseUrl}/auth/login`, {
+      // Map frontend email field to backend identifier field
+      const loginPayload = {
+        identifier: credentials.email,
+        password: credentials.password,
+        rememberMe: false,
+      };
+
+      const response = await fetch(`${apiBaseUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(loginPayload),
+      }).catch((fetchError) => {
+        // Network error - backend unreachable
+        throw new Error(`Cannot connect to server. Please check if the backend is running at ${apiBaseUrl}`);
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => ({
+          message: `Server returned ${response.status}: ${response.statusText}`
+        }));
         throw new Error(errorData.message || 'Login failed');
       }
 
-      const authResponse: AuthResponse = await response.json();
+      const authResponse: any = await response.json();
+
+      // Validate response has required fields
+      if (!authResponse.accessToken || !authResponse.user) {
+        throw new Error('Invalid response from server - missing authentication data');
+      }
 
       // Store token and user data
-      tokenStorage.setToken(authResponse.token);
+      // Backend returns accessToken and refreshToken, not just token
+      tokenStorage.setToken(authResponse.accessToken);
+      tokenStorage.setRefreshToken(authResponse.refreshToken);
       tokenStorage.setUser(authResponse.user);
 
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
           user: authResponse.user,
-          token: authResponse.token,
+          token: authResponse.accessToken,
         },
       });
     } catch (error) {
@@ -182,7 +201,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
       // Call logout endpoint if token exists
       const token = tokenStorage.getToken();
       if (token) {
-        await fetch(`${apiBaseUrl}/auth/logout`, {
+        await fetch(`${apiBaseUrl}/api/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -209,7 +228,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     }
 
     try {
-      const response = await fetch(`${apiBaseUrl}/auth/refresh`, {
+      const response = await fetch(`${apiBaseUrl}/api/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,16 +240,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
         throw new Error('Token refresh failed');
       }
 
-      const authResponse: AuthResponse = await response.json();
+      const authResponse: any = await response.json();
 
-      tokenStorage.setToken(authResponse.token);
+      tokenStorage.setToken(authResponse.accessToken);
+      tokenStorage.setRefreshToken(authResponse.refreshToken);
       tokenStorage.setUser(authResponse.user);
 
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
           user: authResponse.user,
-          token: authResponse.token,
+          token: authResponse.accessToken,
         },
       });
     } catch (error) {

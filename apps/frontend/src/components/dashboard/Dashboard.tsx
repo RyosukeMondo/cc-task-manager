@@ -5,6 +5,7 @@ import { Activity, CheckCircle, Clock, AlertCircle, Cpu, MemoryStick } from 'luc
 import { TaskState, TaskStatus } from '@cc-task-manager/types';
 import { DashboardLayout, DashboardGrid, MetricCard } from './DashboardLayout';
 import { TaskStatusChart, TaskTrendChart, PerformanceChart } from './charts';
+import { UserMenu } from './UserMenu';
 
 interface DashboardProps {
   tasks?: TaskStatus[];
@@ -107,6 +108,7 @@ export function Dashboard({ tasks = [], realTimeUpdates = true }: DashboardProps
     <DashboardLayout
       title="Task Manager Dashboard"
       description="Real-time monitoring and analytics for your task management system"
+      headerActions={<UserMenu />}
     >
       {/* Key Metrics Row */}
       <DashboardGrid>

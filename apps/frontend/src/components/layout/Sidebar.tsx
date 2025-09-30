@@ -52,6 +52,7 @@ const SettingsIcon = () => (
 );
 
 // Sidebar navigation structure
+// TODO: Uncomment routes as pages are implemented
 const sidebarSections = [
   {
     title: 'Main',
@@ -64,57 +65,58 @@ const sidebarSections = [
       }
     ]
   },
-  {
-    title: 'Tasks',
-    items: [
-      {
-        href: '/tasks',
-        label: 'All Tasks',
-        icon: TaskIcon,
-        description: 'View and manage all tasks'
-      },
-      {
-        href: '/tasks/active',
-        label: 'Active Tasks',
-        icon: ListIcon,
-        description: 'Currently running tasks'
-      },
-      {
-        href: '/tasks/completed',
-        label: 'Completed',
-        icon: ListIcon,
-        description: 'Finished tasks'
-      }
-    ]
-  },
-  {
-    title: 'Analytics',
-    items: [
-      {
-        href: '/analytics/performance',
-        label: 'Performance',
-        icon: ChartIcon,
-        description: 'Task performance metrics'
-      },
-      {
-        href: '/analytics/trends',
-        label: 'Trends',
-        icon: ChartIcon,
-        description: 'Task completion trends'
-      }
-    ]
-  },
-  {
-    title: 'System',
-    items: [
-      {
-        href: '/settings',
-        label: 'Settings',
-        icon: SettingsIcon,
-        description: 'Application settings'
-      }
-    ]
-  }
+  // Temporarily commented out until pages are implemented
+  // {
+  //   title: 'Tasks',
+  //   items: [
+  //     {
+  //       href: '/tasks',
+  //       label: 'All Tasks',
+  //       icon: TaskIcon,
+  //       description: 'View and manage all tasks'
+  //     },
+  //     {
+  //       href: '/tasks/active',
+  //       label: 'Active Tasks',
+  //       icon: ListIcon,
+  //       description: 'Currently running tasks'
+  //     },
+  //     {
+  //       href: '/tasks/completed',
+  //       label: 'Completed',
+  //       icon: ListIcon,
+  //       description: 'Finished tasks'
+  //     }
+  //   ]
+  // },
+  // {
+  //   title: 'Analytics',
+  //   items: [
+  //     {
+  //       href: '/analytics/performance',
+  //       label: 'Performance',
+  //       icon: ChartIcon,
+  //       description: 'Task performance metrics'
+  //     },
+  //     {
+  //       href: '/analytics/trends',
+  //       label: 'Trends',
+  //       icon: ChartIcon,
+  //       description: 'Task completion trends'
+  //     }
+  //   ]
+  // },
+  // {
+  //   title: 'System',
+  //   items: [
+  //     {
+  //       href: '/settings',
+  //       label: 'Settings',
+  //       icon: SettingsIcon,
+  //       description: 'Application settings'
+  //       }
+  //   ]
+  // }
 ];
 
 interface SidebarProps {

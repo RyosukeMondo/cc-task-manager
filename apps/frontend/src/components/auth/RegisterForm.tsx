@@ -11,9 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
-
 /**
  * Registration form validation schema
+ * Matches backend UserRegistrationSchema contract to ensure consistency
+ * Adds confirmPassword field for UI validation only
  */
 const registerSchema = z.object({
   username: z
@@ -39,10 +40,10 @@ const registerSchema = z.object({
     .min(1, 'Password is required')
     .min(8, 'Password must be at least 8 characters')
     .max(128, 'Password must not exceed 128 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number')
-    .regex(/[@$!%*?&]/, 'Password must contain at least one special character (@$!%*?&)'),
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character'
+    ),
   confirmPassword: z
     .string()
     .min(1, 'Please confirm your password'),
@@ -74,7 +75,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   className = '',
   showCard = true,
   redirectUrl = '/login',
-  apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005',
 }) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -107,7 +108,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     setError(null);
 
     try {
-      const response = await fetch(`${apiBaseUrl}/auth/register`, {
+      const response = await fetch(`${apiBaseUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

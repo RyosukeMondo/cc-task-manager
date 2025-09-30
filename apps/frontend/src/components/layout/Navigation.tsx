@@ -40,6 +40,7 @@ const SettingsIcon = () => (
 );
 
 // Navigation items configuration
+// TODO: Uncomment routes as pages are implemented
 const navigationItems = [
   {
     href: '/dashboard',
@@ -47,18 +48,19 @@ const navigationItems = [
     icon: DashboardIcon,
     description: 'Main dashboard with task overview and statistics'
   },
-  {
-    href: '/tasks',
-    label: 'Tasks',
-    icon: TaskIcon,
-    description: 'Task management and monitoring'
-  },
-  {
-    href: '/settings',
-    label: 'Settings',
-    icon: SettingsIcon,
-    description: 'Application settings and preferences'
-  }
+  // Temporarily commented out until pages are implemented
+  // {
+  //   href: '/tasks',
+  //   label: 'Tasks',
+  //   icon: TaskIcon,
+  //   description: 'Task management and monitoring'
+  // },
+  // {
+  //   href: '/settings',
+  //   label: 'Settings',
+  //   icon: SettingsIcon,
+  //   description: 'Application settings and preferences'
+  // }
 ];
 
 interface NavigationProps {
