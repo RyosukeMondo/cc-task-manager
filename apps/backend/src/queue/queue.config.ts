@@ -148,7 +148,6 @@ export class QueueConfigService {
     return {
       connection: this.getRedisConnection(),
       defaultJobOptions: this.getDefaultJobOptions(),
-      settings: this.getQueueSettings(),
 
       // Queue naming with environment prefix
       prefix: `{${this.getQueuePrefix()}}`,

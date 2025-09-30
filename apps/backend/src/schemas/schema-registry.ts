@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
-import { ContractRegistry } from '../../../../src/contracts/ContractRegistry';
+import { ContractRegistry } from '@contracts/ContractRegistry';
 
 // Import all auth schemas
 import {

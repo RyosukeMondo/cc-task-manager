@@ -68,7 +68,7 @@ export class TasksRepository implements ITasksRepository {
       id: taskId,
       title: task.title,
       description: task.description,
-      status: TaskStatus.PENDING,
+      status: TaskStatus.TODO,
       priority: task.priority,
       category: task.category,
       assigneeId: task.assigneeId,
@@ -257,7 +257,7 @@ export class TasksRepository implements ITasksRepository {
     const now = new Date();
     
     // Handle status change to completed
-    const completedAt = updateData.status === TaskStatus.COMPLETED && existingTask.status !== TaskStatus.COMPLETED
+    const completedAt = updateData.status === TaskStatus.DONE && existingTask.status !== TaskStatus.DONE
       ? now
       : existingTask.completedAt;
 
@@ -359,7 +359,7 @@ export class TasksRepository implements ITasksRepository {
       .filter(task => 
         task.dueDate && 
         task.dueDate < now && 
-        task.status !== TaskStatus.COMPLETED &&
+        task.status !== TaskStatus.DONE &&
         task.status !== TaskStatus.CANCELLED
       );
     
@@ -396,7 +396,7 @@ export class TasksRepository implements ITasksRepository {
       {
         title: 'Design Database Schema',
         description: 'Create comprehensive database schema for task management system',
-        status: TaskStatus.COMPLETED,
+        status: TaskStatus.DONE,
         priority: TaskPriority.MEDIUM,
         category: TaskCategory.DEVELOPMENT,
         assigneeId: '550e8400-e29b-41d4-a716-446655440002',
@@ -416,7 +416,7 @@ export class TasksRepository implements ITasksRepository {
       {
         title: 'Write API Documentation',
         description: 'Create comprehensive API documentation using OpenAPI/Swagger',
-        status: TaskStatus.PENDING,
+        status: TaskStatus.TODO,
         priority: TaskPriority.LOW,
         category: TaskCategory.DOCUMENTATION,
         assigneeId: '550e8400-e29b-41d4-a716-446655440003',

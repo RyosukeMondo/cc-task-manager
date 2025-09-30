@@ -158,17 +158,15 @@ export class QueueScalingService implements OnModuleInit, OnModuleDestroy {
         concurrency: this.getOptimalConcurrency(priority),
 
         // Performance optimizations
-        stalledInterval: 30000,       // Check for stalled jobs every 30s
         maxStalledCount: 3,           // Max 3 stalled attempts
 
-        // Resource optimization
-        removeOnComplete: 100,        // Keep last 100 completed jobs
-        removeOnFail: 50,            // Keep last 50 failed jobs
+        // Resource optimization - BullMQ v4 uses KeepJobs type
+        removeOnComplete: { count: 100 },        // Keep last 100 completed jobs
+        removeOnFail: { count: 50 },            // Keep last 50 failed jobs
 
-        // Connection optimization
+        // Connection optimization settings
         settings: {
-          stalledInterval: 30000,
-          maxStalledCount: 3,
+          // BullMQ v4 settings (maxStalledCount moved to top level)
         },
       }
     );

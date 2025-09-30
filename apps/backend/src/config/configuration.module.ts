@@ -119,14 +119,14 @@ export class AppConfigurationModule {
     console.log('🔍 Performing startup configuration validation...');
     
     try {
-      const config = this.configService.getEnvironmentConfig();
-      
+      const config = this.configService.getEnvironmentConfig() as unknown as EnvironmentConfig;
+
       // Check required environment variables
       this.validateRequiredVariables(config);
-      
+
       // Validate environment-specific requirements
       this.validateEnvironmentSpecificRequirements(config);
-      
+
       // Check for common configuration issues
       this.checkConfigurationWarnings(config);
       

@@ -4,53 +4,40 @@ import { ContractRegistry } from '@contracts/ContractRegistry';
 // Import all backend-specific schemas
 import {
   UserRegistrationSchema,
-  UserLoginSchema,
-  JwtPayloadSchema,
+  LoginRequestSchema,
+  JWTPayloadSchema,
   AuthResponseSchema,
   TokenRefreshSchema,
   PasswordResetRequestSchema,
   PasswordResetConfirmSchema,
-  UserProfileUpdateSchema,
+  PasswordChangeSchema,
+  UserSessionSchema,
 } from './auth.schemas';
 
 import {
-  TaskCreateSchema,
-  TaskUpdateSchema,
-  TaskResponseSchema,
-  TaskListQuerySchema,
-  TaskListResponseSchema,
+  CreateTaskSchema,
+  UpdateTaskSchema,
+  TaskBaseSchema,
+  TaskQueryFiltersSchema,
   TaskCommentSchema,
-  TaskCommentCreateSchema,
-  TaskTimeEntrySchema,
-  TaskTimeEntryCreateSchema,
+  CreateTaskCommentSchema,
+  UpdateTaskCommentSchema,
+  TaskTimeLogSchema,
+  CreateTaskTimeLogSchema,
+  TaskStatisticsSchema,
 } from './task.schemas';
 
 import {
-  UserResponseSchema,
-  UserCreateSchema,
-  UserUpdateSchema,
-  UserListQuerySchema,
-  UserListResponseSchema,
-  PasswordChangeSchema,
-  EmailVerificationSchema,
-  UserPermissionSchema,
-  UserSessionSchema,
-  UserActivitySchema,
+  UserProfileSchema,
+  UpdateUserProfileSchema,
+  UserQueryFiltersSchema,
+  AdminCreateUserSchema,
+  AdminUpdateUserSchema,
+  UserActivityLogSchema,
+  UserInvitationSchema,
+  CreateUserInvitationSchema,
+  UserStatisticsSchema,
 } from './user.schemas';
-
-import {
-  ProjectCreateSchema,
-  ProjectUpdateSchema,
-  ProjectResponseSchema,
-  ProjectListQuerySchema,
-  ProjectListResponseSchema,
-  ProjectMemberSchema,
-  ProjectMemberInviteSchema,
-  ProjectMemberUpdateSchema,
-  ProjectMilestoneSchema,
-  ProjectMilestoneCreateSchema,
-  ProjectMilestoneUpdateSchema,
-} from './project.schemas';
 
 /**
  * Schema Registry Service
@@ -111,13 +98,14 @@ export class SchemaRegistryService implements OnModuleInit {
   private async registerAuthSchemas(): Promise<void> {
     const authSchemas = [
       { name: 'UserRegistration', version: '1.0.0', schema: UserRegistrationSchema },
-      { name: 'UserLogin', version: '1.0.0', schema: UserLoginSchema },
-      { name: 'JwtPayload', version: '1.0.0', schema: JwtPayloadSchema },
+      { name: 'LoginRequest', version: '1.0.0', schema: LoginRequestSchema },
+      { name: 'JWTPayload', version: '1.0.0', schema: JWTPayloadSchema },
       { name: 'AuthResponse', version: '1.0.0', schema: AuthResponseSchema },
       { name: 'TokenRefresh', version: '1.0.0', schema: TokenRefreshSchema },
       { name: 'PasswordResetRequest', version: '1.0.0', schema: PasswordResetRequestSchema },
       { name: 'PasswordResetConfirm', version: '1.0.0', schema: PasswordResetConfirmSchema },
-      { name: 'UserProfileUpdate', version: '1.0.0', schema: UserProfileUpdateSchema },
+      { name: 'PasswordChange', version: '1.0.0', schema: PasswordChangeSchema },
+      { name: 'UserSession', version: '1.0.0', schema: UserSessionSchema },
     ];
 
     for (const { name, version, schema } of authSchemas) {
@@ -137,15 +125,16 @@ export class SchemaRegistryService implements OnModuleInit {
    */
   private async registerTaskSchemas(): Promise<void> {
     const taskSchemas = [
-      { name: 'TaskCreate', version: '1.0.0', schema: TaskCreateSchema },
-      { name: 'TaskUpdate', version: '1.0.0', schema: TaskUpdateSchema },
-      { name: 'TaskResponse', version: '1.0.0', schema: TaskResponseSchema },
-      { name: 'TaskListQuery', version: '1.0.0', schema: TaskListQuerySchema },
-      { name: 'TaskListResponse', version: '1.0.0', schema: TaskListResponseSchema },
+      { name: 'CreateTask', version: '1.0.0', schema: CreateTaskSchema },
+      { name: 'UpdateTask', version: '1.0.0', schema: UpdateTaskSchema },
+      { name: 'TaskBase', version: '1.0.0', schema: TaskBaseSchema },
+      { name: 'TaskQueryFilters', version: '1.0.0', schema: TaskQueryFiltersSchema },
       { name: 'TaskComment', version: '1.0.0', schema: TaskCommentSchema },
-      { name: 'TaskCommentCreate', version: '1.0.0', schema: TaskCommentCreateSchema },
-      { name: 'TaskTimeEntry', version: '1.0.0', schema: TaskTimeEntrySchema },
-      { name: 'TaskTimeEntryCreate', version: '1.0.0', schema: TaskTimeEntryCreateSchema },
+      { name: 'CreateTaskComment', version: '1.0.0', schema: CreateTaskCommentSchema },
+      { name: 'UpdateTaskComment', version: '1.0.0', schema: UpdateTaskCommentSchema },
+      { name: 'TaskTimeLog', version: '1.0.0', schema: TaskTimeLogSchema },
+      { name: 'CreateTaskTimeLog', version: '1.0.0', schema: CreateTaskTimeLogSchema },
+      { name: 'TaskStatistics', version: '1.0.0', schema: TaskStatisticsSchema },
     ];
 
     for (const { name, version, schema } of taskSchemas) {
@@ -165,16 +154,15 @@ export class SchemaRegistryService implements OnModuleInit {
    */
   private async registerUserSchemas(): Promise<void> {
     const userSchemas = [
-      { name: 'UserResponse', version: '1.0.0', schema: UserResponseSchema },
-      { name: 'UserCreate', version: '1.0.0', schema: UserCreateSchema },
-      { name: 'UserUpdate', version: '1.0.0', schema: UserUpdateSchema },
-      { name: 'UserListQuery', version: '1.0.0', schema: UserListQuerySchema },
-      { name: 'UserListResponse', version: '1.0.0', schema: UserListResponseSchema },
-      { name: 'PasswordChange', version: '1.0.0', schema: PasswordChangeSchema },
-      { name: 'EmailVerification', version: '1.0.0', schema: EmailVerificationSchema },
-      { name: 'UserPermission', version: '1.0.0', schema: UserPermissionSchema },
-      { name: 'UserSession', version: '1.0.0', schema: UserSessionSchema },
-      { name: 'UserActivity', version: '1.0.0', schema: UserActivitySchema },
+      { name: 'UserProfile', version: '1.0.0', schema: UserProfileSchema },
+      { name: 'UpdateUserProfile', version: '1.0.0', schema: UpdateUserProfileSchema },
+      { name: 'UserQueryFilters', version: '1.0.0', schema: UserQueryFiltersSchema },
+      { name: 'AdminCreateUser', version: '1.0.0', schema: AdminCreateUserSchema },
+      { name: 'AdminUpdateUser', version: '1.0.0', schema: AdminUpdateUserSchema },
+      { name: 'UserActivityLog', version: '1.0.0', schema: UserActivityLogSchema },
+      { name: 'UserInvitation', version: '1.0.0', schema: UserInvitationSchema },
+      { name: 'CreateUserInvitation', version: '1.0.0', schema: CreateUserInvitationSchema },
+      { name: 'UserStatistics', version: '1.0.0', schema: UserStatisticsSchema },
     ];
 
     for (const { name, version, schema } of userSchemas) {
@@ -190,33 +178,11 @@ export class SchemaRegistryService implements OnModuleInit {
   }
 
   /**
-   * Register project management schemas
+   * Register project management schemas (placeholder - implement when project.schemas.ts exists)
    */
   private async registerProjectSchemas(): Promise<void> {
-    const projectSchemas = [
-      { name: 'ProjectCreate', version: '1.0.0', schema: ProjectCreateSchema },
-      { name: 'ProjectUpdate', version: '1.0.0', schema: ProjectUpdateSchema },
-      { name: 'ProjectResponse', version: '1.0.0', schema: ProjectResponseSchema },
-      { name: 'ProjectListQuery', version: '1.0.0', schema: ProjectListQuerySchema },
-      { name: 'ProjectListResponse', version: '1.0.0', schema: ProjectListResponseSchema },
-      { name: 'ProjectMember', version: '1.0.0', schema: ProjectMemberSchema },
-      { name: 'ProjectMemberInvite', version: '1.0.0', schema: ProjectMemberInviteSchema },
-      { name: 'ProjectMemberUpdate', version: '1.0.0', schema: ProjectMemberUpdateSchema },
-      { name: 'ProjectMilestone', version: '1.0.0', schema: ProjectMilestoneSchema },
-      { name: 'ProjectMilestoneCreate', version: '1.0.0', schema: ProjectMilestoneCreateSchema },
-      { name: 'ProjectMilestoneUpdate', version: '1.0.0', schema: ProjectMilestoneUpdateSchema },
-    ];
-
-    for (const { name, version, schema } of projectSchemas) {
-      await this.contractRegistry.registerContract(name, version, schema, {
-        name,
-        version,
-        description: `Project management schema for ${name}`,
-        compatibleVersions: ['1.0.0'],
-      });
-    }
-
-    this.logger.log(`📋 Registered ${projectSchemas.length} project management schemas`);
+    // Project schemas not yet implemented
+    this.logger.log('📋 Project schemas not yet implemented');
   }
 
   /**

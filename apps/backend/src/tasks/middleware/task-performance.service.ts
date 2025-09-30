@@ -403,7 +403,7 @@ interface PerformanceSnapshot {
   errorRate: number;
 }
 
-interface PerformanceReport {
+export interface PerformanceReport {
   summary: {
     averageQueryDuration: number;
     cacheHitRate: number;

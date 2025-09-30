@@ -241,9 +241,9 @@ export declare const TaskResponseSchema: z.ZodObject<{
     };
     startedAt?: string;
     retryCount?: number;
+    prompt?: string;
     progress?: number;
     errorMessage?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
@@ -273,9 +273,9 @@ export declare const TaskResponseSchema: z.ZodObject<{
     };
     startedAt?: string;
     retryCount?: number;
+    prompt?: string;
     progress?: number;
     errorMessage?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
@@ -361,9 +361,9 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         };
         startedAt?: string;
         retryCount?: number;
+        prompt?: string;
         progress?: number;
         errorMessage?: string;
-        prompt?: string;
         config?: {
             priority?: TaskPriority;
             timeout?: number;
@@ -393,9 +393,9 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         };
         startedAt?: string;
         retryCount?: number;
+        prompt?: string;
         progress?: number;
         errorMessage?: string;
-        prompt?: string;
         config?: {
             priority?: TaskPriority;
             timeout?: number;
@@ -449,9 +449,9 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         };
         startedAt?: string;
         retryCount?: number;
+        prompt?: string;
         progress?: number;
         errorMessage?: string;
-        prompt?: string;
         config?: {
             priority?: TaskPriority;
             timeout?: number;
@@ -491,9 +491,9 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         };
         startedAt?: string;
         retryCount?: number;
+        prompt?: string;
         progress?: number;
         errorMessage?: string;
-        prompt?: string;
         config?: {
             priority?: TaskPriority;
             timeout?: number;
@@ -632,9 +632,9 @@ export declare const validateTaskResponse: (data: unknown) => {
     };
     startedAt?: string;
     retryCount?: number;
+    prompt?: string;
     progress?: number;
     errorMessage?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;

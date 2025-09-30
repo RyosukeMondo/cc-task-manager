@@ -13,6 +13,7 @@ import {
   NotificationLevel,
   createTaskEvent,
 } from '../websocket/websocket-events.schemas';
+import { TaskStatus } from '../schemas/task.schemas';
 
 /**
  * Interface for Claude Code streaming configuration
@@ -523,9 +524,10 @@ export class ClaudeStreamService extends EventEmitter implements OnModuleDestroy
         stream.userId || 'system',
         {
           taskId: stream.streamId,
-          status: 'streaming',
-          data: batchPayload,
-          metadata: {
+          status: TaskStatus.IN_PROGRESS,
+          title: 'Claude Stream Task',
+          changes: {
+            ...batchPayload,
             type: 'claude_stream_batch',
             streamId: stream.streamId,
             sessionId: stream.sessionId,

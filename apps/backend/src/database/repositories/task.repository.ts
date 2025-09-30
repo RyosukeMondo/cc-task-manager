@@ -213,11 +213,11 @@ export class TaskRepository extends BaseRepository<TaskEntity> implements ITaskR
       this.logger.debug('Updating task status', { id, status });
       
       const updateData: any = { status };
-      
+
       // Set completedAt timestamp when marking as done
       if (status === TaskStatus.DONE) {
         updateData.completedAt = new Date();
-      } else if (status !== TaskStatus.DONE) {
+      } else {
         updateData.completedAt = null;
       }
       

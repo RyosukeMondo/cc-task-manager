@@ -63,7 +63,11 @@ export const UserStatisticsSchema = z.object({
   activeUsers: z.number(),
   suspendedUsers: z.number(),
   pendingVerification: z.number(),
-  usersByRole: z.record(z.nativeEnum(UserRole), z.number()),
+  usersByRole: z.object({
+    [UserRole.ADMIN]: z.number(),
+    [UserRole.MODERATOR]: z.number(),
+    [UserRole.USER]: z.number(),
+  }),
   recentSignups: z.number(),
   activeToday: z.number(),
 });

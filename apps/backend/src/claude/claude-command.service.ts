@@ -47,6 +47,11 @@ export interface CommandExecutionContext {
   status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
   events: ClaudeResponse[];
   responseBuffer: any[];
+  sessionId?: string;
+  userId?: string;
+  workingDirectory?: string;
+  prompt?: string;
+  options?: Record<string, any>;
 }
 
 /**

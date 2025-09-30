@@ -1,0 +1,41 @@
+module.exports = {
+  apps: [
+    {
+      name: 'cc-task-manager-backend',
+      script: 'pnpm',
+      args: 'start:dev',
+      cwd: '/home/rmondo/repos/cc-task-manager/apps/backend',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      env: {
+        NODE_ENV: 'development',
+        PORT: 3005,
+      },
+      error_file: '/home/rmondo/repos/cc-task-manager/logs/pm2-backend-error.log',
+      out_file: '/home/rmondo/repos/cc-task-manager/logs/pm2-backend-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      merge_logs: true,
+      time: true,
+    },
+    {
+      name: 'cc-task-manager-frontend',
+      script: 'pnpm',
+      args: 'dev',
+      cwd: '/home/rmondo/repos/cc-task-manager/apps/frontend',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      env: {
+        NODE_ENV: 'development',
+        PORT: 3006,
+        NEXT_PUBLIC_API_URL: 'http://localhost:3005/api',
+      },
+      error_file: '/home/rmondo/repos/cc-task-manager/logs/pm2-frontend-error.log',
+      out_file: '/home/rmondo/repos/cc-task-manager/logs/pm2-frontend-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      merge_logs: true,
+      time: true,
+    },
+  ],
+};

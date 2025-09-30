@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '../../node_modules/.prisma/client';
 
 /**
  * Prisma Service for database connection management
@@ -35,8 +35,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           emit: 'event',
           level: 'warn',
         },
-      ],
-      errorFormat: 'colored',
+      ] as Prisma.LogDefinition[],
+      errorFormat: 'pretty',
     });
 
     // Set up Prisma event logging
@@ -97,7 +97,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private setupEventLogging(): void {
     // Log slow queries in development
     if (process.env.NODE_ENV !== 'production') {
-      this.$on('query', (e) => {
+      this.$on('query' as never, (e: Prisma.QueryEvent) => {
         if (e.duration > 1000) { // Log queries taking more than 1 second
           this.logger.warn('Slow query detected', {
             query: e.query,
@@ -114,7 +114,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     }
 
     // Log errors
-    this.$on('error', (e) => {
+    this.$on('error' as never, (e: Prisma.LogEvent) => {
       this.logger.error('Prisma error', {
         message: e.message,
         target: e.target,
@@ -122,7 +122,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     });
 
     // Log info messages
-    this.$on('info', (e) => {
+    this.$on('info' as never, (e: Prisma.LogEvent) => {
       this.logger.log('Prisma info', {
         message: e.message,
         target: e.target,
@@ -130,7 +130,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     });
 
     // Log warnings
-    this.$on('warn', (e) => {
+    this.$on('warn' as never, (e: Prisma.LogEvent) => {
       this.logger.warn('Prisma warning', {
         message: e.message,
         target: e.target,
@@ -161,9 +161,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async executeTransaction<T>(fn: (prisma: PrismaClient) => Promise<T>): Promise<T> {
     try {
       this.logger.debug('Starting database transaction');
-      
+
       const result = await this.$transaction(async (prisma) => {
-        return await fn(prisma);
+        return await fn(prisma as any as PrismaClient);
       });
       
       this.logger.debug('Database transaction completed successfully');

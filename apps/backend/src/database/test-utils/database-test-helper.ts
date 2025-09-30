@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma } from '../../../node_modules/.prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -172,13 +172,12 @@ export class ClaudeTaskTestDataFactory implements ITestDataFactory<any> {
       id: uuidv4(),
       title: `Test Claude Task ${Date.now()}`,
       description: 'Test task description',
-      status: 'pending' as const,
-      priority: 'medium' as const,
-      type: 'code_generation' as const,
-      userId: overrides?.userId || uuidv4(),
+      status: 'PENDING' as const,
+      priority: 'MEDIUM' as const,
+      createdById: overrides?.createdById || overrides?.userId || uuidv4(),
       projectId: overrides?.projectId || null,
       prompt: 'Test prompt for Claude task',
-      context: JSON.stringify({ testMode: true }),
+      config: { testMode: true },
       estimatedDuration: 1800, // 30 minutes
       tags: ['test', 'claude'],
       createdAt: new Date(),
@@ -202,7 +201,7 @@ export class ClaudeTaskTestDataFactory implements ITestDataFactory<any> {
       id: uuidv4(),
       title: `Minimal Claude Task ${Date.now()}`,
       prompt: 'Minimal test prompt',
-      userId: uuidv4(),
+      createdById: uuidv4(),
     };
   }
 }
@@ -214,14 +213,11 @@ export class TaskExecutionTestDataFactory implements ITestDataFactory<any> {
   create(overrides?: any): any {
     const baseExecution = {
       id: uuidv4(),
-      claudeTaskId: overrides?.claudeTaskId || uuidv4(),
-      status: 'running' as const,
+      taskId: overrides?.taskId || overrides?.claudeTaskId || uuidv4(),
+      status: 'RUNNING' as const,
       startedAt: new Date(),
       progress: 0,
-      currentStep: 'initializing',
-      metadata: JSON.stringify({ testExecution: true }),
       createdAt: new Date(),
-      updatedAt: new Date(),
     };
 
     return { ...baseExecution, ...overrides };
@@ -230,8 +226,7 @@ export class TaskExecutionTestDataFactory implements ITestDataFactory<any> {
   createMany(count: number, overrides?: any): any[] {
     return Array.from({ length: count }, (_, index) =>
       this.create({
-        currentStep: `step-${index + 1}`,
-        progress: Math.min(index * 25, 100),
+        progress: Math.min(index * 0.25, 1.0),
         ...overrides
       })
     );
@@ -240,8 +235,8 @@ export class TaskExecutionTestDataFactory implements ITestDataFactory<any> {
   createMinimal(): any {
     return {
       id: uuidv4(),
-      claudeTaskId: uuidv4(),
-      status: 'pending' as const,
+      taskId: uuidv4(),
+      status: 'INITIALIZING' as const,
     };
   }
 }
@@ -253,15 +248,16 @@ export class QueueJobTestDataFactory implements ITestDataFactory<any> {
   create(overrides?: any): any {
     const baseJob = {
       id: uuidv4(),
-      type: 'claude_task' as const,
-      status: 'pending' as const,
+      queueName: 'claude-tasks',
+      jobId: `job-${uuidv4()}`,
+      status: 'WAITING' as const,
       priority: 0,
-      payload: JSON.stringify({ testJob: true }),
-      claudeTaskId: overrides?.claudeTaskId || uuidv4(),
-      attempts: 0,
+      jobData: { testJob: true },
+      taskId: overrides?.taskId || overrides?.claudeTaskId || uuidv4(),
       maxAttempts: 3,
+      backoffType: 'EXPONENTIAL' as const,
+      backoffDelay: 2000,
       createdAt: new Date(),
-      updatedAt: new Date(),
     };
 
     return { ...baseJob, ...overrides };
@@ -271,7 +267,7 @@ export class QueueJobTestDataFactory implements ITestDataFactory<any> {
     return Array.from({ length: count }, (_, index) =>
       this.create({
         priority: index,
-        payload: JSON.stringify({ testJob: true, index }),
+        jobData: { testJob: true, index },
         ...overrides
       })
     );
@@ -280,8 +276,10 @@ export class QueueJobTestDataFactory implements ITestDataFactory<any> {
   createMinimal(): any {
     return {
       id: uuidv4(),
-      type: 'claude_task' as const,
-      payload: JSON.stringify({ minimal: true }),
+      queueName: 'claude-tasks',
+      jobId: `job-${uuidv4()}`,
+      jobData: { minimal: true },
+      taskId: uuidv4(),
     };
   }
 }
@@ -293,19 +291,19 @@ export class ExecutionLogTestDataFactory implements ITestDataFactory<any> {
   create(overrides?: any): any {
     const baseLog = {
       id: uuidv4(),
-      taskExecutionId: overrides?.taskExecutionId || uuidv4(),
-      level: 'info' as const,
+      executionId: overrides?.executionId || overrides?.taskExecutionId || uuidv4(),
+      level: 'INFO' as const,
+      source: 'SYSTEM' as const,
       message: 'Test log message',
-      metadata: JSON.stringify({ testLog: true }),
+      details: { testLog: true },
       timestamp: new Date(),
-      createdAt: new Date(),
     };
 
     return { ...baseLog, ...overrides };
   }
 
   createMany(count: number, overrides?: any): any[] {
-    const levels = ['debug', 'info', 'warn', 'error'] as const;
+    const levels = ['DEBUG', 'INFO', 'WARN', 'ERROR'] as const;
 
     return Array.from({ length: count }, (_, index) =>
       this.create({
@@ -320,8 +318,9 @@ export class ExecutionLogTestDataFactory implements ITestDataFactory<any> {
   createMinimal(): any {
     return {
       id: uuidv4(),
-      taskExecutionId: uuidv4(),
-      level: 'info' as const,
+      executionId: uuidv4(),
+      level: 'INFO' as const,
+      source: 'SYSTEM' as const,
       message: 'Minimal log',
     };
   }
@@ -358,7 +357,7 @@ export class DatabaseTestHelper {
   /**
    * Create test user with proper relationships
    */
-  async createTestUser(overrides?: any, transaction?: Prisma.TransactionClient) {
+  async createTestUser(overrides?: any, transaction?: Prisma.TransactionClient): Promise<any> {
     const client = transaction || this.prisma;
     const userData = this.userFactory.create(overrides);
 
@@ -392,9 +391,6 @@ export class DatabaseTestHelper {
     try {
       return await client.project.create({
         data: projectData,
-        include: {
-          owner: true,
-        },
       });
     } catch (error) {
       throw new Error(`Failed to create test project: ${error.message}`);
@@ -404,7 +400,7 @@ export class DatabaseTestHelper {
   /**
    * Create test Claude task with relationships
    */
-  async createTestClaudeTask(userId?: string, projectId?: string, overrides?: any, transaction?: Prisma.TransactionClient) {
+  async createTestClaudeTask(userId?: string, projectId?: string, overrides?: any, transaction?: Prisma.TransactionClient): Promise<any> {
     const client = transaction || this.prisma;
 
     // Create user if not provided
@@ -415,7 +411,7 @@ export class DatabaseTestHelper {
     }
 
     const taskData = this.claudeTaskFactory.create({
-      userId: actualUserId,
+      createdById: actualUserId,
       projectId,
       ...overrides
     });
@@ -424,7 +420,7 @@ export class DatabaseTestHelper {
       return await client.claudeTask.create({
         data: taskData,
         include: {
-          user: true,
+          createdBy: true,
           project: true,
         },
       });
@@ -443,7 +439,7 @@ export class DatabaseTestHelper {
     execution?: any;
     logs?: any[];
     queueJob?: any;
-  }, transaction?: Prisma.TransactionClient) {
+  }, transaction?: Prisma.TransactionClient): Promise<any> {
     const client = transaction || this.prisma;
 
     // Create user
@@ -465,14 +461,14 @@ export class DatabaseTestHelper {
 
     // Create task execution
     const executionData = this.taskExecutionFactory.create({
-      claudeTaskId: task.id,
+      taskId: task.id,
       ...overrides?.execution
     });
 
     const execution = await client.taskExecution.create({
       data: executionData,
       include: {
-        claudeTask: true,
+        task: true,
       },
     });
 
@@ -481,7 +477,7 @@ export class DatabaseTestHelper {
     const logCount = overrides?.logs?.length || 3;
     for (let i = 0; i < logCount; i++) {
       const logData = this.executionLogFactory.create({
-        taskExecutionId: execution.id,
+        executionId: execution.id,
         ...overrides?.logs?.[i]
       });
 
@@ -496,7 +492,7 @@ export class DatabaseTestHelper {
     let queueJob = null;
     if (overrides?.queueJob !== false) {
       const jobData = this.queueJobFactory.create({
-        claudeTaskId: task.id,
+        taskId: task.id,
         ...overrides?.queueJob
       });
 
@@ -530,9 +526,9 @@ export class DatabaseTestHelper {
       if (patterns.userEmails) {
         await client.executionLog.deleteMany({
           where: {
-            taskExecution: {
-              claudeTask: {
-                user: {
+            execution: {
+              task: {
+                createdBy: {
                   email: { in: patterns.userEmails }
                 }
               }
@@ -542,8 +538,8 @@ export class DatabaseTestHelper {
 
         await client.queueJob.deleteMany({
           where: {
-            claudeTask: {
-              user: {
+            task: {
+              createdBy: {
                 email: { in: patterns.userEmails }
               }
             }
@@ -552,8 +548,8 @@ export class DatabaseTestHelper {
 
         await client.taskExecution.deleteMany({
           where: {
-            claudeTask: {
-              user: {
+            task: {
+              createdBy: {
                 email: { in: patterns.userEmails }
               }
             }
@@ -562,15 +558,7 @@ export class DatabaseTestHelper {
 
         await client.claudeTask.deleteMany({
           where: {
-            user: {
-              email: { in: patterns.userEmails }
-            }
-          }
-        });
-
-        await client.project.deleteMany({
-          where: {
-            owner: {
+            createdBy: {
               email: { in: patterns.userEmails }
             }
           }
@@ -602,8 +590,8 @@ export class DatabaseTestHelper {
       if (patterns.taskTitles) {
         await client.executionLog.deleteMany({
           where: {
-            taskExecution: {
-              claudeTask: {
+            execution: {
+              task: {
                 title: { in: patterns.taskTitles }
               }
             }
@@ -612,7 +600,7 @@ export class DatabaseTestHelper {
 
         await client.queueJob.deleteMany({
           where: {
-            claudeTask: {
+            task: {
               title: { in: patterns.taskTitles }
             }
           }
@@ -620,7 +608,7 @@ export class DatabaseTestHelper {
 
         await client.taskExecution.deleteMany({
           where: {
-            claudeTask: {
+            task: {
               title: { in: patterns.taskTitles }
             }
           }
@@ -649,7 +637,7 @@ export class DatabaseTestHelper {
       await client.executionLog.deleteMany({
         where: {
           OR: [
-            { createdAt: { lt: cutoffDate } },
+            { timestamp: { lt: cutoffDate } },
             { message: { contains: 'Test log' } }
           ]
         }
@@ -657,19 +645,13 @@ export class DatabaseTestHelper {
 
       await client.queueJob.deleteMany({
         where: {
-          OR: [
-            { createdAt: { lt: cutoffDate } },
-            { payload: { contains: 'testJob' } }
-          ]
+          createdAt: { lt: cutoffDate }
         }
       });
 
       await client.taskExecution.deleteMany({
         where: {
-          OR: [
-            { createdAt: { lt: cutoffDate } },
-            { metadata: { contains: 'testExecution' } }
-          ]
+          createdAt: { lt: cutoffDate }
         }
       });
 
@@ -718,7 +700,7 @@ export class DatabaseTestHelper {
       // Check for orphaned task executions
       const orphanedExecutions = await client.taskExecution.count({
         where: {
-          claudeTask: null
+          task: null
         }
       });
 
@@ -729,7 +711,7 @@ export class DatabaseTestHelper {
       // Check for orphaned execution logs
       const orphanedLogs = await client.executionLog.count({
         where: {
-          taskExecution: null
+          execution: null
         }
       });
 
@@ -740,23 +722,12 @@ export class DatabaseTestHelper {
       // Check for orphaned queue jobs
       const orphanedJobs = await client.queueJob.count({
         where: {
-          claudeTask: null
+          task: null
         }
       });
 
       if (orphanedJobs > 0) {
         errors.push(`Found ${orphanedJobs} orphaned queue jobs`);
-      }
-
-      // Check for orphaned projects (no owner)
-      const orphanedProjects = await client.project.count({
-        where: {
-          owner: null
-        }
-      });
-
-      if (orphanedProjects > 0) {
-        errors.push(`Found ${orphanedProjects} orphaned projects`);
       }
 
       return {

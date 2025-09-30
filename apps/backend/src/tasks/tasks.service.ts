@@ -347,7 +347,7 @@ export class TasksService {
       throw TaskExceptionFactory.validation(
         validation.error,
         'bulkOperation',
-        bulkOperation
+        operation
       );
     }
 
@@ -487,14 +487,11 @@ export class TasksService {
     const totalTasks = allTasks.length;
     
     const tasksByStatus = {
-      [TaskStatus.PENDING]: allTasks.filter(t => t.status === TaskStatus.PENDING).length,
+      [TaskStatus.TODO]: allTasks.filter(t => t.status === TaskStatus.TODO).length,
       [TaskStatus.IN_PROGRESS]: allTasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length,
-      [TaskStatus.COMPLETED]: allTasks.filter(t => t.status === TaskStatus.COMPLETED).length,
+      [TaskStatus.IN_REVIEW]: allTasks.filter(t => t.status === TaskStatus.IN_REVIEW).length,
+      [TaskStatus.DONE]: allTasks.filter(t => t.status === TaskStatus.DONE).length,
       [TaskStatus.CANCELLED]: allTasks.filter(t => t.status === TaskStatus.CANCELLED).length,
-      [TaskStatus.ON_HOLD]: allTasks.filter(t => t.status === TaskStatus.ON_HOLD).length,
-      [TaskStatus.REVIEW]: allTasks.filter(t => t.status === TaskStatus.REVIEW).length,
-      [TaskStatus.APPROVED]: allTasks.filter(t => t.status === TaskStatus.APPROVED).length,
-      [TaskStatus.REJECTED]: allTasks.filter(t => t.status === TaskStatus.REJECTED).length,
     };
     
     const tasksByPriority = {
@@ -519,25 +516,25 @@ export class TasksService {
     const overdueTasks = allTasks.filter(t => 
       t.dueDate && 
       t.dueDate < now && 
-      t.status !== TaskStatus.COMPLETED &&
+      t.status !== TaskStatus.DONE &&
       t.status !== TaskStatus.CANCELLED
     ).length;
 
     const completedThisWeek = allTasks.filter(t => 
-      t.status === TaskStatus.COMPLETED && 
+      t.status === TaskStatus.DONE && 
       t.completedAt && 
       t.completedAt >= oneWeekAgo
     ).length;
 
     const completedThisMonth = allTasks.filter(t => 
-      t.status === TaskStatus.COMPLETED && 
+      t.status === TaskStatus.DONE && 
       t.completedAt && 
       t.completedAt >= oneMonthAgo
     ).length;
 
     // Calculate average completion time for completed tasks
     const completedTasks = allTasks.filter(t => 
-      t.status === TaskStatus.COMPLETED && 
+      t.status === TaskStatus.DONE && 
       t.completedAt && 
       t.startDate
     );
@@ -620,9 +617,9 @@ export class TasksService {
     await this.validateTaskModification(existingTask, updatedById);
 
     // Business rule: Cannot change status from completed to non-completed without proper reason
-    if (existingTask.status === TaskStatus.COMPLETED && 
+    if (existingTask.status === TaskStatus.DONE && 
         updateData.status && 
-        updateData.status !== TaskStatus.COMPLETED) {
+        updateData.status !== TaskStatus.DONE) {
       this.logger.warn(`Attempt to change completed task ${existingTask.id} to ${updateData.status} by user ${updatedById}`);
       // Allow this but log it - in a real system you might require special permissions
     }
@@ -680,7 +677,7 @@ export class TasksService {
     }
 
     // Business rule: Cannot delete completed tasks (optional business rule)
-    if (task.status === TaskStatus.COMPLETED) {
+    if (task.status === TaskStatus.DONE) {
       this.logger.warn(`Attempt to delete completed task ${task.id} by user ${deletedById}`);
       // Allow this but log it - in a real system you might prevent this
     }

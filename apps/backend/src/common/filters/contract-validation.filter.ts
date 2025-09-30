@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
-import { ContractValidationErrorDetails } from '../../../../../src/contracts/ContractValidationPipe';
+import { ContractValidationErrorDetails } from '@contracts/ContractValidationPipe';
 
 /**
  * Contract Validation Exception Filter

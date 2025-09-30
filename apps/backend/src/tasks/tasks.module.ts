@@ -1,6 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { ContractRegistry } from '../../../../src/contracts/ContractRegistry';
-import { ContractValidationPipe } from '../../../../src/contracts/ContractValidationPipe';
+import { ContractRegistry } from '@contracts/ContractRegistry';
+import { ContractValidationPipe } from '@contracts/ContractValidationPipe';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TaskController } from './task.controller';
 import { TasksService } from './tasks.service';

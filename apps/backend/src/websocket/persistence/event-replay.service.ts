@@ -7,7 +7,7 @@ import {
   WebSocketRoomType,
   validateWebSocketEvent
 } from '../websocket-events.schemas';
-import { WebSocketEvent as PersistentEvent, WebSocketConnection } from '@prisma/client';
+import { WebSocketEvent as PersistentEvent, WebSocketConnection } from '../../../node_modules/.prisma/client';
 
 /**
  * Event Replay Service for WebSocket Event Persistence and Offline Client Support
@@ -72,17 +72,36 @@ export class EventReplayService {
     [WebSocketEventType.TASK_COMMENT_ADDED]: 6,
     [WebSocketEventType.CLAUDE_EXECUTION_OUTPUT]: 5,
 
+    // System events
+    [WebSocketEventType.NOTIFICATION]: 7,
+    [WebSocketEventType.ALERT]: 8,
+    [WebSocketEventType.SYSTEM_PERFORMANCE_METRICS]: 4,
+
+    // Queue job events
+    [WebSocketEventType.QUEUE_JOB_STARTED]: 5,
+    [WebSocketEventType.QUEUE_JOB_PROGRESS]: 4,
+    [WebSocketEventType.QUEUE_JOB_STALLED]: 7,
+
+    // Claude execution events
+    [WebSocketEventType.CLAUDE_EXECUTION_STARTED]: 6,
+    [WebSocketEventType.CLAUDE_EXECUTION_PROGRESS]: 4,
+    [WebSocketEventType.CLAUDE_EXECUTION_PAUSED]: 5,
+    [WebSocketEventType.CLAUDE_EXECUTION_RESUMED]: 5,
+
+    // Room management
+    [WebSocketEventType.JOIN_ROOM]: 2,
+    [WebSocketEventType.LEAVE_ROOM]: 2,
+
+    // Connection events
+    [WebSocketEventType.CONNECT]: 3,
+    [WebSocketEventType.DISCONNECT]: 3,
+
     // Low priority events
     [WebSocketEventType.USER_JOINED]: 3,
     [WebSocketEventType.USER_LEFT]: 3,
     [WebSocketEventType.USER_TYPING]: 1,
     [WebSocketEventType.USER_STOPPED_TYPING]: 1,
     [WebSocketEventType.HEARTBEAT]: 1,
-
-    // Default priority for unspecified events
-    ...Object.fromEntries(
-      Object.values(WebSocketEventType).map(type => [type, 5])
-    ),
   };
 
   constructor(
@@ -440,7 +459,7 @@ export class EventReplayService {
     for (const persistedEvent of events) {
       try {
         // Reconstruct WebSocket event from persisted data
-        const replayEvent: WebSocketEvent = {
+        const replayEvent: any = {
           eventType: persistedEvent.eventType as WebSocketEventType,
           userId: persistedEvent.userId,
           timestamp: persistedEvent.broadcastAt,
@@ -450,7 +469,7 @@ export class EventReplayService {
           data: persistedEvent.eventData as any,
         };
 
-        // Emit event directly to the specific socket
+        // Emit event directly to the specific socket (cast as any for replay compatibility)
         this.webSocketGateway.emitToSocket(socketId, replayEvent);
 
         // Update replay count

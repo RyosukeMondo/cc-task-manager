@@ -15,8 +15,18 @@ export * from './task.schemas';
 // Export all user management schemas and types
 export * from './user.schemas';
 
-// Export all database schemas and types
-export * from './database.schemas';
+// Export database schemas (excluding conflicting enum exports to prevent ambiguity)
+export type {
+  DatabaseUser,
+  CreateDatabaseUser as DatabaseUserCreate,
+  UpdateDatabaseUser as DatabaseUserUpdate,
+  DatabaseTask,
+  CreateDatabaseTask as DatabaseTaskCreate,
+  UpdateDatabaseTask as DatabaseTaskUpdate,
+  DatabaseProject,
+  CreateDatabaseProject as DatabaseProjectCreate,
+  UpdateDatabaseProject as DatabaseProjectUpdate,
+} from './database.schemas';
 
 // Export the schema registry service
 export * from './schema-registry';

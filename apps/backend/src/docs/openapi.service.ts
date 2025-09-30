@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ContractRegistry } from '../../../../src/contracts/ContractRegistry';
-import { ApiContractGenerator, EndpointMetadata, OpenAPISpec } from '../../../../src/contracts/ApiContractGenerator';
-import { TypeScriptGenerator, ClientApiMethod } from '../../../../src/contracts/TypeScriptGenerator';
+import { ContractRegistry } from '@contracts/ContractRegistry';
+import { ApiContractGenerator, EndpointMetadata, OpenAPISpec } from '@contracts/ApiContractGenerator';
+import { TypeScriptGenerator, ClientApiMethod } from '@contracts/TypeScriptGenerator';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 
 /**

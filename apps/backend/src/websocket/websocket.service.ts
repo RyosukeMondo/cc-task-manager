@@ -179,7 +179,7 @@ export class WebSocketService {
         this.gateway.sendNotificationToUser(updatedTask.assigneeId, {
           title: 'Task Priority Changed',
           message: `Priority of task "${updatedTask.title}" changed to ${updatedTask.priority}`,
-          level: updatedTask.priority === 'urgent' ? NotificationLevel.WARNING : NotificationLevel.INFO,
+          level: updatedTask.priority === 'URGENT' ? NotificationLevel.WARNING : NotificationLevel.INFO,
           actionUrl: `/tasks/${updatedTask.id}`,
           actionText: 'View Task',
         });

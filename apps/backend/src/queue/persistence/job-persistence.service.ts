@@ -10,8 +10,8 @@ import {
 import {
   IExecutionLogRepository,
   ExecutionLogEntity,
-  ExecutionStatus,
   LogLevel,
+  LogSource,
 } from '../../database/interfaces/execution-log-repository.interface';
 
 /**
@@ -303,12 +303,10 @@ export class JobPersistenceService implements OnModuleInit {
         throw new Error(`Job not found with ID: ${jobId}`);
       }
 
-      const history = await this.executionLogRepository.findByEntityId(job.id, {
-        entityType: 'QueueJob',
-        limit: options.limit,
-        fromDate: options.fromDate,
-        toDate: options.toDate,
-      });
+      const history = await this.executionLogRepository.findByTimeRange(
+        options.fromDate || new Date(0),
+        options.toDate || new Date()
+      );
 
       this.logger.debug(`Retrieved ${history.length} history entries for job ${jobId}`);
       return history;
@@ -380,11 +378,10 @@ export class JobPersistenceService implements OnModuleInit {
         historyEntriesDeleted = await this.executionLogRepository.cleanupOldLogs(cutoffDate);
       } else {
         // For dry run, estimate based on date filter
-        const oldLogs = await this.executionLogRepository.findByDateRange({
-          fromDate: new Date(0),
-          toDate: cutoffDate,
-          entityType: 'QueueJob',
-        });
+        const oldLogs = await this.executionLogRepository.findByTimeRange(
+          new Date(0),
+          cutoffDate
+        );
         historyEntriesDeleted = oldLogs.length;
       }
 
@@ -519,21 +516,23 @@ export class JobPersistenceService implements OnModuleInit {
     }
   ): Promise<ExecutionLogEntity> {
     return await this.executionLogRepository.create({
-      entityType: 'QueueJob',
-      entityId: job.id,
+      executionId: job.id,
+      source: LogSource.QUEUE,
       level: event.level || LogLevel.INFO,
       message: `Job ${event.action}: ${job.jobId}`,
-      details: event.details,
-      metadata: {
+      details: {
+        ...(typeof event.details === 'object' && event.details !== null ? event.details : {}),
         ...event.metadata,
         taskId: job.taskId,
         queueName: job.queueName,
         status: job.status,
         priority: job.priority,
-        timestamp: event.timestamp || new Date(),
       },
+      component: 'job-persistence',
+      operation: event.action,
+      correlationId: job.jobId,
       timestamp: event.timestamp || new Date(),
-    } as ExecutionLogEntity);
+    } as Omit<ExecutionLogEntity, 'id'>);
   }
 
   /**
@@ -549,17 +548,19 @@ export class JobPersistenceService implements OnModuleInit {
     timestamp?: Date;
   }): Promise<ExecutionLogEntity> {
     return await this.executionLogRepository.create({
-      entityType: 'System',
-      entityId: 'job-persistence-service',
+      executionId: 'system',
+      source: LogSource.SYSTEM,
       level: event.level || LogLevel.INFO,
       message: `System ${event.action}`,
-      details: event.details,
-      metadata: {
+      details: {
         ...event.metadata,
         service: 'JobPersistenceService',
-        timestamp: event.timestamp || new Date(),
+        originalDetails: event.details,
       },
+      component: 'job-persistence-service',
+      operation: event.action,
+      correlationId: null,
       timestamp: event.timestamp || new Date(),
-    } as ExecutionLogEntity);
+    } as Omit<ExecutionLogEntity, 'id'>);
   }
 }

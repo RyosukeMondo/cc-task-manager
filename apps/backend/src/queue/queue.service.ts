@@ -235,13 +235,19 @@ export class QueueService implements OnModuleDestroy {
     }
 
     // Validate job options if provided
+    let validatedOptions: any = options;
     if (options) {
       const optionsValidation = JobOptionsSchema.safeParse(options);
       if (!optionsValidation.success) {
         this.logger.error(`Invalid job options: ${optionsValidation.error.message}`);
         throw new Error(`Invalid job options: ${optionsValidation.error.message}`);
       }
-      options = optionsValidation.data;
+      validatedOptions = optionsValidation.data;
+
+      // Ensure backoff type is properly set if backoff object exists
+      if (validatedOptions.backoff && typeof validatedOptions.backoff === 'object' && !validatedOptions.backoff.type) {
+        validatedOptions.backoff.type = 'exponential';
+      }
     }
 
     // Determine queue based on job type
@@ -278,7 +284,7 @@ export class QueueService implements OnModuleDestroy {
     const job = await queue.add(
       validationResult.data.type,
       validationResult.data,
-      options
+      validatedOptions as any
     );
 
     this.logger.log(`Added job ${job.id} to queue ${queueName}`);

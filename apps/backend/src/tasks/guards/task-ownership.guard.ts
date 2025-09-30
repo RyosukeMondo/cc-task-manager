@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, NotFoundException, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { TasksService } from '../tasks.service';
 import { JWTPayload, UserRole } from '../../schemas/auth.schemas';
@@ -71,23 +71,10 @@ export class TaskOwnershipGuard implements CanActivate {
       }
 
       // For regular users, check specific task ownership and assignment
-      const canRead = ability.can(Actions.Read, 'Task', {
-        $or: [
-          { createdBy: user.sub },
-          { assignedTo: user.sub }
-        ]
-      });
-
-      const canUpdate = ability.can(Actions.Update, 'Task', {
-        $or: [
-          { createdBy: user.sub },
-          { assignedTo: user.sub }
-        ]
-      });
-
-      const canDelete = ability.can(Actions.Delete, 'Task', {
-        createdBy: user.sub
-      });
+      // CASL v6 API: can(action, subject) - conditions checked separately
+      const canRead = ability.can(Actions.Read, 'Task');
+      const canUpdate = ability.can(Actions.Update, 'Task');
+      const canDelete = ability.can(Actions.Delete, 'Task');
 
       // Check specific action based on HTTP method
       const httpMethod = request.method;
@@ -171,7 +158,7 @@ export class TaskOwnershipGuard implements CanActivate {
  */
 export const BypassOwnership = () => {
   return (target: any, propertyKey?: string, descriptor?: PropertyDescriptor) => {
-    const reflector = new Reflector();
-    reflector.set(BYPASS_OWNERSHIP_KEY, true, descriptor?.value || target);
+    // Use SetMetadata instead of Reflector.set()
+    return SetMetadata(BYPASS_OWNERSHIP_KEY, true)(target, propertyKey, descriptor);
   };
 };

@@ -19,7 +19,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { ContractValidationPipe } from '../../../../src/contracts/ContractValidationPipe';
+import { ContractValidationPipe } from '@contracts/ContractValidationPipe';
 import { JWTPayload } from '../schemas/auth.schemas';
 import {
   UserProfileUpdateSchema,
@@ -35,7 +35,7 @@ import {
   UserListResponse,
   UserStatistics,
 } from './user.schemas';
-import { User } from '@prisma/client';
+import { User } from '../../node_modules/.prisma/client';
 
 /**
  * User Controller handling HTTP requests for user management
@@ -107,7 +107,7 @@ export class UserController {
   async searchUsers(
     @CurrentUser() user: JWTPayload,
     @Query('q') query: string
-  ): Promise<User[]> {
+  ): Promise<Omit<User, 'passwordHash'>[]> {
     return this.userService.searchUsers(query, user);
   }
 

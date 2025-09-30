@@ -4,8 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ContractRegistry } from '../../../src/contracts/ContractRegistry';
-import { ApiContractGenerator } from '../../../src/contracts/ApiContractGenerator';
+import { ContractRegistry } from '@contracts/ContractRegistry';
+import { ApiContractGenerator } from '@contracts/ApiContractGenerator';
 import {
   HttpExceptionFilter,
   ContractValidationFilter,

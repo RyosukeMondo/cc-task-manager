@@ -11,7 +11,7 @@ import {
   UserStatistics,
   BulkUserAction
 } from './user.schemas';
-import { User } from '@prisma/client';
+import { User } from '../../node_modules/.prisma/client';
 
 /**
  * User Service implementing business logic with CASL authorization
@@ -346,7 +346,7 @@ export class UserService {
   async searchUsers(
     query: string,
     currentUser: JWTPayload
-  ): Promise<User[]> {
+  ): Promise<Omit<User, 'passwordHash'>[]> {
     const ability = this.caslAbilityFactory.createForUser(currentUser);
 
     // Check if user can read users

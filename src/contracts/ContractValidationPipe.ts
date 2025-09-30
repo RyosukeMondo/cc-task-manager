@@ -29,17 +29,33 @@ export class ContractValidationPipe implements PipeTransform<any> {
   private readonly logger = new Logger(ContractValidationPipe.name);
 
   constructor(
-    private readonly registry: ContractRegistry,
-    private readonly options: ContractValidationOptions,
+    private readonly registryOrSchema: ContractRegistry | any,
+    private readonly options?: ContractValidationOptions,
   ) {}
 
   transform(value: any, metadata: ArgumentMetadata) {
-    const location: ValidationLocation = this.options.location || this.inferLocation(metadata.type);
-    const name = this.options.contractName;
+    // If first argument is a Zod schema, validate directly
+    if (this.registryOrSchema && typeof this.registryOrSchema.parse === 'function') {
+      try {
+        return this.registryOrSchema.parse(value);
+      } catch (error: any) {
+        throw new BadRequestException({
+          error: 'ContractValidationError',
+          contract: { name: 'inline-schema', version: '1.0.0' },
+          location: this.inferLocation(metadata.type),
+          message: error.message || 'Validation failed',
+        });
+      }
+    }
 
-    const version = this.options.version || this.getLatestVersionOrThrow(name);
+    // Otherwise use registry-based validation
+    const registry = this.registryOrSchema as ContractRegistry;
+    const location: ValidationLocation = this.options?.location || this.inferLocation(metadata.type);
+    const name = this.options?.contractName || 'unknown';
 
-    const result = this.registry.validateAgainstContract(name, version, value);
+    const version = this.options?.version || this.getLatestVersionOrThrow(name);
+
+    const result = registry.validateAgainstContract(name, version, value);
     if (!result.success) {
       const details: ContractValidationErrorDetails = {
         error: 'ContractValidationError',
@@ -63,7 +79,8 @@ export class ContractValidationPipe implements PipeTransform<any> {
   }
 
   private getLatestVersionOrThrow(name: string): string {
-    const latest = this.registry.getLatestContract(name);
+    const registry = this.registryOrSchema as ContractRegistry;
+    const latest = registry.getLatestContract(name);
     if (!latest) {
       const msg = `Contract not found: ${name}`;
       this.logger.error(msg);

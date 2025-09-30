@@ -1,8 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PactTestRunner = exports.Matchers = void 0;
-const path_1 = require("path");
-const os_1 = require("os");
+const path_1 = __importDefault(require("path"));
+const os_1 = __importDefault(require("os"));
 const crypto_1 = require("crypto");
 const pact_1 = require("@pact-foundation/pact");
 exports.Matchers = pact_1.MatchersV3;

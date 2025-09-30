@@ -1,23 +1,19 @@
 import { z } from 'zod';
+import { UserRole as PrismaUserRole, UserStatus as PrismaUserStatus } from '../../node_modules/.prisma/client';
 
 /**
  * User role enumeration for authorization control
+ * Re-exported from Prisma to ensure type compatibility
  */
-export enum UserRole {
-  ADMIN = 'admin',
-  USER = 'user',
-  MODERATOR = 'moderator',
-}
+export const UserRole = PrismaUserRole;
+export type UserRole = PrismaUserRole;
 
 /**
  * User account status enumeration
+ * Re-exported from Prisma to ensure type compatibility
  */
-export enum UserStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  SUSPENDED = 'suspended',
-  PENDING_VERIFICATION = 'pending_verification',
-}
+export const UserStatus = PrismaUserStatus;
+export type UserStatus = PrismaUserStatus;
 
 /**
  * User base schema with common user properties
@@ -74,7 +70,10 @@ export const JWTPayloadSchema = z.object({
   sub: z.string().uuid('Subject must be a valid UUID'),
   email: z.string().email('Invalid email address'),
   username: z.string(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   role: z.nativeEnum(UserRole),
+  permissions: z.array(z.string()).optional(),
   iat: z.number(),
   exp: z.number(),
   sessionId: z.string().uuid('Session ID must be a valid UUID').optional(),

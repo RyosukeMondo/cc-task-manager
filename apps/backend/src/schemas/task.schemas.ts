@@ -1,28 +1,19 @@
 import { z } from 'zod';
+import { TaskStatus as PrismaTaskStatus, TaskPriority as PrismaTaskPriority } from '../../node_modules/.prisma/client';
 
 /**
  * Task priority enumeration
+ * Re-exported from Prisma to ensure type compatibility
  */
-export enum TaskPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  URGENT = 'urgent',
-}
+export const TaskPriority = PrismaTaskPriority;
+export type TaskPriority = PrismaTaskPriority;
 
 /**
- * Task status enumeration (extending from worker schemas but for task management)
+ * Task status enumeration
+ * Re-exported from Prisma to ensure type compatibility
  */
-export enum TaskStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  ON_HOLD = 'on_hold',
-  REVIEW = 'review',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-}
+export const TaskStatus = PrismaTaskStatus;
+export type TaskStatus = PrismaTaskStatus;
 
 /**
  * Task category enumeration
@@ -100,6 +91,8 @@ export const UpdateTaskSchema = z.object({
   startDate: z.date().optional(),
   tags: z.array(z.string().max(50, 'Tag must not exceed 50 characters')).optional(),
   metadata: z.record(z.any()).optional(),
+  progress: z.number().min(0).max(1).optional(),
+  errorMessage: z.string().optional(),
 });
 
 /**
@@ -197,14 +190,17 @@ export const CreateTaskTimeLogSchema = z.object({
  */
 export const TaskStatisticsSchema = z.object({
   totalTasks: z.number().nonnegative(),
-  tasksByStatus: z.record(z.nativeEnum(TaskStatus), z.number().nonnegative()),
-  tasksByPriority: z.record(z.nativeEnum(TaskPriority), z.number().nonnegative()),
-  tasksByCategory: z.record(z.nativeEnum(TaskCategory), z.number().nonnegative()),
-  overdueTasks: z.number().nonnegative(),
-  completedThisWeek: z.number().nonnegative(),
-  completedThisMonth: z.number().nonnegative(),
+  tasksByStatus: z.record(z.nativeEnum(TaskStatus), z.number().nonnegative()).optional(),
+  tasksByPriority: z.record(z.nativeEnum(TaskPriority), z.number().nonnegative()).optional(),
+  tasksByCategory: z.record(z.nativeEnum(TaskCategory), z.number().nonnegative()).optional(),
+  overdueTasks: z.number().nonnegative().optional(),
+  completedThisWeek: z.number().nonnegative().optional(),
+  completedThisMonth: z.number().nonnegative().optional(),
   averageCompletionTime: z.number().nonnegative().optional(),
   totalHoursLogged: z.number().nonnegative().optional(),
+  completedTasks: z.number().nonnegative().optional(),
+  failedTasks: z.number().nonnegative().optional(),
+  successRate: z.number().min(0).max(1).optional(),
 });
 
 /**
@@ -212,8 +208,11 @@ export const TaskStatisticsSchema = z.object({
  */
 export const BulkTaskOperationSchema = z.object({
   taskIds: z.array(z.string().uuid('Task ID must be a valid UUID')).min(1, 'At least one task ID is required'),
-  operation: z.enum(['delete', 'updateStatus', 'updatePriority', 'updateAssignee', 'addTags', 'removeTags']),
+  operation: z.enum(['delete', 'cancel', 'retry', 'updateStatus', 'updatePriority', 'updateAssignee', 'addTags', 'removeTags']),
   data: z.record(z.any()).optional(),
+  config: z.object({
+    force: z.boolean().default(false)
+  }).optional(),
 });
 
 /**

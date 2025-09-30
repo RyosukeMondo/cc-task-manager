@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { Queue, Job, JobsOptions, QueueScheduler, RepeatableJob } from 'bullmq';
+import { Queue, Job, JobsOptions, RepeatableJob } from 'bullmq';
 import { QueueConfigService } from './queue.config';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import {
@@ -57,7 +57,6 @@ import {
 export class QueueManagerService {
   private readonly logger = new Logger(QueueManagerService.name);
   private queues: Map<string, Queue> = new Map();
-  private schedulers: Map<string, QueueScheduler> = new Map();
 
   // Queue names for different job types
   private readonly QUEUE_NAMES = {
@@ -77,7 +76,6 @@ export class QueueManagerService {
     private readonly schemaRegistry: BackendSchemaRegistry,
   ) {
     this.initializeQueues();
-    this.initializeSchedulers();
     this.logger.log('Queue Manager Service initialized successfully');
   }
 
@@ -100,19 +98,9 @@ export class QueueManagerService {
   }
 
   /**
-   * Initialize queue schedulers for recurring jobs
-   *
-   * @private
+   * Note: QueueScheduler has been removed in BullMQ v4.
+   * Delayed and repeatable jobs are now handled automatically by the Queue class.
    */
-  private initializeSchedulers(): void {
-    Object.values(this.QUEUE_NAMES).forEach(queueName => {
-      const schedulerConfig = this.queueConfigService.getWorkerConfiguration(queueName);
-      const scheduler = new QueueScheduler(queueName, schedulerConfig);
-
-      this.schedulers.set(queueName, scheduler);
-      this.logger.debug(`Initialized scheduler for queue: ${queueName}`);
-    });
-  }
 
   /**
    * Set up event handlers for queue monitoring
@@ -128,21 +116,12 @@ export class QueueManagerService {
       this.logger.debug(`Job ${job.id} waiting in queue ${queue.name}`);
     });
 
-    queue.on('active', (job) => {
-      this.logger.debug(`Job ${job.id} active in queue ${queue.name}`);
-    });
-
-    queue.on('completed', (job, result) => {
-      this.logger.debug(`Job ${job.id} completed in queue ${queue.name}`);
-    });
-
-    queue.on('failed', (job, error) => {
-      this.logger.warn(`Job ${job?.id} failed in queue ${queue.name}: ${error.message}`);
-    });
-
-    queue.on('stalled', (jobId) => {
-      this.logger.warn(`Job ${jobId} stalled in queue ${queue.name}`);
-    });
+    // Note: BullMQ v4 queue events should use QueueEvents class
+    // These are commented out until proper migration to QueueEvents
+    // queue.on('active', ...) - moved to QueueEvents
+    // queue.on('completed', ...) - moved to QueueEvents
+    // queue.on('failed', ...) - moved to QueueEvents
+    // queue.on('stalled', ...) - moved to QueueEvents
   }
 
   /**
@@ -338,7 +317,7 @@ export class QueueManagerService {
     const jobOptions: JobsOptions = {
       ...this.buildJobOptions(options),
       repeat: {
-        cron: cronExpression,
+        pattern: cronExpression,
         tz: options?.timezone || 'UTC',
       },
     };
@@ -423,7 +402,7 @@ export class QueueManagerService {
       name: job.name,
       data: job.data,
       status,
-      progress: job.progress,
+      progress: typeof job.progress === 'number' ? job.progress : 0,
       priority: job.opts.priority || 0,
       attempts: job.attemptsMade,
       maxAttempts: job.opts.attempts || 1,
@@ -499,11 +478,6 @@ export class QueueManagerService {
 
     try {
       if (retryStrategy) {
-        // Update retry options if provided
-        await job.update({
-          ...job.data,
-        });
-
         // Update job options with new retry strategy
         const newOptions = {
           ...job.opts,
@@ -514,9 +488,12 @@ export class QueueManagerService {
           },
         };
 
-        // Remove and re-add with new options
+        // Remove and re-add with new options (BullMQ v4 pattern)
         await job.remove();
-        await job.queue.add(job.name, job.data, newOptions);
+        const queue = this.queues.get(queueName);
+        if (queue) {
+          await queue.add(job.name, job.data, newOptions);
+        }
       } else {
         // Simple retry with existing options
         await job.retry();
@@ -1044,8 +1021,8 @@ export class QueueManagerService {
         return JobStatus.FAILED;
       case 'delayed':
         return JobStatus.DELAYED;
-      case 'paused':
-        return JobStatus.PAUSED;
+      // Note: 'paused' was removed from BullMQ v4 JobState
+      // Jobs in a paused queue will show as 'waiting'
       default:
         return JobStatus.WAITING;
     }

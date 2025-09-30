@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { User, UserRole, UserStatus, Prisma } from '@prisma/client';
+import { User, UserRole, UserStatus, Prisma } from '../../node_modules/.prisma/client';
 import { UserQueryFilter } from './user.schemas';
 
 /**

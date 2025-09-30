@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { ApplicationConfigService } from './config.service';
-import { ContractRegistry } from '../../../../src/contracts/ContractRegistry';
+import { ContractRegistry } from '@contracts/ContractRegistry';
 import {
   AppConfigSchema,
   DatabaseConfigSchema,

@@ -69,8 +69,8 @@ export abstract class BaseRepository<T, ID = string> implements IBaseRepository<
   async create(data: Omit<T, 'id' | 'createdAt' | 'updatedAt'>): Promise<T> {
     try {
       this.logger.debug(`Creating ${this.modelName}`, { data });
-      
-      const transformedData = this.transformToPrisma(data);
+
+      const transformedData = this.transformToPrisma(data as any);
       const created = await this.getModel().create({
         data: transformedData,
       });
@@ -172,7 +172,7 @@ export abstract class BaseRepository<T, ID = string> implements IBaseRepository<
     try {
       this.logger.debug(`Updating ${this.modelName}`, { id, data });
       
-      const transformedData = this.transformToPrisma(data);
+      const transformedData = this.transformToPrisma(data as any);
       const updated = await this.getModel().update({
         where: { id },
         data: transformedData,

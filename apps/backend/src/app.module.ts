@@ -1,9 +1,9 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ContractRegistry } from '../../../src/contracts/ContractRegistry';
-import { ApiContractGenerator } from '../../../src/contracts/ApiContractGenerator';
-import { ContractValidationPipe } from '../../../src/contracts/ContractValidationPipe';
+import { ContractRegistry } from '@contracts/ContractRegistry';
+import { ApiContractGenerator } from '@contracts/ApiContractGenerator';
+// ContractValidationPipe is used per-endpoint with options, not as a global provider
 import { BackendSchemaRegistry } from './schemas/schema-registry';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -80,8 +80,7 @@ import { CorrelationIdMiddleware } from './common/middleware';
     // Following Dependency Inversion Principle - depend on abstractions
     ContractRegistry,
     ApiContractGenerator,
-    ContractValidationPipe,
-    
+
     // Backend-specific schema registry service
     // Extends existing contract infrastructure with backend schemas
     BackendSchemaRegistry,
@@ -99,7 +98,6 @@ import { CorrelationIdMiddleware } from './common/middleware';
   exports: [
     ContractRegistry,
     ApiContractGenerator,
-    ContractValidationPipe,
     BackendSchemaRegistry,
   ],
 })

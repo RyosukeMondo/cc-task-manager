@@ -161,10 +161,13 @@ export const QueueJobSchema = z.discriminatedUnion('type', [
 export const JobOptionsSchema = z.object({
   delay: z.number().int().min(0).optional(),
   attempts: z.number().int().min(1).max(10).default(3),
-  backoff: z.object({
-    type: z.enum(['fixed', 'exponential']).default('exponential'),
-    delay: z.number().int().min(1000).default(5000),
-  }).optional(),
+  backoff: z.union([
+    z.number(),
+    z.object({
+      type: z.enum(['fixed', 'exponential']).default('exponential'),
+      delay: z.number().int().min(1000).optional(),
+    })
+  ]).optional(),
   removeOnComplete: z.union([z.boolean(), z.number()]).default(true),
   removeOnFail: z.union([z.boolean(), z.number()]).default(false),
   priority: z.number().int().min(0).max(1000).optional(),

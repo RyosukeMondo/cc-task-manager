@@ -263,7 +263,7 @@ export class TaskController {
   ): Promise<TaskResponseDto> {
     // Fail-fast validation using Zod schema
     const validatedData = validateCreateTask(createTaskData);
-    return this.tasksService.createTask(validatedData, user.sub);
+    return this.tasksService.createTask(validatedData, user.sub) as any;
   }
 
   /**
@@ -317,24 +317,21 @@ export class TaskController {
     name: 'projectId',
     required: false,
     type: 'string',
-    format: 'uuid',
-    description: 'Filter by project ID',
+    description: 'Filter by project ID (UUID format)',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @ApiQuery({
     name: 'createdAfter',
     required: false,
     type: 'string',
-    format: 'date-time',
-    description: 'Filter tasks created after this date',
+    description: 'Filter tasks created after this date (ISO 8601 format)',
     example: '2024-01-01T00:00:00Z',
   })
   @ApiQuery({
     name: 'createdBefore',
     required: false,
     type: 'string',
-    format: 'date-time',
-    description: 'Filter tasks created before this date',
+    description: 'Filter tasks created before this date (ISO 8601 format)',
     example: '2024-12-31T23:59:59Z',
   })
   @ApiQuery({
@@ -448,7 +445,7 @@ export class TaskController {
   async getTask(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<TaskResponseDto> {
-    return this.tasksService.getTaskById(id);
+    return this.tasksService.getTaskById(id) as any;
   }
 
   /**
@@ -526,7 +523,7 @@ export class TaskController {
   ): Promise<TaskResponseDto> {
     // Fail-fast validation using Zod schema
     const validatedData = validateUpdateTask(updateData);
-    return this.tasksService.updateTask(id, validatedData, user.sub);
+    return this.tasksService.updateTask(id, validatedData, user.sub) as any;
   }
 
   /**
@@ -593,26 +590,28 @@ export class TaskController {
     description: 'Task unique identifier',
   })
   @ApiBody({
-    type: 'object',
-    required: ['status'],
-    properties: {
-      status: {
-        type: 'string',
-        enum: Object.values(TaskStatus),
-        description: 'New task status',
-        example: TaskStatus.COMPLETED,
-      },
-      progress: {
-        type: 'number',
-        minimum: 0,
-        maximum: 1,
-        description: 'Task completion progress (0.0 to 1.0)',
-        example: 0.75,
-      },
-      errorMessage: {
-        type: 'string',
-        description: 'Error message if status is FAILED',
-        example: 'Timeout exceeded during execution',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        status: {
+          type: 'string',
+          enum: Object.values(TaskStatus),
+          description: 'New task status',
+          example: TaskStatus.COMPLETED,
+        },
+        progress: {
+          type: 'number',
+          minimum: 0,
+          maximum: 1,
+          description: 'Task completion progress (0.0 to 1.0)',
+          example: 0.75,
+        },
+        errorMessage: {
+          type: 'string',
+          description: 'Error message if status is FAILED',
+          example: 'Timeout exceeded during execution',
+        },
       },
     },
   })
@@ -629,7 +628,7 @@ export class TaskController {
   ): Promise<TaskResponseDto> {
     // Fail-fast validation using Zod schema
     const validatedData = validateTaskStatusUpdate(statusUpdate);
-    return this.tasksService.updateTaskStatus(id, validatedData);
+    return this.tasksService.updateTaskStatus(id, validatedData) as any;
   }
 
   /**
@@ -652,30 +651,32 @@ export class TaskController {
     **Performance:** Processes ~10 tasks per second with proper batching`,
   })
   @ApiBody({
-    type: 'object',
-    required: ['taskIds', 'operation'],
-    properties: {
-      taskIds: {
-        type: 'array',
-        items: { type: 'string', format: 'uuid' },
-        minItems: 1,
-        maxItems: 100,
-        description: 'Array of task IDs to operate on',
-        example: ['550e8400-e29b-41d4-a716-446655440000', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'],
-      },
-      operation: {
-        type: 'string',
-        enum: ['delete', 'cancel', 'retry'],
-        description: 'Bulk operation to perform',
-        example: 'delete',
-      },
-      config: {
-        type: 'object',
-        properties: {
-          force: {
-            type: 'boolean',
-            default: false,
-            description: 'Force operation even if validation fails',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        taskIds: {
+          type: 'array',
+          items: { type: 'string', format: 'uuid' },
+          minItems: 1,
+          maxItems: 100,
+          description: 'Array of task IDs to operate on',
+          example: ['550e8400-e29b-41d4-a716-446655440000', '6ba7b810-9dad-11d1-80b4-00c04fd430c8'],
+        },
+        operation: {
+          type: 'string',
+          enum: ['delete', 'cancel', 'retry'],
+          description: 'Bulk operation to perform',
+          example: 'delete',
+        },
+        config: {
+          type: 'object',
+          properties: {
+            force: {
+              type: 'boolean',
+              default: false,
+              description: 'Force operation even if validation fails',
+            },
           },
         },
       },
@@ -710,9 +711,8 @@ export class TaskController {
     @CurrentUser() user: JWTPayload,
   ): Promise<{
     success: boolean;
-    processedCount: number;
-    failedCount: number;
-    results: Array<{ taskId: string; success: boolean; error?: string }>;
+    affectedTasks: number;
+    results: any[];
   }> {
     // Fail-fast validation using Zod schema
     const validatedData = validateBulkTaskOperation(operationData);

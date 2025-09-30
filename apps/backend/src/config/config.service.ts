@@ -175,8 +175,17 @@ export class ApplicationConfigService {
   }
 
   /**
+   * Get environment configuration
+   *
+   * @returns Complete environment configuration
+   */
+  getEnvironmentConfig(): ApplicationConfig {
+    return this.config;
+  }
+
+  /**
    * Get a specific configuration value by key path
-   * 
+   *
    * @param key Configuration key path (e.g., 'database.url', 'server.port')
    * @param defaultValue Optional default value
    * @returns Configuration value or default

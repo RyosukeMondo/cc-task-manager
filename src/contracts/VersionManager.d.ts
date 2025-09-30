@@ -12,20 +12,20 @@ export declare const VersionMigrationStrategySchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     description?: string;
     breakingChanges?: string[];
+    estimatedDuration?: string;
     fromVersion?: string;
     toVersion?: string;
     strategy?: "deprecated" | "manual" | "automatic";
     migrationScript?: string;
-    estimatedDuration?: string;
     migrationSteps?: string[];
 }, {
     description?: string;
     breakingChanges?: string[];
+    estimatedDuration?: string;
     fromVersion?: string;
     toVersion?: string;
     strategy?: "deprecated" | "manual" | "automatic";
     migrationScript?: string;
-    estimatedDuration?: string;
     migrationSteps?: string[];
 }>;
 export declare const VersionPolicySchema: z.ZodObject<{
@@ -62,14 +62,14 @@ export declare const VersionUpgradePlanSchema: z.ZodObject<{
         rollbackPlan: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         description?: string;
-        phase?: string;
         duration?: string;
+        phase?: string;
         actions?: string[];
         rollbackPlan?: string;
     }, {
         description?: string;
-        phase?: string;
         duration?: string;
+        phase?: string;
         actions?: string[];
         rollbackPlan?: string;
     }>, "many">;
@@ -81,28 +81,28 @@ export declare const VersionUpgradePlanSchema: z.ZodObject<{
             date: z.ZodDate;
             deliverables: z.ZodArray<z.ZodString, "many">;
         }, "strip", z.ZodTypeAny, {
-            date?: Date;
             name?: string;
+            date?: Date;
             deliverables?: string[];
         }, {
-            date?: Date;
             name?: string;
+            date?: Date;
             deliverables?: string[];
         }>, "many">;
     }, "strip", z.ZodTypeAny, {
         startDate?: Date;
         endDate?: Date;
         milestones?: {
-            date?: Date;
             name?: string;
+            date?: Date;
             deliverables?: string[];
         }[];
     }, {
         startDate?: Date;
         endDate?: Date;
         milestones?: {
-            date?: Date;
             name?: string;
+            date?: Date;
             deliverables?: string[];
         }[];
     }>;
@@ -125,8 +125,8 @@ export declare const VersionUpgradePlanSchema: z.ZodObject<{
     currentVersion?: string;
     phases?: {
         description?: string;
-        phase?: string;
         duration?: string;
+        phase?: string;
         actions?: string[];
         rollbackPlan?: string;
     }[];
@@ -134,8 +134,8 @@ export declare const VersionUpgradePlanSchema: z.ZodObject<{
         startDate?: Date;
         endDate?: Date;
         milestones?: {
-            date?: Date;
             name?: string;
+            date?: Date;
             deliverables?: string[];
         }[];
     };
@@ -150,8 +150,8 @@ export declare const VersionUpgradePlanSchema: z.ZodObject<{
     currentVersion?: string;
     phases?: {
         description?: string;
-        phase?: string;
         duration?: string;
+        phase?: string;
         actions?: string[];
         rollbackPlan?: string;
     }[];
@@ -159,8 +159,8 @@ export declare const VersionUpgradePlanSchema: z.ZodObject<{
         startDate?: Date;
         endDate?: Date;
         milestones?: {
-            date?: Date;
             name?: string;
+            date?: Date;
             deliverables?: string[];
         }[];
     };
@@ -181,14 +181,14 @@ export declare const VersionComplianceStatusSchema: z.ZodObject<{
         remediation: z.ZodString;
         deadline: z.ZodOptional<z.ZodDate>;
     }, "strip", z.ZodTypeAny, {
-        type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
         description?: string;
+        type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
         severity?: "low" | "medium" | "high" | "critical";
         remediation?: string;
         deadline?: Date;
     }, {
-        type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
         description?: string;
+        type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
         severity?: "low" | "medium" | "high" | "critical";
         remediation?: string;
         deadline?: Date;
@@ -200,8 +200,8 @@ export declare const VersionComplianceStatusSchema: z.ZodObject<{
     contractName?: string;
     compliant?: boolean;
     violations?: {
-        type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
         description?: string;
+        type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
         severity?: "low" | "medium" | "high" | "critical";
         remediation?: string;
         deadline?: Date;
@@ -213,8 +213,8 @@ export declare const VersionComplianceStatusSchema: z.ZodObject<{
     contractName?: string;
     compliant?: boolean;
     violations?: {
-        type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
         description?: string;
+        type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
         severity?: "low" | "medium" | "high" | "critical";
         remediation?: string;
         deadline?: Date;

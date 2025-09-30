@@ -128,7 +128,7 @@ export class TaskPerformanceMiddleware implements NestMiddleware {
    */
   private generateCacheKey(req: Request): string {
     const url = req.originalUrl || req.url;
-    const userId = req.user?.id || 'anonymous';
+    const userId = (req.user as any)?.sub || 'anonymous';
     const queryString = new URLSearchParams(req.query as any).toString();
     return `${req.method}:${url}:${userId}:${queryString}`;
   }

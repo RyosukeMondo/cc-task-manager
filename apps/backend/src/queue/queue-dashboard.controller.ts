@@ -163,7 +163,7 @@ export class QueueDashboardController {
   })
   async getQueueMetrics(
     @Query('queue') queueName?: string,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const metrics = await this.queueMonitorService.getCurrentMetrics(queueName);
@@ -194,7 +194,7 @@ export class QueueDashboardController {
   })
   async getQueueHealth(
     @Query('queue') queueName?: string,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const health = await this.queueMonitorService.getQueueHealth(queueName);
@@ -236,7 +236,7 @@ export class QueueDashboardController {
   async createJob(
     @Body('jobData') jobData: QueueJob,
     @Body('options') options?: QueueManagerOptions,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const result = await this.queueManagerService.addJob(jobData, options);
@@ -271,7 +271,7 @@ export class QueueDashboardController {
   async getJob(
     @Param('jobId') jobId: string,
     @Query('queue') queueName?: string,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const job = await this.queueManagerService.getJob(jobId, queueName);
@@ -302,7 +302,7 @@ export class QueueDashboardController {
   })
   async searchJobs(
     @Query() filters: any,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       // Parse and validate filters
@@ -351,7 +351,7 @@ export class QueueDashboardController {
     @Param('jobId') jobId: string,
     @Body('retryStrategy') retryStrategy?: JobRetryStrategy,
     @Body('queueName') queueName?: string,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       await this.queueManagerService.retryJob(jobId, retryStrategy, queueName);
@@ -388,7 +388,7 @@ export class QueueDashboardController {
   async cancelJob(
     @Param('jobId') jobId: string,
     @Query('queue') queueName?: string,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       await this.queueManagerService.cancelJob(jobId, queueName);
@@ -431,7 +431,7 @@ export class QueueDashboardController {
     @Param('jobId') jobId: string,
     @Body('priority') priority: JobPriority,
     @Body('queueName') queueName?: string,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       await this.queueManagerService.updateJobPriority(jobId, priority, queueName);
@@ -473,7 +473,7 @@ export class QueueDashboardController {
   })
   async bulkJobOperation(
     @Body() operation: BulkJobOperation,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const results = await this.queueManagerService.bulkJobOperation(operation);
@@ -511,7 +511,7 @@ export class QueueDashboardController {
   })
   async pauseQueue(
     @Param('queueName') queueName: string,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       await this.queueManagerService.pauseQueue(queueName);
@@ -537,7 +537,7 @@ export class QueueDashboardController {
   })
   async resumeQueue(
     @Param('queueName') queueName: string,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       await this.queueManagerService.resumeQueue(queueName);
@@ -583,7 +583,7 @@ export class QueueDashboardController {
     @Query('grace') grace?: number,
     @Query('limit') limit?: number,
     @Query('status') status?: 'completed' | 'failed',
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const cleanedJobIds = await this.queueManagerService.cleanQueue(
@@ -638,7 +638,7 @@ export class QueueDashboardController {
   async getJobStatistics(
     @Query('queue') queueName?: string,
     @Query('timeWindow') timeWindow?: number,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const statistics = await this.queueMonitorService.getJobStatistics(
@@ -678,7 +678,7 @@ export class QueueDashboardController {
   async getPerformanceTrends(
     @Param('queueName') queueName: string,
     @Query('timeWindow') timeWindow?: number,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const trends = this.queueMonitorService.getPerformanceTrends(
@@ -719,7 +719,7 @@ export class QueueDashboardController {
   async getFailureAnalysis(
     @Param('queueName') queueName: string,
     @Query('timeWindow') timeWindow?: number,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const analysis = await this.queueMonitorService.getFailureAnalysis(
@@ -792,7 +792,7 @@ export class QueueDashboardController {
   async scheduleDelayedJob(
     @Body('jobData') jobData: QueueJob,
     @Body('delayOptions') delayOptions: DelayedJobOptions,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const result = await this.queueManagerService.scheduleDelayedJob(jobData, delayOptions);
@@ -835,7 +835,7 @@ export class QueueDashboardController {
     @Body('jobData') jobData: QueueJob,
     @Body('cronExpression') cronExpression: string,
     @Body('options') options?: QueueManagerOptions,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const result = await this.queueManagerService.scheduleRecurringJob(
@@ -875,7 +875,7 @@ export class QueueDashboardController {
   })
   async getRepeatableJobs(
     @Query('queue') queueName?: string,
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       const repeatableJobs = await this.queueManagerService.getRepeatableJobs(queueName);
@@ -922,7 +922,7 @@ export class QueueDashboardController {
     @Param('queueName') queueName: string,
     @Param('jobId') jobId: string,
     @Body('repeatOptions') repeatOptions: { cron?: string; every?: number },
-    @CurrentUser() user: JWTPayload,
+    @CurrentUser() user?: JWTPayload,
   ) {
     try {
       await this.queueManagerService.removeRepeatableJob(queueName, jobId, repeatOptions);
