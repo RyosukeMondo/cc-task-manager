@@ -13,6 +13,10 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+
+export type SortField = 'createdAt' | 'updatedAt' | 'priority' | 'title'
+export type SortOrder = 'asc' | 'desc'
 
 export interface TaskListProps {
   initialFilters?: TaskFilter
@@ -31,6 +35,7 @@ export interface TaskListProps {
  * - Real-time updates via WebSocket integration
  * - Accessible with proper ARIA labels and keyboard navigation
  * - Filter controls with URL synchronization
+ * - Sorting by multiple criteria (date, priority, title)
  *
  * Requirements: 1.1, 1.2, 1.3, 3.1, 3.2, 3.3
  */
@@ -55,12 +60,25 @@ export const TaskList = React.memo<TaskListProps>(({
     }
   })
 
+  // Initialize sort state from URL params or defaults
+  const [sortField, setSortField] = React.useState<SortField>(() => {
+    const sortBy = searchParams.get('sortBy') as SortField | null
+    return sortBy && ['createdAt', 'updatedAt', 'priority', 'title'].includes(sortBy)
+      ? sortBy
+      : 'createdAt'
+  })
+
+  const [sortOrder, setSortOrder] = React.useState<SortOrder>(() => {
+    const order = searchParams.get('sortOrder') as SortOrder | null
+    return order === 'asc' || order === 'desc' ? order : 'desc'
+  })
+
   const { tasks, isLoading, isError, error, filters, setFilters } = useTasks(localFilters)
   const updateTaskMutation = useUpdateTask()
   const deleteTaskMutation = useDeleteTask()
 
-  // Sync filters with URL
-  const updateUrlParams = React.useCallback((newFilters: TaskFilter) => {
+  // Sync filters and sort with URL
+  const updateUrlParams = React.useCallback((newFilters: TaskFilter, newSortField?: SortField, newSortOrder?: SortOrder) => {
     const params = new URLSearchParams()
 
     if (newFilters.status && newFilters.status.length > 0) {
@@ -73,10 +91,16 @@ export const TaskList = React.memo<TaskListProps>(({
       params.set('search', newFilters.search)
     }
 
+    // Add sort parameters
+    const currentSortField = newSortField ?? sortField
+    const currentSortOrder = newSortOrder ?? sortOrder
+    params.set('sortBy', currentSortField)
+    params.set('sortOrder', currentSortOrder)
+
     const queryString = params.toString()
     const url = queryString ? `?${queryString}` : window.location.pathname
     router.push(url, { scroll: false })
-  }, [router])
+  }, [router, sortField, sortOrder])
 
   // Handle filter changes
   const handleFilterChange = React.useCallback((key: keyof TaskFilter, value: any) => {
@@ -105,6 +129,46 @@ export const TaskList = React.memo<TaskListProps>(({
   const hasActiveFilters = React.useMemo(() => {
     return !!(localFilters.status?.length || localFilters.priority?.length || localFilters.search)
   }, [localFilters])
+
+  // Handle sort changes
+  const handleSortChange = React.useCallback((field: SortField) => {
+    const newOrder = field === sortField && sortOrder === 'desc' ? 'asc' : 'desc'
+    setSortField(field)
+    setSortOrder(newOrder)
+    updateUrlParams(localFilters, field, newOrder)
+  }, [sortField, sortOrder, localFilters, updateUrlParams])
+
+  // Sort tasks based on current sort field and order
+  const sortedTasks = React.useMemo(() => {
+    if (!tasks || tasks.length === 0) return tasks
+
+    const sorted = [...tasks].sort((a, b) => {
+      let comparison = 0
+
+      switch (sortField) {
+        case 'title':
+          comparison = a.title.localeCompare(b.title)
+          break
+        case 'priority': {
+          const priorityOrder = { URGENT: 4, HIGH: 3, MEDIUM: 2, LOW: 1 }
+          comparison = priorityOrder[a.priority] - priorityOrder[b.priority]
+          break
+        }
+        case 'createdAt':
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          break
+        case 'updatedAt':
+          comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+          break
+        default:
+          comparison = 0
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+
+    return sorted
+  }, [tasks, sortField, sortOrder])
 
   // Handle status change
   const handleStatusChange = React.useCallback(
@@ -136,6 +200,16 @@ export const TaskList = React.memo<TaskListProps>(({
     },
     [deleteTaskMutation]
   )
+
+  // Get sort icon based on current sort state
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="h-4 w-4 ml-1" />
+    }
+    return sortOrder === 'asc'
+      ? <ArrowUp className="h-4 w-4 ml-1" />
+      : <ArrowDown className="h-4 w-4 ml-1" />
+  }
 
   // Filter controls component
   const FilterControls = () => (
@@ -215,6 +289,53 @@ export const TaskList = React.memo<TaskListProps>(({
                 Clear Filters
               </Button>
             )}
+          </div>
+
+          {/* Sort controls */}
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium">Sort by:</Label>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={sortField === 'createdAt' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleSortChange('createdAt')}
+                className="flex items-center"
+                aria-label={`Sort by created date ${sortField === 'createdAt' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : ''}`}
+              >
+                Created Date
+                {getSortIcon('createdAt')}
+              </Button>
+              <Button
+                variant={sortField === 'updatedAt' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleSortChange('updatedAt')}
+                className="flex items-center"
+                aria-label={`Sort by updated date ${sortField === 'updatedAt' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : ''}`}
+              >
+                Updated Date
+                {getSortIcon('updatedAt')}
+              </Button>
+              <Button
+                variant={sortField === 'priority' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleSortChange('priority')}
+                className="flex items-center"
+                aria-label={`Sort by priority ${sortField === 'priority' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : ''}`}
+              >
+                Priority
+                {getSortIcon('priority')}
+              </Button>
+              <Button
+                variant={sortField === 'title' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleSortChange('title')}
+                className="flex items-center"
+                aria-label={`Sort by title ${sortField === 'title' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : ''}`}
+              >
+                Title
+                {getSortIcon('title')}
+              </Button>
+            </div>
           </div>
 
           {/* Active filter indicators */}
@@ -322,7 +443,7 @@ export const TaskList = React.memo<TaskListProps>(({
         aria-label="Task list"
         aria-busy={updateTaskMutation.isPending || deleteTaskMutation.isPending}
       >
-        {tasks.map((task) => (
+        {sortedTasks?.map((task) => (
           <TaskItem
             key={task.id}
             task={task}

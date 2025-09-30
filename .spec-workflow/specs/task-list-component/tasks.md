@@ -63,7 +63,7 @@ All tasks must follow contract-driven development. Task 0 MUST be completed befo
   - _Requirements: 3.1, 3.2, 3.3_
   - _Prompt: Role: Frontend Developer with expertise in state management and filtering logic | Task: Implement task filtering functionality following requirements 3.1, 3.2, and 3.3, adding filter controls and state management | Restrictions: Must maintain URL sync for filters (query params), ensure filter performance with large datasets, provide clear filter feedback | Success: Filters work correctly, URL reflects filter state, performance is maintained, clear visual feedback for active filters_
 
-- [ ] 7. Implement sorting functionality
+- [x] 7. Implement sorting functionality
   - File: apps/frontend/src/components/tasks/TaskList.tsx (continue from task 4)
   - Add sort controls and sorting logic
   - Purpose: Enable users to sort tasks by different criteria
