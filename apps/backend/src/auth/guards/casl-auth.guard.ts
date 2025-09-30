@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { CaslAbilityFactory, Actions, Subjects } from '../casl-ability.factory';
-import { JWTPayload } from '../../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 
 /**
  * Interface for CASL authorization requirements

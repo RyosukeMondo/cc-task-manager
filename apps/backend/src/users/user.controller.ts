@@ -20,7 +20,7 @@ import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ContractValidationPipe } from '@contracts/ContractValidationPipe';
-import { JWTPayload } from '../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 import {
   UserProfileUpdateSchema,
   UserQueryFilterSchema,

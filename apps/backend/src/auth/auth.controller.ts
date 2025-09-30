@@ -14,7 +14,7 @@ import {
   TokenRefresh,
   JWTPayload,
   validateTokenRefresh,
-} from '../schemas/auth.schemas';
+} from '@schemas/auth';
 
 /**
  * Authentication controller following Single Responsibility Principle

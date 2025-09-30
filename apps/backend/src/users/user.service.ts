@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, ConflictException, BadRequestException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { CaslAbilityFactory, Actions } from '../auth/casl-ability.factory';
-import { JWTPayload, UserRole, UserStatus } from '../schemas/auth.schemas';
+import { JWTPayload, UserRole, UserStatus } from '@schemas/auth';
 import {
   UserProfileUpdate,
   UserQueryFilter,

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserRole, UserStatus, UserBaseSchema } from '../schemas/auth.schemas';
+import { UserRole, UserStatus, UserBaseSchema } from '@schemas/auth';
 
 /**
  * User profile update schema
@@ -43,10 +43,27 @@ export const UserStatusUpdateSchema = z.object({
 });
 
 /**
+ * Sanitized user schema (matches what sanitizeUser returns)
+ * Excludes passwordHash and matches Prisma User type
+ */
+const SanitizedUserSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  username: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  role: z.nativeEnum(UserRole),
+  status: z.nativeEnum(UserStatus),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  lastLoginAt: z.date().nullable(),
+});
+
+/**
  * User list response schema
  */
 export const UserListResponseSchema = z.object({
-  users: z.array(UserBaseSchema.omit({ lastLoginAt: true })),
+  users: z.array(SanitizedUserSchema),
   pagination: z.object({
     total: z.number(),
     page: z.number(),

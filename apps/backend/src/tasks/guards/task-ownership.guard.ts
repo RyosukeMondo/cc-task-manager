@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException, NotFoundException, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { TasksService } from '../tasks.service';
-import { JWTPayload, UserRole } from '../../schemas/auth.schemas';
+import { JWTPayload, UserRole } from '@schemas/auth';
 import { CaslAbilityFactory, Actions } from '../../auth/casl-ability.factory';
 
 /**

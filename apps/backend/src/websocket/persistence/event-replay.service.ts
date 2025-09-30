@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { WebSocketGateway } from '../websocket.gateway';
 import {
@@ -106,6 +106,7 @@ export class EventReplayService {
 
   constructor(
     private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => WebSocketGateway))
     private readonly webSocketGateway: WebSocketGateway
   ) {
     // Start cleanup processes

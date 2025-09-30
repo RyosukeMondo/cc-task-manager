@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
-import { JWTPayload, UserRole } from '../../schemas/auth.schemas';
+import { JWTPayload, UserRole } from '@schemas/auth';
 import {
   WebSocketEvent,
   WebSocketEventType,

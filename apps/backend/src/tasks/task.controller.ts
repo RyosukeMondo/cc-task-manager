@@ -34,7 +34,7 @@ import { TaskPerformanceService } from './middleware/task-performance.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TaskOwnershipGuard, BypassOwnership } from './guards/task-ownership.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JWTPayload } from '../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 import {
   CreateTaskDto,
   UpdateTaskDto,

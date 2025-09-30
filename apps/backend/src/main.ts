@@ -28,9 +28,23 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
+  // Enable CORS for frontend access
+  app.enableCors({
+    origin: true, // Allow all origins in development
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  });
+
+  // Set global API prefix from environment or default to 'api'
+  const globalPrefix = process.env.API_PREFIX || 'api';
+  if (globalPrefix) {
+    app.setGlobalPrefix(globalPrefix);
+  }
+
   // Apply Dependency Inversion Principle - inject logger
   app.useLogger(app.get(Logger));
-  
+
   // Get configuration service for environment-based settings
   const configService = app.get(ConfigService);
   

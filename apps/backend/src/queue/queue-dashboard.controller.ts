@@ -30,7 +30,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { QueueManagerService } from './queue-manager.service';
 import { QueueMonitorService } from './queue-monitor.service';
 import { JobSchedulerService } from './scheduler/job-scheduler.service';
-import { JWTPayload } from '../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 import {
   QueueJob,
   QueueManagerOptions,

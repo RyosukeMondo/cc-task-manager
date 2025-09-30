@@ -56,7 +56,7 @@ export class SystemEventsService {
   private activeAlerts = new Map<string, SystemAlertEventData>();
 
   // Monitoring configuration
-  private readonly SYSTEM_USER_ID = 'system'; // Special user ID for system events
+  private readonly SYSTEM_USER_ID = '00000000-0000-0000-0000-000000000000'; // Special UUID for system events
   private readonly PERFORMANCE_HISTORY_SIZE = 100;
   private readonly ALERT_COOLDOWN_MS = 300000; // 5 minutes
   private readonly HEALTH_CHECK_SERVICES = [

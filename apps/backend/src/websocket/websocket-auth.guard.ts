@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Socket } from 'socket.io';
-import { JWTPayload } from '../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 
 /**
  * WebSocket Authentication Guard

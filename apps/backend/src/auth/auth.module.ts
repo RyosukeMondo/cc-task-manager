@@ -8,6 +8,8 @@ import { JwtStrategy } from './jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CaslAbilityFactory } from './casl-ability.factory';
 import { CaslAuthGuard } from './guards/casl-auth.guard';
+import { UserRepository } from '../users/user.repository';
+import { DatabaseModule } from '../database/database.module';
 
 /**
  * Authentication Module following SOLID principles
@@ -22,9 +24,12 @@ import { CaslAuthGuard } from './guards/casl-auth.guard';
  */
 @Module({
   imports: [
+    // Database module for Prisma access
+    DatabaseModule,
+
     // Passport configuration for authentication strategies
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    
+
     // JWT module configuration with async factory pattern
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -37,17 +42,20 @@ import { CaslAuthGuard } from './guards/casl-auth.guard';
       inject: [ConfigService],
     }),
   ],
-  
+
   controllers: [AuthController],
-  
+
   providers: [
     // Core authentication services
     AuthService,
     JwtStrategy,
-    
+
+    // User repository for database access
+    UserRepository,
+
     // CASL authorization factory
     CaslAbilityFactory,
-    
+
     // Authentication and authorization guards
     JwtAuthGuard,
     CaslAuthGuard,

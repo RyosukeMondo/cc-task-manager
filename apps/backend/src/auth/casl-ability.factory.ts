@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Ability, AbilityBuilder, AbilityClass, ExtractSubjectType, InferSubjects } from '@casl/ability';
-import { UserRole, JWTPayload } from '../schemas/auth.schemas';
+import { UserRole, JWTPayload } from '@schemas/auth';
 
 /**
  * Define all possible subjects for authorization using string literals

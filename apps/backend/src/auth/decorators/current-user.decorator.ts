@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { JWTPayload } from '../../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 
 /**
  * Current User decorator for extracting user information from JWT payload

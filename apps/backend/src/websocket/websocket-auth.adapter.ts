@@ -3,7 +3,7 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Server, ServerOptions, Socket } from 'socket.io';
-import { validateJWTPayload, JWTPayload } from '../schemas/auth.schemas';
+import { validateJWTPayload, JWTPayload } from '@schemas/auth';
 import { validateWebSocketAuth } from './websocket.schemas';
 
 /**

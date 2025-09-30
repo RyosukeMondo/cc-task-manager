@@ -10,7 +10,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './users/user.module';
-// import { WebSocketModule } from './websocket/websocket.module';
+import { WebSocketModule } from './websocket/websocket.module';
 import { DatabaseModule } from './database/database.module';
 // import { QueueModule } from './queue/queue.module';
 // import { OpenApiModule } from './docs/openapi.module';
@@ -59,8 +59,7 @@ import { CorrelationIdMiddleware } from './common/middleware';
     UserModule,
 
     // WebSocket module for real-time communication
-    // Temporarily disabled due to dependency issues
-    // WebSocketModule,
+    WebSocketModule,
 
     // Queue module for job processing with BullMQ
     // Temporarily disabled due to ApplicationConfigService dependency issues
@@ -70,8 +69,8 @@ import { CorrelationIdMiddleware } from './common/middleware';
     // Temporarily disabled due to QueueModule dependency
     // HealthModule,
 
-    // OpenAPI documentation module using existing ApiContractGenerator
-    // Temporarily disabled due to ContractRegistry dependency issues
+    // OpenAPI documentation module - not yet implemented
+    // TODO: Implement proper OpenAPI/Swagger documentation
     // OpenApiModule,
   ],
   

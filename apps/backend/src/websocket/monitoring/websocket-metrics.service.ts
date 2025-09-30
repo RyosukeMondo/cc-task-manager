@@ -833,7 +833,7 @@ export class WebSocketMetricsService implements OnModuleInit, OnModuleDestroy {
       };
 
       const event = createSystemPerformanceEvent(
-        'system',
+        '00000000-0000-0000-0000-000000000000', // System UUID for automated metrics
         performanceData,
         this.webSocketGateway.getGlobalRoom(),
         WebSocketRoomType.GLOBAL

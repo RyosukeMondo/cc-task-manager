@@ -33,7 +33,7 @@ import {
   NotificationEventData,
   UserActivityEventData,
 } from './websocket-events.schemas';
-import { JWTPayload } from '../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 import { UserChannelsService } from './channels/user-channels.service';
 import { ConnectionManagerService } from './connection/connection-manager.service';
 import { EventReplayService } from './persistence/event-replay.service';

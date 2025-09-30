@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { JWTPayload, validateJWTPayload } from '../schemas/auth.schemas';
+import { JWTPayload, validateJWTPayload } from '@schemas/auth';
 
 /**
  * JWT Strategy implementation following Interface Segregation Principle

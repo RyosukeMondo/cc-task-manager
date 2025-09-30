@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
-import { JWTPayload } from '../../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 
 export interface ConnectionInfo {
   userId: string;

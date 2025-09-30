@@ -7,7 +7,7 @@ import {
   TaskConflictException,
   TaskStatusTransitionException,
 } from './exceptions/task-exceptions';
-import { JWTPayload } from '../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TasksRepository, ITasksRepository } from './tasks.repository';
 import { QueueService } from '../queue/queue.service';

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
 import { UserChannelsService, PermissionContext, EventFilter } from './user-channels.service';
-import { JWTPayload, UserRole } from '../../schemas/auth.schemas';
+import { JWTPayload, UserRole } from '@schemas/auth';
 import {
   WebSocketEvent,
   WebSocketEventType,

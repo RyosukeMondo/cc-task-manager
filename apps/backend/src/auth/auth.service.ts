@@ -14,19 +14,8 @@ import {
   validateLoginRequest,
   validateUserRegistration,
   validateJWTPayload,
-} from '../schemas/auth.schemas';
-
-/**
- * User repository interface following Dependency Inversion Principle
- * Abstracts data access to allow for different implementations
- */
-export interface IUserRepository {
-  findByEmail(email: string): Promise<UserBase | null>;
-  findByUsername(username: string): Promise<UserBase | null>;
-  findById(id: string): Promise<UserBase | null>;
-  create(userData: UserRegistration): Promise<UserBase>;
-  updateLastLogin(id: string): Promise<void>;
-}
+} from '@schemas/auth';
+import { UserRepository } from '../users/user.repository';
 
 /**
  * Authentication Service following Single Responsibility Principle
@@ -42,8 +31,7 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
-    // Note: UserRepository would be injected here when database module is implemented
-    // private userRepository: IUserRepository,
+    private userRepository: UserRepository,
   ) {
     this.jwtSecret = this.configService.get<string>('JWT_SECRET') || 'fallback-secret';
     this.jwtExpiresIn = this.configService.get<string>('JWT_EXPIRES_IN') || '15m';
@@ -52,7 +40,7 @@ export class AuthService {
 
   /**
    * Authenticate user with email/username and password
-   * Demonstrates secure authentication with bcrypt password verification
+   * Uses real database and bcrypt password verification
    */
   async login(loginData: LoginRequest): Promise<AuthResponse> {
     // Validate input using existing Zod schema
@@ -60,7 +48,7 @@ export class AuthService {
 
     // Find user by email or username
     const user = await this.findUserByIdentifier(validatedData.identifier);
-    if (!user) {
+    if (!user || !('passwordHash' in user)) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -69,19 +57,15 @@ export class AuthService {
       throw new UnauthorizedException('Account is not active');
     }
 
-    // Verify password (password field would be included in actual user object)
-    // For now, using mock password verification
+    // Verify password using bcrypt
     const isPasswordValid = await this.verifyPassword(
       validatedData.password,
-      this.getMockHashedPassword(user.email)
+      user.passwordHash
     );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    // Update last login
-    // await this.userRepository.updateLastLogin(user.id);
 
     // Generate tokens
     const tokens = await this.generateTokens(user);
@@ -104,19 +88,19 @@ export class AuthService {
 
   /**
    * Register new user with password hashing
-   * Demonstrates secure user creation with bcrypt password hashing
+   * Saves to database using Prisma
    */
   async register(registrationData: UserRegistration): Promise<AuthResponse> {
     // Validate input using existing Zod schema
     const validatedData = validateUserRegistration(registrationData);
 
     // Check if user already exists
-    const existingUser = await this.findUserByIdentifier(validatedData.email);
-    if (existingUser) {
+    const existingEmail = await this.userRepository.findByEmail(validatedData.email);
+    if (existingEmail) {
       throw new BadRequestException('User with this email already exists');
     }
 
-    const existingUsername = await this.findUserByIdentifier(validatedData.username);
+    const existingUsername = await this.userRepository.findByUsername(validatedData.username);
     if (existingUsername) {
       throw new BadRequestException('Username is already taken');
     }
@@ -124,37 +108,30 @@ export class AuthService {
     // Hash password
     const hashedPassword = await this.hashPassword(validatedData.password);
 
-    // Create user
-    const newUser: UserBase = {
-      id: uuidv4(),
+    // Create user in database
+    const createdUser = await this.userRepository.create({
       email: validatedData.email,
       username: validatedData.username,
       firstName: validatedData.firstName,
       lastName: validatedData.lastName,
-      role: UserRole.USER, // Default role
-      status: UserStatus.ACTIVE, // Default status
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    // Save user (would use repository in actual implementation)
-    // const createdUser = await this.userRepository.create(newUser);
+      passwordHash: hashedPassword,
+    });
 
     // Generate tokens
-    const tokens = await this.generateTokens(newUser);
+    const tokens = await this.generateTokens(createdUser);
 
     return {
       ...tokens,
       user: {
-        id: newUser.id,
-        email: newUser.email,
-        username: newUser.username,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        role: newUser.role,
-        status: newUser.status,
-        createdAt: newUser.createdAt,
-        updatedAt: newUser.updatedAt,
+        id: createdUser.id,
+        email: createdUser.email,
+        username: createdUser.username,
+        firstName: createdUser.firstName,
+        lastName: createdUser.lastName,
+        role: createdUser.role,
+        status: createdUser.status,
+        createdAt: createdUser.createdAt,
+        updatedAt: createdUser.updatedAt,
       },
     };
   }
@@ -221,34 +198,15 @@ export class AuthService {
   }
 
   /**
-   * Find user by email or username
-   * Temporary implementation - would use repository in actual implementation
+   * Find user by email or username using real database
    */
-  private async findUserByIdentifier(identifier: string): Promise<UserBase | null> {
-    // Mock implementation - would use actual repository
-    if (identifier === 'admin@example.com' || identifier === 'admin') {
-      return {
-        id: '550e8400-e29b-41d4-a716-446655440000',
-        email: 'admin@example.com',
-        username: 'admin',
-        firstName: 'Admin',
-        lastName: 'User',
-        role: UserRole.ADMIN,
-        status: UserStatus.ACTIVE,
-        createdAt: new Date('2023-01-01'),
-        updatedAt: new Date('2023-01-01'),
-      };
+  private async findUserByIdentifier(identifier: string): Promise<any | null> {
+    // Check if identifier is email or username
+    if (identifier.includes('@')) {
+      return await this.userRepository.findByEmail(identifier);
+    } else {
+      return await this.userRepository.findByUsername(identifier);
     }
-    return null;
-  }
-
-  /**
-   * Get mock hashed password for testing
-   * Would be stored in database in actual implementation
-   */
-  private getMockHashedPassword(email: string): string {
-    // Mock hashed password for "password123!"
-    return '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LeV4Ru2rMd0xmQ8R6';
   }
 
   /**

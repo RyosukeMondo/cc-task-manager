@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { OpenApiDocumentationService } from './openapi.service';
 import { OpenApiController } from './openapi.controller';
+import { ContractRegistry } from '@contracts/ContractRegistry';
+import { ApiContractGenerator } from '@contracts/ApiContractGenerator';
+// import { TypeScriptGenerator } from '@contracts/generators/TypeScriptGenerator'; // TODO: Implement this
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 
 /**
@@ -19,7 +22,9 @@ import { BackendSchemaRegistry } from '../schemas/schema-registry';
 @Module({
   providers: [
     OpenApiDocumentationService,
-    // Import these from the app module instead of recreating them
+    ContractRegistry,
+    ApiContractGenerator,
+    // TypeScriptGenerator, // TODO: Implement this
     BackendSchemaRegistry,
   ],
   controllers: [OpenApiController],

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConnectionManagerService } from './connection-manager.service';
 import { Socket } from 'socket.io';
-import { JWTPayload } from '../../schemas/auth.schemas';
+import { JWTPayload } from '@schemas/auth';
 
 describe('ConnectionManagerService', () => {
   let service: ConnectionManagerService;
