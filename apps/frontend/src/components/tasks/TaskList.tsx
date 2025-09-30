@@ -6,6 +6,7 @@ import { TaskItem } from './TaskItem'
 import { Task, TaskStatus, TaskPriority, type TaskFilter } from '@/types/task'
 import { Alert } from '@/components/ui/alert'
 import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 export interface TaskListProps {
@@ -76,12 +77,12 @@ export const TaskList = React.memo<TaskListProps>(({
         aria-label="Loading tasks"
       >
         {[...Array(3)].map((_, i) => (
-          <Card key={i} className="animate-pulse">
+          <Card key={i}>
             <CardContent className="p-6">
               <div className="space-y-3">
-                <div className="h-5 bg-muted rounded w-3/4" />
-                <div className="h-4 bg-muted rounded w-1/2" />
-                <div className="h-4 bg-muted rounded w-1/4" />
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-1/4" />
               </div>
             </CardContent>
           </Card>

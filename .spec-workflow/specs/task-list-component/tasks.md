@@ -47,7 +47,7 @@ All tasks must follow contract-driven development. Task 0 MUST be completed befo
   - _Requirements: 1.1, 1.2, 1.3, 3.1, 3.2_
   - _Prompt: Role: Senior React Developer with expertise in state management and component architecture | Task: Implement TaskList container component following requirements 1.1, 1.2, 1.3, 3.1, and 3.2, using useTasks hook and TaskItem component with proper loading and empty states | Restrictions: Must handle all data states (loading, error, empty, success), implement efficient rendering for large lists, maintain accessibility | Success: Component renders task lists efficiently, handles filtering/sorting, provides proper feedback for all states, is keyboard navigable_
 
-- [ ] 5. Add loading and empty states
+- [x] 5. Add loading and empty states
   - File: apps/frontend/src/components/tasks/TaskList.tsx (continue from task 4)
   - Implement skeleton loading UI and empty state messaging
   - Purpose: Provide visual feedback during data loading and empty states
