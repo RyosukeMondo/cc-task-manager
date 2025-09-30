@@ -1,257 +1,203 @@
 import { z } from 'zod';
 
 /**
- * Trend direction enumeration for KPI changes
+ * Trend direction enumeration for KPI data
  * Indicates the direction of change in performance metrics
  */
 export enum TrendDirection {
-  UP = 'up',
-  DOWN = 'down',
-  STABLE = 'stable'
+  UP = 'UP',
+  DOWN = 'DOWN',
+  STABLE = 'STABLE'
 }
 
 /**
- * Time grouping options for analytics aggregation
- * Defines supported time intervals for data grouping
+ * Group by options for analytics filtering
+ * Defines supported time-based aggregation options
  */
 export enum GroupByOption {
-  HOUR = 'hour',
-  DAY = 'day',
-  WEEK = 'week',
-  MONTH = 'month',
-  YEAR = 'year'
+  DAY = 'DAY',
+  WEEK = 'WEEK',
+  MONTH = 'MONTH',
+  QUARTER = 'QUARTER',
+  YEAR = 'YEAR'
 }
 
 /**
- * Available metrics for analytics queries
- * Defines all performance metrics that can be requested
+ * Performance metrics schema for task analytics
+ * Comprehensive schema for tracking task completion and performance metrics
+ *
+ * @property completionRate - Percentage of tasks completed successfully (0-1)
+ * @property averageCompletionTime - Mean time to complete tasks in milliseconds
+ * @property throughput - Number of tasks completed per unit time (tasks/day)
+ * @property efficiency - Ratio of actual to estimated completion time (0-1)
+ * @property taskVelocity - Rate of task completion trend over time
+ * @property totalTasks - Total number of tasks in the analysis period
+ * @property completedTasks - Number of successfully completed tasks
+ * @property failedTasks - Number of failed tasks
+ * @property pendingTasks - Number of tasks awaiting execution
+ * @property cancelledTasks - Number of cancelled tasks
+ * @property timestamp - ISO 8601 timestamp when metrics were calculated
  */
-export enum MetricType {
-  COMPLETION_RATE = 'completionRate',
-  AVERAGE_COMPLETION_TIME = 'averageCompletionTime',
-  THROUGHPUT = 'throughput',
-  EFFICIENCY = 'efficiency',
-  TASK_VELOCITY = 'taskVelocity'
-}
+export const PerformanceMetricsSchema = z.object({
+  completionRate: z.number().min(0).max(1),
+  averageCompletionTime: z.number().min(0).nullable(),
+  throughput: z.number().min(0),
+  efficiency: z.number().min(0).max(1).nullable(),
+  taskVelocity: z.number().nullable(),
+  totalTasks: z.number().int().min(0),
+  completedTasks: z.number().int().min(0),
+  failedTasks: z.number().int().min(0),
+  pendingTasks: z.number().int().min(0),
+  cancelledTasks: z.number().int().min(0),
+  timestamp: z.string().datetime()
+}).strict();
 
 /**
- * Date range schema for time-based filtering
- * Validates date range with business rules ensuring end date is after start date
+ * KPI data schema for key performance indicators
+ * Represents a single KPI metric with trend information
+ *
+ * @property value - Current numeric value of the KPI
+ * @property change - Percentage change from previous period (-1 to 1)
+ * @property trend - Direction of change (UP, DOWN, STABLE)
+ * @property label - Human-readable label for the KPI
+ * @property unit - Unit of measurement (e.g., "tasks", "hours", "%")
+ * @property previousValue - Previous period value for comparison (optional)
+ */
+export const KPIDataSchema = z.object({
+  value: z.number(),
+  change: z.number().min(-1).max(1),
+  trend: z.nativeEnum(TrendDirection),
+  label: z.string().min(1).max(100),
+  unit: z.string().max(20).optional(),
+  previousValue: z.number().optional()
+}).strict();
+
+/**
+ * Chart dataset schema for chart data
+ * Represents a single data series in a chart
+ *
+ * @property label - Name of the data series
+ * @property data - Array of numeric values for the series
+ * @property backgroundColor - Fill color for the series (CSS color)
+ * @property borderColor - Border color for the series (CSS color)
+ * @property borderWidth - Width of the border line in pixels
+ */
+export const ChartDatasetSchema = z.object({
+  label: z.string(),
+  data: z.array(z.number()),
+  backgroundColor: z.string().optional(),
+  borderColor: z.string().optional(),
+  borderWidth: z.number().min(0).optional()
+}).strict();
+
+/**
+ * Chart data schema for visualization components
+ * Complete chart configuration with labels and datasets
+ *
+ * @property labels - Array of x-axis labels (dates, categories, etc.)
+ * @property datasets - Array of data series to display
+ * @property metadata - Optional chart configuration (title, axes labels, etc.)
+ */
+export const ChartDataSchema = z.object({
+  labels: z.array(z.string()),
+  datasets: z.array(ChartDatasetSchema),
+  metadata: z.record(z.any()).optional()
+}).strict();
+
+/**
+ * Time series data point schema
+ * Single data point in a time-based series
+ *
+ * @property timestamp - ISO 8601 timestamp for the data point
+ * @property value - Numeric value at this timestamp
+ * @property category - Optional category label for the data point
+ * @property metadata - Optional additional data for the point
+ */
+export const TimeSeriesDataSchema = z.object({
+  timestamp: z.string().datetime(),
+  value: z.number(),
+  category: z.string().max(50).optional(),
+  metadata: z.record(z.any()).optional()
+}).strict();
+
+/**
+ * Date range schema for filtering analytics data
+ * Validates date range with business rules
+ *
+ * @property startDate - ISO 8601 start date (inclusive)
+ * @property endDate - ISO 8601 end date (inclusive)
  */
 export const DateRangeSchema = z.object({
-  /** ISO 8601 date string for range start */
-  startDate: z.string().datetime('Invalid start date format'),
-  /** ISO 8601 date string for range end */
-  endDate: z.string().datetime('Invalid end date format')
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime()
 }).strict().refine(
   (data) => {
     const start = new Date(data.startDate);
     const end = new Date(data.endDate);
-    return end >= start;
+    return start <= end;
   },
   {
-    message: 'End date must be equal to or after start date',
+    message: 'Start date must be before or equal to end date',
+    path: ['endDate']
+  }
+).refine(
+  (data) => {
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+    const diffInDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+    return diffInDays <= 365;
+  },
+  {
+    message: 'Date range cannot exceed 365 days',
     path: ['endDate']
   }
 );
 
 /**
- * Performance metrics schema for task completion analytics
- * Comprehensive performance indicators with timestamps and calculated rates
- */
-export const PerformanceMetricsSchema = z.object({
-  /** Task completion rate as percentage (0-100) */
-  completionRate: z.number().min(0).max(100),
-
-  /** Average time to complete tasks in seconds */
-  averageCompletionTime: z.number().min(0),
-
-  /** Tasks completed per hour */
-  throughput: z.number().min(0),
-
-  /** Efficiency score calculated as (completed / (completed + failed)) * 100 */
-  efficiency: z.number().min(0).max(100),
-
-  /** Task velocity: average tasks completed per day over the selected period */
-  taskVelocity: z.number().min(0),
-
-  /** Total number of tasks in the analyzed period */
-  totalTasks: z.number().int().min(0),
-
-  /** Number of successfully completed tasks */
-  completedTasks: z.number().int().min(0),
-
-  /** Number of failed tasks */
-  failedTasks: z.number().int().min(0),
-
-  /** Number of pending tasks */
-  pendingTasks: z.number().int().min(0),
-
-  /** Number of currently running tasks */
-  runningTasks: z.number().int().min(0),
-
-  /** ISO 8601 timestamp when metrics were calculated */
-  timestamp: z.string().datetime(),
-
-  /** Date range for which these metrics apply */
-  period: DateRangeSchema
-}).strict();
-
-/**
- * KPI data schema for summary cards
- * Single key performance indicator with change tracking
- */
-export const KPIDataSchema = z.object({
-  /** Numeric value of the KPI */
-  value: z.number(),
-
-  /** Percentage change from previous period (-100 to Infinity) */
-  change: z.number(),
-
-  /** Trend direction for visual indication */
-  trend: z.nativeEnum(TrendDirection),
-
-  /** Human-readable label for the KPI */
-  label: z.string().min(1).max(100),
-
-  /** Optional unit of measurement (e.g., '%', 'tasks', 'hours') */
-  unit: z.string().max(20).optional(),
-
-  /** Optional description providing context */
-  description: z.string().max(200).optional()
-}).strict();
-
-/**
- * Dataset configuration for chart rendering
- * Defines a single data series with styling options
- */
-export const DatasetSchema = z.object({
-  /** Dataset label for legend */
-  label: z.string().min(1).max(100),
-
-  /** Array of numeric data points */
-  data: z.array(z.number()),
-
-  /** Optional color for the dataset (hex, rgb, or named color) */
-  color: z.string().max(50).optional(),
-
-  /** Optional background color for filled areas */
-  backgroundColor: z.string().max(50).optional(),
-
-  /** Optional border color */
-  borderColor: z.string().max(50).optional()
-}).strict();
-
-/**
- * Chart metadata for display configuration
- * Additional settings for chart rendering and interaction
- */
-export const ChartMetadataSchema = z.object({
-  /** Chart title */
-  title: z.string().max(200).optional(),
-
-  /** X-axis label */
-  xAxisLabel: z.string().max(100).optional(),
-
-  /** Y-axis label */
-  yAxisLabel: z.string().max(100).optional(),
-
-  /** Whether to show legend */
-  showLegend: z.boolean().default(true),
-
-  /** Whether to enable tooltips */
-  showTooltips: z.boolean().default(true),
-
-  /** Chart type hint (e.g., 'line', 'bar', 'area') */
-  chartType: z.enum(['line', 'bar', 'area', 'pie', 'doughnut']).optional()
-}).strict();
-
-/**
- * Chart data schema for visualization components
- * Complete chart configuration with labels, datasets, and metadata
- */
-export const ChartDataSchema = z.object({
-  /** Array of labels for x-axis or categories */
-  labels: z.array(z.string()),
-
-  /** Array of datasets to display */
-  datasets: z.array(DatasetSchema).min(1, 'At least one dataset required'),
-
-  /** Optional metadata for chart configuration */
-  metadata: ChartMetadataSchema.optional()
-}).strict();
-
-/**
- * Time series data point schema for trend analysis
- * Single data point in a time-ordered sequence
- */
-export const TimeSeriesDataSchema = z.object({
-  /** ISO 8601 timestamp for the data point */
-  timestamp: z.string().datetime(),
-
-  /** Numeric value at this timestamp */
-  value: z.number(),
-
-  /** Optional category or metric name for grouping */
-  category: z.string().max(100).optional(),
-
-  /** Optional additional metadata for the data point */
-  metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional()
-}).strict();
-
-/**
- * Analytics filter schema for query parameters
+ * Analytics filter schema for querying performance data
  * Comprehensive filtering options for analytics queries
+ *
+ * @property dateRange - Time period for the analytics query
+ * @property groupBy - Time-based aggregation option
+ * @property metrics - Specific metrics to include in the response
+ * @property projectId - Filter by specific project (optional)
+ * @property userId - Filter by specific user (optional)
+ * @property tags - Filter by task tags (optional)
  */
 export const AnalyticsFilterSchema = z.object({
-  /** Date range for filtering data */
   dateRange: DateRangeSchema,
-
-  /** Time grouping for aggregation */
   groupBy: z.nativeEnum(GroupByOption).default(GroupByOption.DAY),
-
-  /** Specific metrics to include in response */
-  metrics: z.array(z.nativeEnum(MetricType)).min(1, 'At least one metric required').optional(),
-
-  /** Optional project ID filter */
-  projectId: z.string().uuid('Invalid project ID format').optional(),
-
-  /** Optional user ID filter */
-  userId: z.string().uuid('Invalid user ID format').optional(),
-
-  /** Optional tags to filter by */
-  tags: z.array(z.string().max(50)).max(10, 'Maximum 10 tags allowed').optional()
+  metrics: z.array(z.string()).min(1).max(20).optional(),
+  projectId: z.string().uuid().optional(),
+  userId: z.string().uuid().optional(),
+  tags: z.array(z.string().max(50)).max(10).optional()
 }).strict();
 
 /**
- * Analytics query response schema
- * Complete analytics data including metrics, charts, and KPIs
+ * Analytics response schema for API responses
+ * Complete analytics data structure with metrics and charts
+ *
+ * @property performanceMetrics - Current performance metrics
+ * @property kpis - Array of key performance indicators
+ * @property chartData - Chart data for visualization
+ * @property timeSeries - Time-based data points
+ * @property generatedAt - ISO 8601 timestamp when the analytics were generated
  */
 export const AnalyticsResponseSchema = z.object({
-  /** Performance metrics for the requested period */
-  metrics: PerformanceMetricsSchema,
-
-  /** Array of KPI summaries */
+  performanceMetrics: PerformanceMetricsSchema,
   kpis: z.array(KPIDataSchema),
-
-  /** Chart data for visualizations */
-  charts: z.record(z.string(), ChartDataSchema),
-
-  /** Time series data for trend analysis */
-  timeSeries: z.array(TimeSeriesDataSchema),
-
-  /** ISO 8601 timestamp when data was generated */
+  chartData: ChartDataSchema.optional(),
+  timeSeries: z.array(TimeSeriesDataSchema).optional(),
   generatedAt: z.string().datetime()
 }).strict();
 
 // Type exports for TypeScript usage
-export type DateRange = z.infer<typeof DateRangeSchema>;
 export type PerformanceMetrics = z.infer<typeof PerformanceMetricsSchema>;
 export type KPIData = z.infer<typeof KPIDataSchema>;
-export type Dataset = z.infer<typeof DatasetSchema>;
-export type ChartMetadata = z.infer<typeof ChartMetadataSchema>;
+export type ChartDataset = z.infer<typeof ChartDatasetSchema>;
 export type ChartData = z.infer<typeof ChartDataSchema>;
 export type TimeSeriesData = z.infer<typeof TimeSeriesDataSchema>;
+export type DateRange = z.infer<typeof DateRangeSchema>;
 export type AnalyticsFilter = z.infer<typeof AnalyticsFilterSchema>;
 export type AnalyticsResponse = z.infer<typeof AnalyticsResponseSchema>;
 
@@ -259,31 +205,31 @@ export type AnalyticsResponse = z.infer<typeof AnalyticsResponseSchema>;
  * Validation helper functions for runtime type checking
  * Provides fail-fast validation with detailed error messages
  */
-export const validateDateRange = (data: unknown) => {
-  return DateRangeSchema.parse(data);
-};
-
-export const validatePerformanceMetrics = (data: unknown) => {
+export const validatePerformanceMetrics = (data: unknown): PerformanceMetrics => {
   return PerformanceMetricsSchema.parse(data);
 };
 
-export const validateKPIData = (data: unknown) => {
+export const validateKPIData = (data: unknown): KPIData => {
   return KPIDataSchema.parse(data);
 };
 
-export const validateChartData = (data: unknown) => {
+export const validateChartData = (data: unknown): ChartData => {
   return ChartDataSchema.parse(data);
 };
 
-export const validateTimeSeriesData = (data: unknown) => {
+export const validateTimeSeriesData = (data: unknown): TimeSeriesData => {
   return TimeSeriesDataSchema.parse(data);
 };
 
-export const validateAnalyticsFilter = (data: unknown) => {
+export const validateDateRange = (data: unknown): DateRange => {
+  return DateRangeSchema.parse(data);
+};
+
+export const validateAnalyticsFilter = (data: unknown): AnalyticsFilter => {
   return AnalyticsFilterSchema.parse(data);
 };
 
-export const validateAnalyticsResponse = (data: unknown) => {
+export const validateAnalyticsResponse = (data: unknown): AnalyticsResponse => {
   return AnalyticsResponseSchema.parse(data);
 };
 
@@ -291,14 +237,30 @@ export const validateAnalyticsResponse = (data: unknown) => {
  * Safe parsing functions that return results instead of throwing
  * Useful for optional validation scenarios
  */
-export const safeParseDateRange = (data: unknown) => {
-  return DateRangeSchema.safeParse(data);
-};
-
 export const safeParsePerformanceMetrics = (data: unknown) => {
   return PerformanceMetricsSchema.safeParse(data);
 };
 
+export const safeParseKPIData = (data: unknown) => {
+  return KPIDataSchema.safeParse(data);
+};
+
+export const safeParseChartData = (data: unknown) => {
+  return ChartDataSchema.safeParse(data);
+};
+
+export const safeParseTimeSeriesData = (data: unknown) => {
+  return TimeSeriesDataSchema.safeParse(data);
+};
+
+export const safeParseDateRange = (data: unknown) => {
+  return DateRangeSchema.safeParse(data);
+};
+
 export const safeParseAnalyticsFilter = (data: unknown) => {
   return AnalyticsFilterSchema.safeParse(data);
+};
+
+export const safeParseAnalyticsResponse = (data: unknown) => {
+  return AnalyticsResponseSchema.safeParse(data);
 };
