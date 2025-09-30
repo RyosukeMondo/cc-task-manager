@@ -8,7 +8,7 @@ import { RedisHealthIndicator } from './indicators/redis.health';
 import { MemoryHealthIndicator } from './indicators/memory.health';
 import { DiskHealthIndicator } from './indicators/disk.health';
 import { DatabaseModule } from '../database/database.module';
-import { QueueModule } from '../queue/queue.module';
+// import { QueueModule } from '../queue/queue.module';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { QueueModule } from '../queue/queue.module';
     }),
     HttpModule,
     DatabaseModule,
-    QueueModule,
+    // QueueModule, // Temporarily disabled due to ApplicationConfigService dependency issues
   ],
   controllers: [HealthController],
   providers: [

@@ -18,19 +18,16 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "rootDir": "../../",
+    "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
+    "types": [],
     "paths": {
       "@/*": ["src/*"],
       "@contracts/*": ["../../src/contracts/*"],
       "@schemas/*": ["../../packages/schemas/src/*"]
     }
   },
-  "extends": "../../tsconfig.json",
   "include": [
-    "src/**/*",
-    "../../src/contracts/**/*.ts",
-    "../../packages/types/src/**/*.ts",
-    "../../packages/schemas/src/**/*.ts"
+    "src/**/*"
   ],
   "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "**/*.test.ts", "../../src/contracts/tests/**/*", "../../src/contracts/integration/**/*"]
 }

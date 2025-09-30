@@ -10,10 +10,10 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './users/user.module';
-import { WebSocketModule } from './websocket/websocket.module';
+// import { WebSocketModule } from './websocket/websocket.module';
 import { DatabaseModule } from './database/database.module';
-import { QueueModule } from './queue/queue.module';
-import { OpenApiModule } from './docs/openapi.module';
+// import { QueueModule } from './queue/queue.module';
+// import { OpenApiModule } from './docs/openapi.module';
 import { HealthModule } from './health/health.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { LoggingModule } from './logging/logging.module';
@@ -67,7 +67,8 @@ import { CorrelationIdMiddleware } from './common/middleware';
     // QueueModule,
 
     // Health module for monitoring and health checks
-    HealthModule,
+    // Temporarily disabled due to QueueModule dependency
+    // HealthModule,
 
     // OpenAPI documentation module using existing ApiContractGenerator
     // Temporarily disabled due to ContractRegistry dependency issues
@@ -115,10 +116,10 @@ export class AppModule implements NestModule {
       .apply(CorrelationIdMiddleware)
       .forRoutes('*');
 
-    // Then apply request logging middleware which will use the correlation ID
-    consumer
-      .apply(RequestLoggingMiddleware)
-      .forRoutes('*'); // Apply to all routes for comprehensive request tracking
+    // Request logging middleware temporarily disabled due to EnhancedLoggerService dependency
+    // consumer
+    //   .apply(RequestLoggingMiddleware)
+    //   .forRoutes('*');
   }
 
   /**

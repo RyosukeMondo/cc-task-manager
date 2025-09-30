@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserRole as PrismaUserRole, UserStatus as PrismaUserStatus } from '../../node_modules/.prisma/client';
+import { UserRole as PrismaUserRole, UserStatus as PrismaUserStatus } from '@prisma/client';
 
 /**
  * User role enumeration for authorization control

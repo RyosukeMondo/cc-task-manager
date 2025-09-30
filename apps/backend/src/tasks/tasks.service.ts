@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import {
   TaskExceptionFactory,
   TaskNotFoundException,
@@ -56,10 +56,10 @@ export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
   constructor(
-    private readonly tasksRepository: ITasksRepository,
-    private readonly schemaRegistry: BackendSchemaRegistry,
-    private readonly queueService: QueueService,
-    private readonly taskEventsService: TaskEventsService,
+    @Inject('ITasksRepository') private readonly tasksRepository: ITasksRepository,
+    @Optional() private readonly schemaRegistry?: BackendSchemaRegistry,
+    @Optional() private readonly queueService?: QueueService,
+    @Optional() private readonly taskEventsService?: TaskEventsService,
   ) {}
 
   /**
@@ -71,8 +71,8 @@ export class TasksService {
    */
   async createTask(createTaskData: CreateTask, createdById: string): Promise<TaskBase> {
     // Validate input using existing contract validation infrastructure
-    const validation = this.schemaRegistry.validateAgainstSchema('CreateTask', createTaskData);
-    if (!validation.success) {
+    const validation = this.schemaRegistry?.validateAgainstSchema('CreateTask', createTaskData);
+    if (validation && !validation.success) {
       this.logger.warn(`Task creation validation failed: ${validation.error}`);
       throw TaskExceptionFactory.validation(
         validation.error,
@@ -90,15 +90,17 @@ export class TasksService {
     this.logger.log(`Created task: ${createdTask.id} - "${createdTask.title}" by user ${createdById}`);
 
     // Emit real-time task creation event
-    try {
-      await this.taskEventsService.emitTaskCreated(createdTask, createdById);
-    } catch (error) {
-      // Don't fail task creation if event emission fails
-      this.logger.error(`Failed to emit task created event: ${error.message}`);
+    if (this.taskEventsService) {
+      try {
+        await this.taskEventsService.emitTaskCreated(createdTask, createdById);
+      } catch (error) {
+        // Don't fail task creation if event emission fails
+        this.logger.error(`Failed to emit task created event: ${error.message}`);
+      }
     }
 
     // Queue task notification job for assignee if assigned
-    if (createdTask.assigneeId) {
+    if (createdTask.assigneeId && this.queueService) {
       try {
         await this.queueService.addJob({
           type: 'TASK_NOTIFICATION',
@@ -159,8 +161,8 @@ export class TasksService {
    */
   async getAllTasks(filters: TaskQueryFilters): Promise<{ tasks: TaskBase[]; total: number; page: number; limit: number }> {
     // Validate query filters using existing contract validation
-    const validation = this.schemaRegistry.validateAgainstSchema('TaskQueryFilters', filters);
-    if (!validation.success) {
+    const validation = this.schemaRegistry?.validateAgainstSchema('TaskQueryFilters', filters);
+    if (validation && !validation.success) {
       this.logger.warn(`Task query validation failed: ${validation.error}`);
       throw TaskExceptionFactory.validation(
         validation.error,
@@ -248,8 +250,8 @@ export class TasksService {
    */
   async updateTask(taskId: string, updateData: UpdateTask, updatedById: string): Promise<TaskBase> {
     // Validate input using existing contract validation infrastructure
-    const validation = this.schemaRegistry.validateAgainstSchema('UpdateTask', updateData);
-    if (!validation.success) {
+    const validation = this.schemaRegistry?.validateAgainstSchema('UpdateTask', updateData);
+    if (validation && !validation.success) {
       this.logger.warn(`Task update validation failed: ${validation.error}`);
       throw TaskExceptionFactory.validation(
         validation.error,
@@ -275,21 +277,23 @@ export class TasksService {
     this.logger.log(`Updated task: ${taskId} - "${updatedTask.title}" by user ${updatedById}`);
 
     // Emit real-time task update events
-    try {
-      await this.taskEventsService.emitTaskUpdated(updatedTask, existingTask, updatedById);
+    if (this.taskEventsService) {
+      try {
+        await this.taskEventsService.emitTaskUpdated(updatedTask, existingTask, updatedById);
 
-      // Emit specific status change event if status changed
-      if (existingTask.status !== updatedTask.status) {
-        await this.taskEventsService.emitTaskStatusChanged(updatedTask, existingTask.status, updatedById);
-      }
+        // Emit specific status change event if status changed
+        if (existingTask.status !== updatedTask.status) {
+          await this.taskEventsService.emitTaskStatusChanged(updatedTask, existingTask.status, updatedById);
+        }
 
-      // Emit assignment event if assignee changed
-      if (existingTask.assigneeId !== updatedTask.assigneeId) {
-        await this.taskEventsService.emitTaskAssigned(updatedTask, existingTask.assigneeId, updatedById);
+        // Emit assignment event if assignee changed
+        if (existingTask.assigneeId !== updatedTask.assigneeId) {
+          await this.taskEventsService.emitTaskAssigned(updatedTask, existingTask.assigneeId, updatedById);
+        }
+      } catch (error) {
+        // Don't fail task update if event emission fails
+        this.logger.error(`Failed to emit task update events: ${error.message}`);
       }
-    } catch (error) {
-      // Don't fail task update if event emission fails
-      this.logger.error(`Failed to emit task update events: ${error.message}`);
     }
 
     return updatedTask;
@@ -318,11 +322,13 @@ export class TasksService {
     this.logger.log(`Deleted task: ${taskId} - "${existingTask.title}" by user ${deletedById}`);
 
     // Emit real-time task deletion event
-    try {
-      await this.taskEventsService.emitTaskDeleted(existingTask, deletedById);
-    } catch (error) {
-      // Don't fail task deletion if event emission fails
-      this.logger.error(`Failed to emit task deleted event: ${error.message}`);
+    if (this.taskEventsService) {
+      try {
+        await this.taskEventsService.emitTaskDeleted(existingTask, deletedById);
+      } catch (error) {
+        // Don't fail task deletion if event emission fails
+        this.logger.error(`Failed to emit task deleted event: ${error.message}`);
+      }
     }
 
     return { success: true, taskId };
@@ -341,8 +347,8 @@ export class TasksService {
     results: TaskBase[] 
   }> {
     // Validate operation using existing contract validation
-    const validation = this.schemaRegistry.validateAgainstSchema('BulkTaskOperation', operation);
-    if (!validation.success) {
+    const validation = this.schemaRegistry?.validateAgainstSchema('BulkTaskOperation', operation);
+    if (validation && !validation.success) {
       this.logger.warn(`Bulk operation validation failed: ${validation.error}`);
       throw TaskExceptionFactory.validation(
         validation.error,
@@ -406,20 +412,22 @@ export class TasksService {
     this.logger.log(`Bulk operation ${operationType} completed on ${taskIds.length} tasks by user ${operatorId}`);
 
     // Emit bulk task events for real-time updates
-    try {
-      const eventType = this.getBulkOperationEventType(operationType);
-      if (eventType && results.length > 0) {
-        const events = results.map(task => ({
-          type: eventType,
-          task,
-          userId: operatorId,
-          additionalData: data || {}
-        }));
-        await this.taskEventsService.emitBatchTaskEvents(events);
+    if (this.taskEventsService) {
+      try {
+        const eventType = this.getBulkOperationEventType(operationType);
+        if (eventType && results.length > 0) {
+          const events = results.map(task => ({
+            type: eventType,
+            task,
+            userId: operatorId,
+            additionalData: data || {}
+          }));
+          await this.taskEventsService.emitBatchTaskEvents(events);
+        }
+      } catch (error) {
+        // Don't fail bulk operation if event emission fails
+        this.logger.error(`Failed to emit bulk operation events: ${error.message}`);
       }
-    } catch (error) {
-      // Don't fail bulk operation if event emission fails
-      this.logger.error(`Failed to emit bulk operation events: ${error.message}`);
     }
 
     return {

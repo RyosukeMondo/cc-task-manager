@@ -122,7 +122,7 @@ export declare const WorkerConfigSchema: z.ZodObject<{
     awaitWriteFinishMs: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
     queueName?: string;
-    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
+    logLevel?: "error" | "info" | "warn" | "fatal" | "debug" | "trace";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
@@ -141,7 +141,7 @@ export declare const WorkerConfigSchema: z.ZodObject<{
     awaitWriteFinishMs?: number;
 }, {
     queueName?: string;
-    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
+    logLevel?: "error" | "info" | "warn" | "fatal" | "debug" | "trace";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
@@ -215,7 +215,7 @@ export declare const validateClaudeCodeOptions: (data: unknown) => {
 };
 export declare const validateWorkerConfig: (data: unknown) => {
     queueName?: string;
-    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
+    logLevel?: "error" | "info" | "warn" | "fatal" | "debug" | "trace";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;

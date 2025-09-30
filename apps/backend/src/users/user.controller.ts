@@ -35,7 +35,7 @@ import {
   UserListResponse,
   UserStatistics,
 } from './user.schemas';
-import { User } from '../../node_modules/.prisma/client';
+import { User } from '@prisma/client';
 
 /**
  * User Controller handling HTTP requests for user management

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TaskStatus as PrismaTaskStatus, TaskPriority as PrismaTaskPriority } from '../../node_modules/.prisma/client';
+import { TaskStatus as PrismaTaskStatus, TaskPriority as PrismaTaskPriority } from '@prisma/client';
 
 /**
  * Task priority enumeration

@@ -7,7 +7,7 @@ import {
   WebSocketRoomType,
   validateWebSocketEvent
 } from '../websocket-events.schemas';
-import { WebSocketEvent as PersistentEvent, WebSocketConnection } from '../../../node_modules/.prisma/client';
+import { WebSocketEvent as PersistentEvent, WebSocketConnection } from '@prisma/client';
 
 /**
  * Event Replay Service for WebSocket Event Persistence and Offline Client Support

@@ -60,7 +60,8 @@ async function bootstrap() {
   );
 
   // Apply Open/Closed Principle - extend existing documentation without modification
-  await setupApiDocumentation(app, contractRegistry);
+  // Temporarily disabled due to OpenApiDocumentationService dependency
+  // await setupApiDocumentation(app, contractRegistry);
 
   // Enable graceful shutdown for clean resource management
   app.enableShutdownHooks();

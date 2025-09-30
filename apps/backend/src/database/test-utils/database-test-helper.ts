@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from '../../../node_modules/.prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 /**

@@ -11,7 +11,7 @@ import {
   UserStatistics,
   BulkUserAction
 } from './user.schemas';
-import { User } from '../../node_modules/.prisma/client';
+import { User } from '@prisma/client';
 
 /**
  * User Service implementing business logic with CASL authorization

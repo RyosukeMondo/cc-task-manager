@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClient, Prisma } from '../../node_modules/.prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 /**
  * Prisma Service for database connection management

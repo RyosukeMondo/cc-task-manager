@@ -1,6 +1,6 @@
 declare const _default: (() => {
     queueName?: string;
-    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
+    logLevel?: "error" | "info" | "warn" | "fatal" | "debug" | "trace";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
@@ -17,9 +17,9 @@ declare const _default: (() => {
     sessionLogsDir?: string;
     awaitWriteFinish?: boolean;
     awaitWriteFinishMs?: number;
-}) & import("node_modules/@nestjs/config").ConfigFactoryKeyHost<{
+}) & import("@nestjs/config").ConfigFactoryKeyHost<{
     queueName?: string;
-    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
+    logLevel?: "error" | "info" | "warn" | "fatal" | "debug" | "trace";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
