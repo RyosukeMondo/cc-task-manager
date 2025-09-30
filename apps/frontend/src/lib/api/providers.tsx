@@ -12,7 +12,6 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
         defaultOptions: {
           queries: {
             staleTime: 5 * 60 * 1000, // 5 minutes
-            refetchOnWindowFocus: false,
             retry: (failureCount, error) => {
               // Don't retry on client errors (4xx)
               const errorType = classifyError(error)
@@ -56,24 +55,7 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
             networkMode: 'offlineFirst',
           },
         },
-        // Global error handling
-        mutationCache: {
-          onError: (error, variables, context, mutation) => {
-            console.error('Mutation error:', {
-              error,
-              mutationKey: mutation.options.mutationKey,
-              variables,
-            })
-          },
-        },
-        queryCache: {
-          onError: (error, query) => {
-            console.error('Query error:', {
-              error,
-              queryKey: query.queryKey,
-            })
-          },
-        },
+        // Note: mutationCache and queryCache removed - use global error handling at component level
       })
   )
 
