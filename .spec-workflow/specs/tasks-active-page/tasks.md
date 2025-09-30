@@ -16,7 +16,7 @@ Task 0 from task-list-component spec MUST be completed first. The Task API contr
   - _Leverage: packages/schemas/src/tasks/ contract from task-list-component Task 0_
   - _Requirements: 1.1, 1.2, 2.1_
 
-- [ ] 1. Create active tasks page file
+- [x] 1. Create active tasks page file
   - File: apps/frontend/src/app/tasks/active/page.tsx
   - Create page component with TaskList filtered by active status
   - Purpose: Establish /tasks/active route showing only active tasks
