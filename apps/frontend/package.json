@@ -30,6 +30,9 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:smoke": "playwright test smoke.spec.ts",
+    "test:e2e:auth": "playwright test auth.spec.ts",
+    "test:e2e:pages": "playwright test authenticated-pages.spec.ts",
+    "test:e2e:tasks": "playwright test task-operations.spec.ts",
     "test:e2e:report": "playwright show-report",
     "clean": "rm -rf .next dist node_modules/.cache",
     "clean:packages": "pnpm --filter '@cc-task-manager/types' --filter '@cc-task-manager/schemas' clean",
@@ -89,6 +92,7 @@
   },
   "devDependencies": {
     "@axe-core/react": "^4.8.0",
+    "@playwright/test": "^1.55.1",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-interactions": "^8.6.14",
     "@storybook/addon-links": "^9.1.9",

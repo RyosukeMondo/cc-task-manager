@@ -17,6 +17,11 @@ coverage/
 # nyc test coverage
 .nyc_output
 
+# Playwright test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+
 # Build outputs
 dist/
 build/
