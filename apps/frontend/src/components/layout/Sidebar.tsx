@@ -89,23 +89,23 @@ const sidebarSections = [
   //     }
   //   ]
   // },
-  // {
-  //   title: 'Analytics',
-  //   items: [
-  //     {
-  //       href: '/analytics/performance',
-  //       label: 'Performance',
-  //       icon: ChartIcon,
-  //       description: 'Task performance metrics'
-  //     },
-  //     {
-  //       href: '/analytics/trends',
-  //       label: 'Trends',
-  //       icon: ChartIcon,
-  //       description: 'Task completion trends'
-  //     }
-  //   ]
-  // },
+  {
+    title: 'Analytics',
+    items: [
+      {
+        href: '/analytics/performance',
+        label: 'Performance',
+        icon: ChartIcon,
+        description: 'Task performance metrics'
+      },
+      {
+        href: '/analytics/trends',
+        label: 'Trends',
+        icon: ChartIcon,
+        description: 'Task completion trends'
+      }
+    ]
+  },
   // {
   //   title: 'System',
   //   items: [
