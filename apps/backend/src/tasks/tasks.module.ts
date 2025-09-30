@@ -43,7 +43,7 @@ import { ScheduleModule } from '@nestjs/schedule';
   imports: [
     // QueueModule, // Temporarily disabled due to ApplicationConfigService dependency issues
     // WebSocketModule, // Temporarily disabled due to dependency issues
-    ScheduleModule.forRoot(), // Enable scheduled tasks for performance monitoring
+    // ScheduleModule.forRoot(), // Temporarily disabled due to crypto polyfill issues in Node 18
   ],
   controllers: [TaskController],
   providers: [
