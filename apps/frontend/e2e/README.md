@@ -1,73 +1,47 @@
-# E2E Tests
+# E2E Testing with Playwright
 
-This directory contains end-to-end tests for the CC Task Manager frontend using Playwright.
+## Quick Start
 
-## Setup
-
-1. Install Playwright:
-   ```bash
-   pnpm add -D @playwright/test
-   ```
-
-2. Install browsers:
-   ```bash
-   pnpm exec playwright install
-   ```
-
-## Running Tests
-
-### Run all E2E tests:
 ```bash
-pnpm test:e2e
-```
+# Install (first time only)
+pnpm add -D @playwright/test
+pnpm exec playwright install chromium
 
-### Run tests in UI mode (interactive):
-```bash
+# Run smoke tests (validates all pages load)
+pnpm test:e2e:smoke
+
+# Interactive UI mode (recommended)
 pnpm test:e2e:ui
 ```
 
-### Run tests in debug mode:
-```bash
-pnpm test:e2e:debug
+## What This Solves
+
+**Problem:** Manual "try access → got error → fix → repeat" loop
+
+**Solution:** Automated tests catch errors across all pages in 30 seconds
+
+```
+Before: Visit each page manually in browser
+After:  pnpm test:e2e:smoke (tests 7 pages automatically)
 ```
 
-### View test report:
-```bash
-pnpm test:e2e:report
-```
+## Commands
 
-## Test Structure
+- `pnpm test:e2e:smoke` - Quick smoke test all pages
+- `pnpm test:e2e:ui` - Visual debugging (recommended)
+- `pnpm test:e2e:headed` - Watch tests run in browser
+- `pnpm test:e2e:debug` - Step-through debugging
+- `./e2e/watch-and-test.sh` - Auto-run on file changes
 
-- `tasks-page.spec.ts` - E2E tests for the tasks page, covering:
-  - Navigation from sidebar and top navigation
-  - Page rendering and layout
-  - Task list display
-  - Real-time updates via WebSocket
-  - Create task button interaction
-  - Empty state handling
-  - Responsive design
-  - Accessibility (keyboard navigation)
+## What Gets Tested
 
-## Prerequisites
+✅ All pages load without errors
+✅ No runtime errors or console errors  
+✅ WebSocket connections work
+✅ Key elements render
 
-Before running E2E tests, ensure:
-1. Development server is running on port 3006 (or configure BASE_URL)
-2. Backend server is available with WebSocket support
-3. All dependencies are installed
+Pages covered:
+- Dashboard, Tasks (all/active/completed)
+- Analytics (performance/trends), Settings
 
-## Configuration
-
-The Playwright configuration is in `playwright.config.ts` at the frontend root.
-
-Key settings:
-- Base URL: `http://localhost:3006`
-- Test directory: `./e2e`
-- Test match pattern: `**/*.spec.ts`
-- Web server auto-start: Enabled
-
-## CI/CD
-
-In CI environments:
-- Tests run with 2 retries
-- Single worker mode for stability
-- Screenshots and videos captured on failure
+See `e2e/smoke.spec.ts` for test details.
