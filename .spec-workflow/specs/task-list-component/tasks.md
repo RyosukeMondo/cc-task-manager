@@ -23,7 +23,7 @@ All tasks must follow contract-driven development. Task 0 MUST be completed befo
   - _Requirements: 1.1, 2.1_
   - _Prompt: Role: TypeScript Developer specializing in type systems and contract-driven development | Task: Create type re-export file at apps/frontend/src/types/task.ts that imports and re-exports Task, TaskStatus, TaskPriority, TaskFilter, and other task-related types from @cc-task-manager/schemas following requirement 1.1 and 2.1 | Restrictions: Must import from @cc-task-manager/schemas only, do not define any types locally, only re-export for convenience, ensure tsconfig.json references schemas package, verify types are accessible | Success: All task types imported from shared schemas, re-exported for frontend use, TypeScript compiles without errors, no duplicate type definitions, frontend has full type coverage from shared contracts_
 
-- [ ] 2. Create useTasks custom hook
+- [x] 2. Create useTasks custom hook
   - File: apps/frontend/src/hooks/useTasks.ts
   - Implement data fetching hook with filtering and real-time updates
   - Purpose: Centralize task data management logic
