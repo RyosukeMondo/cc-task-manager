@@ -1,11 +1,13 @@
+// Set environment to test BEFORE importing React
+process.env.NODE_ENV = 'test'
+
 import '@testing-library/jest-dom'
 import 'jest-canvas-mock'
 import React from 'react'
 
-// Set NODE_ENV to test if not already set
-if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = 'test'
-}
+// Suppress act() warnings for async operations
+// @ts-ignore
+globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 // Global test setup
 global.ResizeObserver = global.ResizeObserver || class ResizeObserver {
@@ -127,3 +129,4 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalError
 })
+

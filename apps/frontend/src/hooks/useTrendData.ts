@@ -1,126 +1,152 @@
 'use client';
 
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/contract-client';
+import { useState, useCallback, useMemo } from 'react';
 import type {
-  AnalyticsResponse,
+  AnalyticsTrendResponse,
   AnalyticsFilter,
-  TimeSeriesData,
-  GroupByOption,
-} from '@cc-task-manager/schemas';
+  TimePeriod,
+} from '@/types/analytics';
 
-/**
- * Query key factory for trend data
- * Ensures proper cache invalidation and deduplication
- */
+// Query keys for trend data following TanStack Query best practices
 export const trendQueryKeys = {
-  all: ['trends'] as const,
-  filtered: (filter: AnalyticsFilter) => ['trends', filter] as const,
-  timeSeries: (filter: AnalyticsFilter) => ['trends', 'timeSeries', filter] as const,
+  trends: ['analytics', 'trends'] as const,
+  trendsByPeriod: (period: TimePeriod) =>
+    ['analytics', 'trends', period] as const,
+  trendsWithFilters: (filters: AnalyticsFilter) =>
+    ['analytics', 'trends', filters] as const,
 } as const;
 
+interface UseTrendDataOptions {
+  initialPeriod?: TimePeriod;
+  enabled?: boolean;
+  refetchInterval?: number;
+}
+
+interface UseTrendDataReturn {
+  data: AnalyticsTrendResponse | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+  timePeriod: TimePeriod;
+  setTimePeriod: (period: TimePeriod) => void;
+  filters: AnalyticsFilter;
+  updateFilters: (newFilters: Partial<AnalyticsFilter>) => void;
+  refetch: () => void;
+}
+
 /**
- * Custom hook for fetching and managing trend analytics data
+ * Custom hook for fetching and managing trend data
+ * Centralizes trend data management with support for time period selection and filtering
  *
- * Provides time-series data with support for different time period groupings (day/week/month)
- * and automatic caching through React Query.
- *
- * @param filter - Analytics filter parameters including date range and groupBy period
- * @param options - Additional React Query options for customization
- * @returns Query result with trend data, loading state, and error handling
- *
- * @example
- * ```tsx
- * const { data, isLoading, error } = useTrendData({
- *   dateRange: {
- *     startDate: '2025-09-01T00:00:00Z',
- *     endDate: '2025-09-30T23:59:59Z'
- *   },
- *   groupBy: GroupByOption.DAY
- * });
- * ```
+ * @param options - Configuration options for the hook
+ * @returns Trend data with loading states and control functions
  */
 export function useTrendData(
-  filter: AnalyticsFilter,
-  options?: Omit<UseQueryOptions<AnalyticsResponse>, 'queryKey' | 'queryFn'>
-) {
-  return useQuery({
-    queryKey: trendQueryKeys.filtered(filter),
-    queryFn: async () => {
-      // Call analytics API endpoint with filter parameters
-      const response = await apiClient.request<AnalyticsResponse>(
-        'POST',
-        '/api/analytics/trends',
-        filter
-      );
-      return response;
+  options: UseTrendDataOptions = {}
+): UseTrendDataReturn {
+  const {
+    initialPeriod = 'day',
+    enabled = true,
+    refetchInterval,
+  } = options;
+
+  // State management
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>(initialPeriod);
+  const [filters, setFilters] = useState<AnalyticsFilter>({
+    groupBy: initialPeriod,
+  });
+
+  // Update filters when time period changes
+  const updateTimePeriod = useCallback((period: TimePeriod) => {
+    setTimePeriod(period);
+    setFilters((prev) => ({
+      ...prev,
+      groupBy: period,
+    }));
+  }, []);
+
+  // Update filters while preserving existing values
+  const updateFilters = useCallback((newFilters: Partial<AnalyticsFilter>) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+    }));
+  }, []);
+
+  // Fetch trend data function
+  const fetchTrendData = useCallback(
+    async (currentFilters: AnalyticsFilter): Promise<AnalyticsTrendResponse> => {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+      // Build query parameters from filters
+      const params = new URLSearchParams();
+      if (currentFilters.groupBy) {
+        params.append('groupBy', currentFilters.groupBy);
+      }
+      if (currentFilters.startDate) {
+        params.append('startDate', currentFilters.startDate.toISOString());
+      }
+      if (currentFilters.endDate) {
+        params.append('endDate', currentFilters.endDate.toISOString());
+      }
+
+      const url = `${baseUrl}/api/analytics/trends?${params.toString()}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add auth token if available
+          ...(typeof window !== 'undefined' && localStorage.getItem('auth_token') && {
+            Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+          }),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch trend data: ${response.statusText}`);
+      }
+
+      return response.json();
     },
+    []
+  );
+
+  // React Query integration with caching
+  const queryKey = useMemo(
+    () => trendQueryKeys.trendsWithFilters(filters),
+    [filters]
+  );
+
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey,
+    queryFn: () => fetchTrendData(filters),
+    enabled,
     // Cache for 5 minutes by default
     staleTime: 5 * 60 * 1000,
-    // Keep unused data in cache for 10 minutes
+    // Keep cached data for 10 minutes
     gcTime: 10 * 60 * 1000,
+    refetchInterval,
     // Refetch on window focus for fresh data
     refetchOnWindowFocus: true,
-    // Retry failed requests up to 2 times
-    retry: 2,
-    ...options,
-  });
-}
-
-/**
- * Hook specifically for fetching time series trend data
- *
- * Optimized for retrieving just the time-series portion of analytics data
- * for trend visualization charts.
- *
- * @param filter - Analytics filter parameters
- * @param options - Additional React Query options
- * @returns Query result containing array of time series data points
- */
-export function useTrendTimeSeries(
-  filter: AnalyticsFilter,
-  options?: Omit<UseQueryOptions<TimeSeriesData[]>, 'queryKey' | 'queryFn'>
-) {
-  return useQuery({
-    queryKey: trendQueryKeys.timeSeries(filter),
-    queryFn: async () => {
-      const response = await apiClient.request<AnalyticsResponse>(
-        'POST',
-        '/api/analytics/trends',
-        filter
-      );
-      return response.timeSeries;
-    },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: true,
-    retry: 2,
-    ...options,
-  });
-}
-
-/**
- * Hook for comparing trends across different time periods
- *
- * Fetches trend data for multiple time periods simultaneously to enable
- * period-over-period comparison analysis.
- *
- * @param currentFilter - Filter for the current period
- * @param previousFilter - Filter for the comparison period
- * @returns Object containing queries for both current and previous periods
- */
-export function useTrendComparison(
-  currentFilter: AnalyticsFilter,
-  previousFilter: AnalyticsFilter
-) {
-  const currentQuery = useTrendData(currentFilter);
-  const previousQuery = useTrendData(previousFilter);
+  } as UseQueryOptions<AnalyticsTrendResponse, Error>);
 
   return {
-    current: currentQuery,
-    previous: previousQuery,
-    isLoading: currentQuery.isLoading || previousQuery.isLoading,
-    isError: currentQuery.isError || previousQuery.isError,
-    error: currentQuery.error || previousQuery.error,
+    data,
+    isLoading,
+    isError,
+    error: error ?? null,
+    timePeriod,
+    setTimePeriod: updateTimePeriod,
+    filters,
+    updateFilters,
+    refetch,
   };
 }

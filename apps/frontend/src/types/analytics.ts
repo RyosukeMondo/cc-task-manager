@@ -1,15 +1,27 @@
 /**
- * Analytics type re-exports from shared schemas
- *
- * This file imports and re-exports all analytics-related types from the shared schemas package
- * to ensure frontend-backend consistency for analytics data structures.
+ * Analytics types re-exported from shared schemas
+ * All analytics types are imported from @cc-task-manager/schemas to ensure
+ * contract-first development and type consistency across frontend and backend.
  */
 
+// Time-series and trend types
 export type {
-  PerformanceMetrics,
-  KPIData,
-  ChartData,
   TimeSeriesData,
-  DateRange,
+  TrendDirection,
+  TrendComparison,
+  TimePeriod,
   AnalyticsFilter,
+  AggregatedMetric,
+  AnalyticsTrendResponse,
+} from '@cc-task-manager/schemas';
+
+// Re-export schemas for runtime validation if needed
+export {
+  TimeSeriesDataSchema,
+  TrendDirectionSchema,
+  TrendComparisonSchema,
+  TimePeriodSchema,
+  AnalyticsFilterSchema,
+  AggregatedMetricSchema,
+  AnalyticsTrendResponseSchema,
 } from '@cc-task-manager/schemas';
