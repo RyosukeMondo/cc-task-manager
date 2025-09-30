@@ -37,8 +37,6 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
             refetchOnWindowFocus: 'always',
             // Retry stale queries when network reconnects
             refetchOnReconnect: 'always',
-            // Keep data while refetching for better UX
-            keepPreviousData: true,
             // Network mode configuration for offline handling
             networkMode: 'offlineFirst',
           },
