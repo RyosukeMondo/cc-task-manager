@@ -60,6 +60,19 @@ export const TimePeriodSchema = z.enum(['day', 'week', 'month']);
 export type TimePeriod = z.infer<typeof TimePeriodSchema>;
 
 /**
+ * Date range schema for time-based filtering
+ * Used to specify start and end dates for analytics queries
+ */
+export const DateRangeSchema = z.object({
+  /** Start date (ISO 8601) */
+  startDate: z.string().datetime(),
+  /** End date (ISO 8601) */
+  endDate: z.string().datetime(),
+});
+
+export type DateRange = z.infer<typeof DateRangeSchema>;
+
+/**
  * Analytics filter schema with time period grouping support
  * Used to filter and aggregate metrics by time periods
  */
@@ -203,3 +216,23 @@ export const PerformanceMetricsSchema = z.object({
 });
 
 export type PerformanceMetrics = z.infer<typeof PerformanceMetricsSchema>;
+/**
+ * Complete analytics response schema
+ * Combines metrics, KPIs, and charts for comprehensive analytics display
+ */
+export const AnalyticsResponseSchema = z.object({
+  /** Key Performance Indicators */
+  kpis: z.array(KPIDataSchema).optional(),
+  /** Performance metrics */
+  metrics: PerformanceMetricsSchema.optional(),
+  /** Chart data for visualizations */
+  charts: z.record(z.string(), ChartDataSchema).optional(),
+  /** Time-series trend data */
+  trends: AnalyticsTrendResponseSchema.optional(),
+  /** Date range for the analytics data */
+  dateRange: DateRangeSchema.optional(),
+  /** Timestamp when the analytics were generated */
+  generatedAt: z.string().datetime().optional(),
+});
+
+export type AnalyticsResponse = z.infer<typeof AnalyticsResponseSchema>;
