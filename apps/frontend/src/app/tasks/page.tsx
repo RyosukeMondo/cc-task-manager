@@ -5,7 +5,8 @@ import { Plus } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { TaskList } from '@/components/tasks/TaskList';
 import { Button } from '@/components/ui/button';
-import { TaskStatus, TaskState } from '@cc-task-manager/types';
+import { Task, TaskStatus as TaskStatusEnum } from '@/types/task';
+import { TaskState } from '@cc-task-manager/types';
 import {
   useWebSocketConnection,
   useWebSocketEvent
@@ -22,7 +23,7 @@ import {
  * Provides comprehensive task list view with real-time updates
  */
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<TaskStatus[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const wsConnection = useWebSocketConnection('task-all-page');
 

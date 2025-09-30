@@ -18,10 +18,21 @@ export const TimeSeriesDataSchema = z.object({
 export type TimeSeriesData = z.infer<typeof TimeSeriesDataSchema>;
 
 /**
- * Trend direction indicator
+ * Trend direction indicator schema
+ * Used to show if a metric is increasing, decreasing, or staying stable
  */
 export const TrendDirectionSchema = z.enum(['up', 'down', 'stable']);
-export type TrendDirection = z.infer<typeof TrendDirectionSchema>;
+export type TrendDirectionType = z.infer<typeof TrendDirectionSchema>;
+
+/**
+ * Trend direction enum values
+ * Use these constants for type-safe trend direction assignment
+ */
+export const TrendDirection = {
+  UP: 'up' as TrendDirectionType,
+  DOWN: 'down' as TrendDirectionType,
+  STABLE: 'stable' as TrendDirectionType,
+};
 
 /**
  * Period-over-period comparison schema
@@ -35,7 +46,7 @@ export const TrendComparisonSchema = z.object({
   /** Percentage change between periods (can be negative) */
   percentageChange: z.number(),
   /** Direction of the trend */
-  direction: TrendDirectionSchema,
+  direction: z.enum(['up', 'down', 'stable']),
   /** Label for the comparison period (e.g., "vs last week") */
   periodLabel: z.string(),
 });
@@ -100,3 +111,74 @@ export const AnalyticsTrendResponseSchema = z.object({
 });
 
 export type AnalyticsTrendResponse = z.infer<typeof AnalyticsTrendResponseSchema>;
+
+/**
+ * KPI (Key Performance Indicator) data schema
+ * Used to display summary metrics with trend information
+ */
+export const KPIDataSchema = z.object({
+  /** Label/name of the KPI */
+  label: z.string(),
+  /** Numeric value of the KPI */
+  value: z.number(),
+  /** Percentage change from previous period */
+  change: z.number(),
+  /** Trend direction (up, down, or stable) */
+  trend: z.enum(['up', 'down', 'stable']),
+  /** Unit of measurement (e.g., '%', 'h', '/h') */
+  unit: z.string().optional(),
+  /** Optional description of the KPI */
+  description: z.string().optional(),
+});
+
+export type KPIData = z.infer<typeof KPIDataSchema>;
+
+/**
+ * Chart dataset schema for visualization
+ * Matches Chart.js dataset structure
+ */
+export const ChartDatasetSchema = z.object({
+  /** Dataset label */
+  label: z.string(),
+  /** Data values */
+  data: z.array(z.number()),
+  /** Border color */
+  borderColor: z.string().optional(),
+  /** Background color */
+  backgroundColor: z.string().optional(),
+  /** Line tension for line charts */
+  tension: z.number().optional(),
+  /** Other chart.js properties */
+}).passthrough();
+
+/**
+ * Chart data schema for analytics visualizations
+ * Compatible with Chart.js data structure
+ */
+export const ChartDataSchema = z.object({
+  /** X-axis labels */
+  labels: z.array(z.string()),
+  /** Chart datasets */
+  datasets: z.array(ChartDatasetSchema),
+});
+
+export type ChartData = z.infer<typeof ChartDataSchema>;
+
+/**
+ * Performance metrics schema
+ * Contains key performance indicators for task execution
+ */
+export const PerformanceMetricsSchema = z.object({
+  /** Task completion rate as percentage (0-100) */
+  completionRate: z.number().min(0).max(100),
+  /** Average time to complete tasks in seconds */
+  averageCompletionTime: z.number().min(0),
+  /** Number of tasks completed per hour */
+  throughput: z.number().min(0),
+  /** Overall efficiency percentage (0-100) */
+  efficiency: z.number().min(0).max(100),
+  /** Optional chart data for visualizations */
+  charts: z.record(z.string(), ChartDataSchema).optional(),
+});
+
+export type PerformanceMetrics = z.infer<typeof PerformanceMetricsSchema>;
