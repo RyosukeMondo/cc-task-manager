@@ -106,8 +106,20 @@ export const QueueConfigSchema = z.object({
       type: z.enum(['fixed', 'exponential']).default('exponential'),
       delay: z.number().int().min(1000).default(2000),
     }),
+    delay: z.number().int().min(0).default(0),
+    priority: z.number().int().min(1).max(100).default(50),
+    jobId: z.string().optional(),
   }),
   concurrency: z.number().int().min(1).default(5),
+  settings: z.object({
+    stalledInterval: z.number().int().min(1000).default(30000),
+    maxStalledCount: z.number().int().min(1).default(1),
+    retryProcessDelay: z.number().int().min(1000).default(5000),
+  }),
+  limiter: z.object({
+    max: z.number().int().min(1).default(100),
+    duration: z.number().int().min(1000).default(60000),
+  }),
 });
 
 /**
