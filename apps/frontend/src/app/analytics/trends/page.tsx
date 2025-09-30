@@ -81,7 +81,7 @@ function TrendsPageContent() {
       )}
 
       {/* No data state */}
-      {!isLoading && !isError && (!data || data.metrics.length === 0) && (
+      {!isLoading && !isError && (!data || !data.metrics || data.metrics.length === 0) && (
         <div
           className="flex items-center justify-center rounded-lg border bg-card p-12"
           role="status"
@@ -99,7 +99,7 @@ function TrendsPageContent() {
       )}
 
       {/* Trend charts */}
-      {!isLoading && !isError && data && data.metrics.length > 0 && (
+      {!isLoading && !isError && data && data.metrics && data.metrics.length > 0 && (
         <TrendCharts
           metrics={data.metrics}
           height={320}

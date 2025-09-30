@@ -152,14 +152,35 @@ export const ChartDatasetSchema = z.object({
 }).passthrough();
 
 /**
+ * Chart metadata schema for customizing chart display
+ * Provides configuration for titles, labels, and display options
+ */
+export const ChartMetadataSchema = z.object({
+  /** Chart title */
+  title: z.string().optional(),
+  /** X-axis label */
+  xAxisLabel: z.string().optional(),
+  /** Y-axis label */
+  yAxisLabel: z.string().optional(),
+  /** Whether to show legend */
+  showLegend: z.boolean().optional(),
+  /** Whether to show tooltips */
+  showTooltips: z.boolean().optional(),
+}).optional();
+
+export type ChartMetadata = z.infer<typeof ChartMetadataSchema>;
+
+/**
  * Chart data schema for analytics visualizations
- * Compatible with Chart.js data structure
+ * Compatible with Chart.js data structure with optional metadata
  */
 export const ChartDataSchema = z.object({
   /** X-axis labels */
   labels: z.array(z.string()),
   /** Chart datasets */
   datasets: z.array(ChartDatasetSchema),
+  /** Optional metadata for chart customization */
+  metadata: ChartMetadataSchema,
 });
 
 export type ChartData = z.infer<typeof ChartDataSchema>;

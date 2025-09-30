@@ -166,17 +166,21 @@ export function TrendCharts({
 
     const icon = isPositive ? '↑' : isNegative ? '↓' : '→';
 
+    // Handle undefined percentageChange
+    const percentageChange = comparison.percentageChange ?? 0;
+    const periodLabel = comparison.periodLabel ?? 'vs previous';
+
     return (
       <div
         className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${bgColor}`}
         role="status"
-        aria-label={`Trend ${comparison.direction}: ${Math.abs(comparison.percentageChange).toFixed(1)}% ${comparison.periodLabel}`}
+        aria-label={`Trend ${comparison.direction}: ${Math.abs(percentageChange).toFixed(1)}% ${periodLabel}`}
       >
         <span aria-hidden="true">{icon}</span>
         <span>
-          {Math.abs(comparison.percentageChange).toFixed(1)}%
+          {Math.abs(percentageChange).toFixed(1)}%
         </span>
-        <span className="text-xs opacity-75">{comparison.periodLabel}</span>
+        <span className="text-xs opacity-75">{periodLabel}</span>
       </div>
     );
   };
@@ -196,10 +200,15 @@ export function TrendCharts({
   return (
     <div className={`space-y-6 ${className}`}>
       {metrics.map((metric, index) => {
+        // Skip metrics without time series data
+        if (!metric.timeSeries || metric.timeSeries.length === 0) {
+          return null;
+        }
+
         // Prepare chart data for this metric
         const chartData = {
           labels: metric.timeSeries.map((point) => {
-            const date = new Date(point.timestamp);
+            const date = new Date(point.timestamp ?? new Date());
             return date.toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
@@ -207,8 +216,8 @@ export function TrendCharts({
           }),
           datasets: [
             {
-              label: metric.name,
-              data: metric.timeSeries.map((point) => point.value),
+              label: metric.name ?? 'Unknown',
+              data: metric.timeSeries.map((point) => point.value ?? 0),
               borderColor: colors[index % colors.length],
               backgroundColor: colors[index % colors.length].replace('1)', '0.1)'),
               borderWidth: 2,
@@ -222,21 +231,21 @@ export function TrendCharts({
 
         return (
           <div
-            key={metric.metricId}
+            key={metric.metricId ?? `metric-${index}`}
             className="rounded-lg border bg-card p-6 shadow-sm"
           >
             {/* Header with metric name and comparison */}
             <div className="mb-4 flex items-start justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-card-foreground">
-                  {metric.name}
+                  {metric.name ?? 'Unknown Metric'}
                 </h3>
                 <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
                   <span>
-                    Total: <strong>{metric.total.toLocaleString()}</strong>
+                    Total: <strong>{(metric.total ?? 0).toLocaleString()}</strong>
                   </span>
                   <span>
-                    Avg: <strong>{metric.average.toLocaleString()}</strong>
+                    Avg: <strong>{(metric.average ?? 0).toLocaleString()}</strong>
                   </span>
                 </div>
               </div>

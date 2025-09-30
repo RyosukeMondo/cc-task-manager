@@ -134,9 +134,9 @@ interface ChartComponentProps {
  */
 function CompletionTimeChart({ data }: ChartComponentProps) {
   const chartData: ChartData<'line'> = React.useMemo(() => {
-    const datasets = data.datasets.map((dataset, index) => ({
-      label: dataset.label,
-      data: dataset.data,
+    const datasets = (data.datasets ?? []).map((dataset, index) => ({
+      label: dataset.label ?? '',
+      data: dataset.data ?? [],
       borderColor: dataset.borderColor || chartColors.borders[index % chartColors.borders.length],
       backgroundColor: dataset.backgroundColor || chartColors.primary[index % chartColors.primary.length],
       tension: 0.4,
@@ -144,7 +144,7 @@ function CompletionTimeChart({ data }: ChartComponentProps) {
     }))
 
     return {
-      labels: data.labels,
+      labels: data.labels ?? [],
       datasets
     }
   }, [data])
@@ -180,7 +180,7 @@ function CompletionTimeChart({ data }: ChartComponentProps) {
       tooltip: {
         enabled: data.metadata?.showTooltips ?? true,
         callbacks: {
-          label: function(context) {
+          label: (context: { dataset: { label?: string }, parsed: { y: number } }) => {
             const label = context.dataset.label || ''
             const value = context.parsed.y
             return `${label}: ${value.toFixed(2)} hours`
@@ -214,16 +214,16 @@ function CompletionTimeChart({ data }: ChartComponentProps) {
  */
 function ThroughputChart({ data }: ChartComponentProps) {
   const chartData: ChartData<'bar'> = React.useMemo(() => {
-    const datasets = data.datasets.map((dataset, index) => ({
-      label: dataset.label,
-      data: dataset.data,
+    const datasets = (data.datasets ?? []).map((dataset, index) => ({
+      label: dataset.label ?? '',
+      data: dataset.data ?? [],
       backgroundColor: dataset.backgroundColor || chartColors.primary[index % chartColors.primary.length],
       borderColor: dataset.borderColor || chartColors.borders[index % chartColors.borders.length],
       borderWidth: 1
     }))
 
     return {
-      labels: data.labels,
+      labels: data.labels ?? [],
       datasets
     }
   }, [data])
@@ -259,7 +259,7 @@ function ThroughputChart({ data }: ChartComponentProps) {
       tooltip: {
         enabled: data.metadata?.showTooltips ?? true,
         callbacks: {
-          label: function(context) {
+          label: (context: { dataset: { label?: string }, parsed: { y: number } }) => {
             const label = context.dataset.label || ''
             const value = context.parsed.y
             return `${label}: ${value.toFixed(2)} tasks/hour`
@@ -293,9 +293,9 @@ function ThroughputChart({ data }: ChartComponentProps) {
  */
 function EfficiencyChart({ data }: ChartComponentProps) {
   const chartData: ChartData<'line'> = React.useMemo(() => {
-    const datasets = data.datasets.map((dataset, index) => ({
-      label: dataset.label,
-      data: dataset.data,
+    const datasets = (data.datasets ?? []).map((dataset, index) => ({
+      label: dataset.label ?? '',
+      data: dataset.data ?? [],
       borderColor: dataset.borderColor || chartColors.success,
       backgroundColor: dataset.backgroundColor || 'rgba(16, 185, 129, 0.1)',
       tension: 0.4,
@@ -304,7 +304,7 @@ function EfficiencyChart({ data }: ChartComponentProps) {
     }))
 
     return {
-      labels: data.labels,
+      labels: data.labels ?? [],
       datasets
     }
   }, [data])
@@ -341,7 +341,7 @@ function EfficiencyChart({ data }: ChartComponentProps) {
       tooltip: {
         enabled: data.metadata?.showTooltips ?? true,
         callbacks: {
-          label: function(context) {
+          label: (context: { dataset: { label?: string }, parsed: { y: number } }) => {
             const label = context.dataset.label || ''
             const value = context.parsed.y
             return `${label}: ${value.toFixed(1)}%`

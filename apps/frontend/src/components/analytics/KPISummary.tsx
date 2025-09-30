@@ -92,6 +92,11 @@ function KPICard({ kpi }: KPICardProps) {
   const { label, value, change, trend, unit = '', description } = kpi
 
   const formattedValue = React.useMemo(() => {
+    // Handle undefined value
+    if (value === undefined || value === null) {
+      return '--'
+    }
+
     if (unit === '%') {
       return `${value.toFixed(1)}${unit}`
     }
@@ -102,6 +107,11 @@ function KPICard({ kpi }: KPICardProps) {
   }, [value, unit])
 
   const formattedChange = React.useMemo(() => {
+    // Handle undefined change
+    if (change === undefined || change === null) {
+      return '--'
+    }
+
     const absChange = Math.abs(change)
     return `${change >= 0 ? '+' : '-'}${absChange.toFixed(1)}%`
   }, [change])

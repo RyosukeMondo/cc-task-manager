@@ -1,36 +1,28 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { AppLayout } from '@/components/layout';
 import { TaskList } from '@/components/tasks/TaskList';
-import { useTasks } from '@/lib/api/hooks';
-import { TaskState } from '@cc-task-manager/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { TaskStatus } from '@/types/task';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckCircle } from 'lucide-react';
 
 /**
  * Completed Tasks Page
- * Displays only completed tasks sorted by completion date (newest first)
- * Route: /tasks/completed
+ *
+ * Displays tasks with COMPLETED status, sorted by completion date.
+ * Uses TaskList with pre-filtered initialFilters for COMPLETED status.
+ *
+ * Architecture:
+ * - TaskList handles data fetching with initialFilters
+ * - Filter defaults to COMPLETED status from API Task schema
+ * - Default sort is by updatedAt (descending) to show recently completed first
+ * - User can still modify filters and sorting via TaskList's built-in controls
+ *
+ * Note: Uses TaskStatus enum from API task schemas, not worker TaskState.
+ * TaskStatus.COMPLETED represents API task completion state.
  */
 export default function CompletedTasksPage() {
-  const { data: allTasks, isLoading, error, refetch } = useTasks();
-
-  // Filter for completed tasks only
-  const completedTasks = useMemo(() => {
-    if (!allTasks) return [];
-    return allTasks.filter(task => task.state === TaskState.COMPLETED);
-  }, [allTasks]);
-
-  // Sort by lastActivity (most recent first) as proxy for completion date
-  const sortedCompletedTasks = useMemo(() => {
-    return [...completedTasks].sort((a, b) => {
-      const dateA = new Date(a.lastActivity).getTime();
-      const dateB = new Date(b.lastActivity).getTime();
-      return dateB - dateA; // Descending order (newest first)
-    });
-  }, [completedTasks]);
-
   return (
     <AppLayout>
       <div className="container mx-auto py-6 space-y-6">
@@ -42,38 +34,19 @@ export default function CompletedTasksPage() {
               <div>
                 <CardTitle className="text-2xl">Completed Tasks</CardTitle>
                 <CardDescription>
-                  {isLoading ? (
-                    <span className="flex items-center space-x-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading...</span>
-                    </span>
-                  ) : (
-                    <span>{completedTasks.length} completed {completedTasks.length === 1 ? 'task' : 'tasks'}</span>
-                  )}
+                  View all tasks that have been successfully completed
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
         </Card>
 
-        {/* Task List */}
-        {error ? (
-          <Card>
-            <CardContent className="py-6">
-              <div className="text-center text-red-600">
-                <p>Error loading tasks: {error.message}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <TaskList
-            tasks={sortedCompletedTasks}
-            onRefresh={refetch}
-            isLoading={isLoading}
-            showFilters={false}
-            showSearch={true}
-          />
-        )}
+        {/* Task List with Completed Status Filter */}
+        <TaskList
+          initialFilters={{
+            status: [TaskStatus.COMPLETED],
+          }}
+        />
       </div>
     </AppLayout>
   );
