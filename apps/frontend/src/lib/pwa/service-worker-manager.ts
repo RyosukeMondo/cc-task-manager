@@ -28,11 +28,12 @@ class ServiceWorkerManager {
   private listeners: ((state: ServiceWorkerState) => void)[] = [];
 
   constructor() {
-    this.state.isSupported = 'serviceWorker' in navigator;
-    this.state.isOffline = !navigator.onLine;
+    // Only initialize in browser environment
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+      this.state.isSupported = 'serviceWorker' in navigator;
+      this.state.isOffline = !navigator.onLine;
 
-    // Listen for online/offline events
-    if (typeof window !== 'undefined') {
+      // Listen for online/offline events
       window.addEventListener('online', this.handleOnline);
       window.addEventListener('offline', this.handleOffline);
     }

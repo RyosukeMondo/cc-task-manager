@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Accessible React components following WCAG 2.1 AA standards
  * Provides reusable components with built-in accessibility features

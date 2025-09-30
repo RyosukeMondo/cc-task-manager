@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Performance optimization utilities and Core Web Vitals monitoring
  * Consolidates performance-related functionality for the dashboard application

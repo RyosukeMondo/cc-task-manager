@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useMemo } from 'react';
 import { useAuth } from './context';
 import { Role, Permission } from './types';

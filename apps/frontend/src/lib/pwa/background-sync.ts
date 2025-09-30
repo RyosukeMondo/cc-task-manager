@@ -29,8 +29,11 @@ class BackgroundSyncManager {
   };
 
   constructor() {
-    this.isSupported = 'serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype;
-    this.loadQueue();
+    // Only initialize in browser environment
+    if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+      this.isSupported = 'serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype;
+      this.loadQueue();
+    }
   }
 
   /**

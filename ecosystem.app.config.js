@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'cc-task-manager-backend',
-      script: 'pnpm',
-      args: 'start:dev',
+      script: 'npx',
+      args: 'pnpm start:dev',
       cwd: '/home/rmondo/repos/cc-task-manager/apps/backend',
       autorestart: true,
       watch: false,
@@ -20,8 +20,8 @@ module.exports = {
     },
     {
       name: 'cc-task-manager-frontend',
-      script: 'pnpm',
-      args: 'dev',
+      script: 'npx',
+      args: 'pnpm dev',
       cwd: '/home/rmondo/repos/cc-task-manager/apps/frontend',
       autorestart: true,
       watch: false,

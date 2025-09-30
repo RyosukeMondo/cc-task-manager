@@ -6,7 +6,7 @@ import { AuthProvider } from '@/lib/auth/context'
 import { WebSocketProvider } from '@/lib/websocket/context'
 import { ReactQueryProvider } from '@/lib/api/providers'
 import { PerformanceMonitor } from '@/lib/accessibility/components'
-import { PWAProvider } from '@/lib/pwa'
+import { PWAClientProvider } from '@/lib/pwa/client-provider'
 import { SkipNavPatterns } from '@/components/ui/skip-nav'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -46,7 +46,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <SkipNavPatterns.Complete />
-        <PWAProvider>
+        <PWAClientProvider>
           <ThemeProvider>
             <ReactQueryProvider>
               <AuthProvider>
@@ -58,7 +58,7 @@ export default function RootLayout({
               </AuthProvider>
             </ReactQueryProvider>
           </ThemeProvider>
-        </PWAProvider>
+        </PWAClientProvider>
       </body>
     </html>
   )
