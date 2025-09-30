@@ -12,4 +12,7 @@ export type {
   TimeSeriesData,
   DateRange,
   AnalyticsFilter,
+  AnalyticsResponse,
 } from '@cc-task-manager/schemas';
+
+export { TrendDirection, GroupByOption } from '@cc-task-manager/schemas';
