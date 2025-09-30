@@ -114,7 +114,7 @@ export const TaskQueryFiltersSchema = z.object({
   search: z.string().max(100, 'Search query must not exceed 100 characters').optional(),
   page: z.number().positive('Page must be positive').default(1),
   limit: z.number().positive('Limit must be positive').max(100, 'Limit must not exceed 100').default(20),
-  sortBy: z.enum(['createdAt', 'updatedAt', 'dueDate', 'priority', 'status', 'title']).default('createdAt'),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'dueDate', 'priority', 'status', 'title', 'completedAt']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
