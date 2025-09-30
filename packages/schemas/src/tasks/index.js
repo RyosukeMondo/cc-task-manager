@@ -13,13 +13,6 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.workerConfig = void 0;
-__exportStar(require("./worker.schemas"), exports);
-var worker_config_1 = require("./worker.config");
-Object.defineProperty(exports, "workerConfig", { enumerable: true, get: function () { return __importDefault(worker_config_1).default; } });
-__exportStar(require("./tasks/task-schemas"), exports);
+__exportStar(require("./task-schemas"), exports);
 //# sourceMappingURL=index.js.map

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ProcessConfigSchema, ClaudeCodeOptionsSchema, TaskExecutionRequestSchema, WorkerConfigSchema, TaskStatusSchema } from '@cc-task-manager/schemas';
-export { TaskState } from '@cc-task-manager/schemas';
+import { ProcessConfigSchema, ClaudeCodeOptionsSchema, TaskExecutionRequestSchema, WorkerConfigSchema, TaskStatusSchema } from '../../schemas/dist';
+export { TaskState } from '../../schemas/dist';
 export type ProcessConfig = z.infer<typeof ProcessConfigSchema>;
 export type ClaudeCodeOptions = z.infer<typeof ClaudeCodeOptionsSchema>;
 export type TaskExecutionRequest = z.infer<typeof TaskExecutionRequestSchema>;

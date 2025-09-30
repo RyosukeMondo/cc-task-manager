@@ -73,24 +73,24 @@ export declare const CreateTaskSchema: z.ZodObject<{
     tags?: string[];
     title?: string;
     projectId?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
         retryAttempts?: number;
     };
+    prompt?: string;
     scheduledAt?: string;
 }, {
     description?: string;
     tags?: string[];
     title?: string;
     projectId?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
         retryAttempts?: number;
     };
+    prompt?: string;
     scheduledAt?: string;
 }>;
 export declare const UpdateTaskSchema: z.ZodObject<{
@@ -230,6 +230,13 @@ export declare const TaskResponseSchema: z.ZodObject<{
     updatedAt?: string;
     priority?: TaskPriority;
     completedAt?: string;
+    progress?: number;
+    errorMessage?: string;
+    config?: {
+        priority?: TaskPriority;
+        timeout?: number;
+        retryAttempts?: number;
+    };
     createdBy?: {
         email?: string;
         id?: string;
@@ -242,13 +249,6 @@ export declare const TaskResponseSchema: z.ZodObject<{
     startedAt?: string;
     retryCount?: number;
     prompt?: string;
-    progress?: number;
-    errorMessage?: string;
-    config?: {
-        priority?: TaskPriority;
-        timeout?: number;
-        retryAttempts?: number;
-    };
     scheduledAt?: string;
     estimatedDuration?: number;
     actualDuration?: number;
@@ -262,6 +262,13 @@ export declare const TaskResponseSchema: z.ZodObject<{
     updatedAt?: string;
     priority?: TaskPriority;
     completedAt?: string;
+    progress?: number;
+    errorMessage?: string;
+    config?: {
+        priority?: TaskPriority;
+        timeout?: number;
+        retryAttempts?: number;
+    };
     createdBy?: {
         email?: string;
         id?: string;
@@ -274,13 +281,6 @@ export declare const TaskResponseSchema: z.ZodObject<{
     startedAt?: string;
     retryCount?: number;
     prompt?: string;
-    progress?: number;
-    errorMessage?: string;
-    config?: {
-        priority?: TaskPriority;
-        timeout?: number;
-        retryAttempts?: number;
-    };
     scheduledAt?: string;
     estimatedDuration?: number;
     actualDuration?: number;
@@ -350,6 +350,13 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         updatedAt?: string;
         priority?: TaskPriority;
         completedAt?: string;
+        progress?: number;
+        errorMessage?: string;
+        config?: {
+            priority?: TaskPriority;
+            timeout?: number;
+            retryAttempts?: number;
+        };
         createdBy?: {
             email?: string;
             id?: string;
@@ -362,13 +369,6 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         startedAt?: string;
         retryCount?: number;
         prompt?: string;
-        progress?: number;
-        errorMessage?: string;
-        config?: {
-            priority?: TaskPriority;
-            timeout?: number;
-            retryAttempts?: number;
-        };
         scheduledAt?: string;
         estimatedDuration?: number;
         actualDuration?: number;
@@ -382,6 +382,13 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         updatedAt?: string;
         priority?: TaskPriority;
         completedAt?: string;
+        progress?: number;
+        errorMessage?: string;
+        config?: {
+            priority?: TaskPriority;
+            timeout?: number;
+            retryAttempts?: number;
+        };
         createdBy?: {
             email?: string;
             id?: string;
@@ -394,13 +401,6 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         startedAt?: string;
         retryCount?: number;
         prompt?: string;
-        progress?: number;
-        errorMessage?: string;
-        config?: {
-            priority?: TaskPriority;
-            timeout?: number;
-            retryAttempts?: number;
-        };
         scheduledAt?: string;
         estimatedDuration?: number;
         actualDuration?: number;
@@ -438,6 +438,13 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         updatedAt?: string;
         priority?: TaskPriority;
         completedAt?: string;
+        progress?: number;
+        errorMessage?: string;
+        config?: {
+            priority?: TaskPriority;
+            timeout?: number;
+            retryAttempts?: number;
+        };
         createdBy?: {
             email?: string;
             id?: string;
@@ -450,13 +457,6 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         startedAt?: string;
         retryCount?: number;
         prompt?: string;
-        progress?: number;
-        errorMessage?: string;
-        config?: {
-            priority?: TaskPriority;
-            timeout?: number;
-            retryAttempts?: number;
-        };
         scheduledAt?: string;
         estimatedDuration?: number;
         actualDuration?: number;
@@ -480,6 +480,13 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         updatedAt?: string;
         priority?: TaskPriority;
         completedAt?: string;
+        progress?: number;
+        errorMessage?: string;
+        config?: {
+            priority?: TaskPriority;
+            timeout?: number;
+            retryAttempts?: number;
+        };
         createdBy?: {
             email?: string;
             id?: string;
@@ -492,13 +499,6 @@ export declare const PaginatedTaskResponseSchema: z.ZodObject<{
         startedAt?: string;
         retryCount?: number;
         prompt?: string;
-        progress?: number;
-        errorMessage?: string;
-        config?: {
-            priority?: TaskPriority;
-            timeout?: number;
-            retryAttempts?: number;
-        };
         scheduledAt?: string;
         estimatedDuration?: number;
         actualDuration?: number;
@@ -537,13 +537,13 @@ export declare const BulkTaskOperationSchema: z.ZodObject<{
     }>>;
 }, "strict", z.ZodTypeAny, {
     taskIds?: string[];
-    operation?: "delete" | "retry" | "cancel";
+    operation?: "delete" | "cancel" | "retry";
     config?: {
         force?: boolean;
     };
 }, {
     taskIds?: string[];
-    operation?: "delete" | "retry" | "cancel";
+    operation?: "delete" | "cancel" | "retry";
     config?: {
         force?: boolean;
     };
@@ -580,12 +580,12 @@ export declare const validateCreateTask: (data: unknown) => {
     tags?: string[];
     title?: string;
     projectId?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
         retryAttempts?: number;
     };
+    prompt?: string;
     scheduledAt?: string;
 };
 export declare const validateUpdateTask: (data: unknown) => {
@@ -621,6 +621,13 @@ export declare const validateTaskResponse: (data: unknown) => {
     updatedAt?: string;
     priority?: TaskPriority;
     completedAt?: string;
+    progress?: number;
+    errorMessage?: string;
+    config?: {
+        priority?: TaskPriority;
+        timeout?: number;
+        retryAttempts?: number;
+    };
     createdBy?: {
         email?: string;
         id?: string;
@@ -633,13 +640,6 @@ export declare const validateTaskResponse: (data: unknown) => {
     startedAt?: string;
     retryCount?: number;
     prompt?: string;
-    progress?: number;
-    errorMessage?: string;
-    config?: {
-        priority?: TaskPriority;
-        timeout?: number;
-        retryAttempts?: number;
-    };
     scheduledAt?: string;
     estimatedDuration?: number;
     actualDuration?: number;
@@ -651,7 +651,7 @@ export declare const validateTaskStatusUpdate: (data: unknown) => {
 };
 export declare const validateBulkTaskOperation: (data: unknown) => {
     taskIds?: string[];
-    operation?: "delete" | "retry" | "cancel";
+    operation?: "delete" | "cancel" | "retry";
     config?: {
         force?: boolean;
     };
@@ -661,24 +661,24 @@ export declare const safeParseCreateTask: (data: unknown) => z.SafeParseReturnTy
     tags?: string[];
     title?: string;
     projectId?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
         retryAttempts?: number;
     };
+    prompt?: string;
     scheduledAt?: string;
 }, {
     description?: string;
     tags?: string[];
     title?: string;
     projectId?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
         retryAttempts?: number;
     };
+    prompt?: string;
     scheduledAt?: string;
 }>;
 export declare const safeParseUpdateTask: (data: unknown) => z.SafeParseReturnType<{
@@ -750,48 +750,48 @@ export declare const CreateTaskSchemaWithBusinessRules: z.ZodEffects<z.ZodObject
     tags?: string[];
     title?: string;
     projectId?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
         retryAttempts?: number;
     };
+    prompt?: string;
     scheduledAt?: string;
 }, {
     description?: string;
     tags?: string[];
     title?: string;
     projectId?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
         retryAttempts?: number;
     };
+    prompt?: string;
     scheduledAt?: string;
 }>, {
     description?: string;
     tags?: string[];
     title?: string;
     projectId?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
         retryAttempts?: number;
     };
+    prompt?: string;
     scheduledAt?: string;
 }, {
     description?: string;
     tags?: string[];
     title?: string;
     projectId?: string;
-    prompt?: string;
     config?: {
         priority?: TaskPriority;
         timeout?: number;
         retryAttempts?: number;
     };
+    prompt?: string;
     scheduledAt?: string;
 }>;
 export declare const UpdateTaskSchemaWithBusinessRules: z.ZodEffects<z.ZodObject<{

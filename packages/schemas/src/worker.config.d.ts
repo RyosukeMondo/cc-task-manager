@@ -1,4 +1,6 @@
 declare const _default: (() => {
+    queueName?: string;
+    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
@@ -8,16 +10,16 @@ declare const _default: (() => {
     fileWatchTimeoutMs?: number;
     inactivityTimeoutMs?: number;
     wrapperWorkingDir?: string;
-    queueName?: string;
     redisHost?: string;
     redisPort?: number;
     redisPassword?: string;
-    logLevel?: "fatal" | "error" | "warn" | "info" | "debug" | "trace";
     enableDetailedLogs?: boolean;
     sessionLogsDir?: string;
     awaitWriteFinish?: boolean;
     awaitWriteFinishMs?: number;
 }) & import("node_modules/@nestjs/config").ConfigFactoryKeyHost<{
+    queueName?: string;
+    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
@@ -27,11 +29,9 @@ declare const _default: (() => {
     fileWatchTimeoutMs?: number;
     inactivityTimeoutMs?: number;
     wrapperWorkingDir?: string;
-    queueName?: string;
     redisHost?: string;
     redisPort?: number;
     redisPassword?: string;
-    logLevel?: "fatal" | "error" | "warn" | "info" | "debug" | "trace";
     enableDetailedLogs?: boolean;
     sessionLogsDir?: string;
     awaitWriteFinish?: boolean;

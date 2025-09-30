@@ -12,18 +12,31 @@ var ContractValidationPipe_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContractValidationPipe = void 0;
 const common_1 = require("@nestjs/common");
-const ContractRegistry_1 = require("./ContractRegistry");
 let ContractValidationPipe = ContractValidationPipe_1 = class ContractValidationPipe {
-    constructor(registry, options) {
-        this.registry = registry;
+    constructor(registryOrSchema, options) {
+        this.registryOrSchema = registryOrSchema;
         this.options = options;
         this.logger = new common_1.Logger(ContractValidationPipe_1.name);
     }
     transform(value, metadata) {
-        const location = this.options.location || this.inferLocation(metadata.type);
-        const name = this.options.contractName;
-        const version = this.options.version || this.getLatestVersionOrThrow(name);
-        const result = this.registry.validateAgainstContract(name, version, value);
+        if (this.registryOrSchema && typeof this.registryOrSchema.parse === 'function') {
+            try {
+                return this.registryOrSchema.parse(value);
+            }
+            catch (error) {
+                throw new common_1.BadRequestException({
+                    error: 'ContractValidationError',
+                    contract: { name: 'inline-schema', version: '1.0.0' },
+                    location: this.inferLocation(metadata.type),
+                    message: error.message || 'Validation failed',
+                });
+            }
+        }
+        const registry = this.registryOrSchema;
+        const location = this.options?.location || this.inferLocation(metadata.type);
+        const name = this.options?.contractName || 'unknown';
+        const version = this.options?.version || this.getLatestVersionOrThrow(name);
+        const result = registry.validateAgainstContract(name, version, value);
         if (!result.success) {
             const details = {
                 error: 'ContractValidationError',
@@ -44,7 +57,8 @@ let ContractValidationPipe = ContractValidationPipe_1 = class ContractValidation
         return 'body';
     }
     getLatestVersionOrThrow(name) {
-        const latest = this.registry.getLatestContract(name);
+        const registry = this.registryOrSchema;
+        const latest = registry.getLatestContract(name);
         if (!latest) {
             const msg = `Contract not found: ${name}`;
             this.logger.error(msg);
@@ -61,6 +75,6 @@ let ContractValidationPipe = ContractValidationPipe_1 = class ContractValidation
 exports.ContractValidationPipe = ContractValidationPipe;
 exports.ContractValidationPipe = ContractValidationPipe = ContractValidationPipe_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [ContractRegistry_1.ContractRegistry, Object])
+    __metadata("design:paramtypes", [Object, Object])
 ], ContractValidationPipe);
 //# sourceMappingURL=ContractValidationPipe.js.map

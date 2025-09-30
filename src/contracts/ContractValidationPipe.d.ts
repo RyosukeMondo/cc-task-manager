@@ -17,10 +17,10 @@ export interface ContractValidationErrorDetails {
     message: string;
 }
 export declare class ContractValidationPipe implements PipeTransform<any> {
-    private readonly registry;
-    private readonly options;
+    private readonly registryOrSchema;
+    private readonly options?;
     private readonly logger;
-    constructor(registry: ContractRegistry, options: ContractValidationOptions);
+    constructor(registryOrSchema: ContractRegistry | any, options?: ContractValidationOptions);
     transform(value: any, metadata: ArgumentMetadata): any;
     private inferLocation;
     private getLatestVersionOrThrow;

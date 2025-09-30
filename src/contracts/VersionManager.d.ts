@@ -183,13 +183,13 @@ export declare const VersionComplianceStatusSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         description?: string;
         type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
-        severity?: "low" | "medium" | "high" | "critical";
+        severity?: "low" | "high" | "critical" | "medium";
         remediation?: string;
         deadline?: Date;
     }, {
         description?: string;
         type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
-        severity?: "low" | "medium" | "high" | "critical";
+        severity?: "low" | "high" | "critical" | "medium";
         remediation?: string;
         deadline?: Date;
     }>, "many">;
@@ -202,7 +202,7 @@ export declare const VersionComplianceStatusSchema: z.ZodObject<{
     violations?: {
         description?: string;
         type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
-        severity?: "low" | "medium" | "high" | "critical";
+        severity?: "low" | "high" | "critical" | "medium";
         remediation?: string;
         deadline?: Date;
     }[];
@@ -215,7 +215,7 @@ export declare const VersionComplianceStatusSchema: z.ZodObject<{
     violations?: {
         description?: string;
         type?: "deprecation" | "compatibility" | "lifecycle" | "policy";
-        severity?: "low" | "medium" | "high" | "critical";
+        severity?: "low" | "high" | "critical" | "medium";
         remediation?: string;
         deadline?: Date;
     }[];
