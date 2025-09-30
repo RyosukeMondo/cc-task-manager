@@ -1,12 +1,9 @@
 /**
- * Task types re-exported from shared schemas package
+ * Task type definitions
+ * Re-exports from shared schemas package to ensure frontend-backend consistency
  * Provides convenient access to task-related types while maintaining a single source of truth
  */
 
-// Core task enums
-export { TaskStatus, TaskPriority } from '@cc-task-manager/schemas';
-
-// Task schemas and types
 export type {
   TaskResponseDto as Task,
   CreateTaskDto as TaskCreate,
@@ -15,4 +12,9 @@ export type {
   PaginatedTaskResponseDto as TaskListResponse,
   TaskStatusUpdateDto as TaskStatusUpdate,
   TaskMetricsDto as TaskMetrics,
+} from '@cc-task-manager/schemas';
+
+export {
+  TaskStatus,
+  TaskPriority
 } from '@cc-task-manager/schemas';

@@ -21,6 +21,7 @@ export { TaskDisplay } from './TaskDisplay';
 export { TaskForm } from './TaskForm';
 export { TaskEditor } from './TaskEditor';
 export { TaskList } from './TaskList';
+export { TaskItem } from './TaskItem';
 
 // Re-export types for convenience
 export type { TaskStatus, TaskExecutionRequest, TaskState } from '@cc-task-manager/types';

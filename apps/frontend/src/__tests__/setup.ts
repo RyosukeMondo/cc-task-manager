@@ -125,3 +125,10 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalError
 })
+
+// Mock lucide-react icons
+jest.mock('lucide-react', () => ({
+  ArrowUpDown: (props: any) => React.createElement('div', { 'data-testid': 'arrow-up-down', ...props }),
+  ArrowUp: (props: any) => React.createElement('div', { 'data-testid': 'arrow-up', ...props }),
+  ArrowDown: (props: any) => React.createElement('div', { 'data-testid': 'arrow-down', ...props }),
+}))
