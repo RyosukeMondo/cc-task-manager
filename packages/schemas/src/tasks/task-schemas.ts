@@ -1,559 +1,261 @@
 import { z } from 'zod';
 
 /**
- * Task Schema Module - Comprehensive Zod validation schemas for all task CRUD operations
- *
- * Following SOLID principles:
- * - SRP: Each schema has a single, focused validation responsibility
- * - OCP: Schemas are extensible through composition, closed for modification
- * - LSP: All task schemas can be substituted where base schemas are expected
- * - ISP: Specific validation interfaces for different operations
- * - DIP: Schemas depend on abstractions (Zod primitives) not concretions
- *
- * KISS Principle: Simple, focused validation rules that are easy to understand and maintain
- * DRY/SSOT: Single source of truth for all task validation logic across the application
- * Fail-fast: Comprehensive validation that catches errors early in the request pipeline
- * Contract-driven: Schema-first design that generates TypeScript types automatically
- */
-
-// ============================= ENUMERATIONS =============================
-
-/**
- * Task priority enumeration - Interface Segregation Principle applied
- * Separate interface for priority-specific validation
+ * Task Priority enumeration for schema validation
+ * Defines all supported priority levels for task scheduling and processing
  */
 export enum TaskPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  URGENT = 'urgent',
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  URGENT = 'URGENT'
 }
 
 /**
- * Task status enumeration - Single Responsibility for status validation
- * Comprehensive lifecycle states for task management
+ * Task Status enumeration for schema validation
+ * Defines all possible states in the task lifecycle
  */
 export enum TaskStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  CANCELLED = 'cancelled',
-  ON_HOLD = 'on_hold',
-  REVIEW = 'review',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
+  PENDING = 'PENDING',
+  RUNNING = 'RUNNING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED'
 }
 
 /**
- * Task category enumeration - Single Responsibility for categorization
- * Clear separation of different types of work
+ * Task configuration schema for execution parameters
+ * Validates all optional configuration settings for task execution
  */
-export enum TaskCategory {
-  DEVELOPMENT = 'development',
-  TESTING = 'testing',
-  DOCUMENTATION = 'documentation',
-  RESEARCH = 'research',
-  BUG_FIX = 'bug_fix',
-  FEATURE = 'feature',
-  MAINTENANCE = 'maintenance',
-  DEPLOYMENT = 'deployment',
-  OTHER = 'other',
-}
-
-// ============================= BASE SCHEMAS =============================
+export const TaskConfigSchema = z.object({
+  timeout: z.number().int().min(1).max(3600).optional(),
+  retryAttempts: z.number().int().min(0).max(5).optional(),
+  priority: z.nativeEnum(TaskPriority).optional()
+}).strict();
 
 /**
- * UUID validation schema - DRY principle applied
- * Reusable validation for all UUID fields
+ * User reference schema for task ownership
+ * Minimal user information for task attribution
  */
-export const UuidSchema = z.string().uuid('Must be a valid UUID');
+export const TaskUserSchema = z.object({
+  id: z.string().uuid(),
+  username: z.string(),
+  email: z.string().email()
+}).strict();
 
 /**
- * Positive number schema - DRY principle applied
- * Reusable validation for all positive numeric fields
+ * Project reference schema for task organization
+ * Minimal project information for task categorization
  */
-export const PositiveNumberSchema = z.number().positive('Must be a positive number');
+export const TaskProjectSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string()
+}).strict();
 
 /**
- * Non-empty string schema - DRY principle applied
- * Reusable validation for required string fields
- */
-export const NonEmptyStringSchema = z.string().min(1, 'Cannot be empty');
-
-/**
- * Task title validation schema - Single Responsibility
- * Focused validation for task titles with length constraints
- */
-export const TaskTitleSchema = NonEmptyStringSchema.max(200, 'Title must not exceed 200 characters');
-
-/**
- * Task description validation schema - Single Responsibility
- * Focused validation for task descriptions with length constraints
- */
-export const TaskDescriptionSchema = z.string().max(2000, 'Description must not exceed 2000 characters').optional();
-
-/**
- * Task tag validation schema - Single Responsibility
- * Focused validation for individual tags
- */
-export const TaskTagSchema = z.string().max(50, 'Tag must not exceed 50 characters');
-
-/**
- * Task tags array validation schema - Single Responsibility
- * Focused validation for tag collections
- */
-export const TaskTagsSchema = z.array(TaskTagSchema).default([]);
-
-/**
- * Task metadata validation schema - Open/Closed Principle applied
- * Extensible metadata structure without modifying core schema
- */
-export const TaskMetadataSchema = z.record(z.any()).optional();
-
-// ============================= CORE ENTITY SCHEMAS =============================
-
-/**
- * Base task entity schema - Single Responsibility for core task structure
- * Complete task representation with all standard fields
- * Serves as SSOT for task entity validation
- */
-export const TaskEntitySchema = z.object({
-  id: UuidSchema,
-  title: TaskTitleSchema,
-  description: TaskDescriptionSchema,
-  status: z.nativeEnum(TaskStatus),
-  priority: z.nativeEnum(TaskPriority),
-  category: z.nativeEnum(TaskCategory),
-  assigneeId: UuidSchema.optional(),
-  createdById: UuidSchema,
-  projectId: UuidSchema.optional(),
-  parentTaskId: UuidSchema.optional(),
-  estimatedHours: PositiveNumberSchema.optional(),
-  actualHours: PositiveNumberSchema.optional(),
-  dueDate: z.date().optional(),
-  startDate: z.date().optional(),
-  completedAt: z.date().optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  tags: TaskTagsSchema,
-  metadata: TaskMetadataSchema,
-});
-
-// ============================= CRUD OPERATION SCHEMAS =============================
-
-/**
- * Create Task DTO Schema - Interface Segregation Principle applied
- * Specific validation interface for task creation operations
- * Fail-fast validation for required creation fields
+ * Create task request schema for task creation endpoints
+ * Validates all required and optional fields for new task creation
  */
 export const CreateTaskSchema = z.object({
-  title: TaskTitleSchema,
-  description: TaskDescriptionSchema,
-  priority: z.nativeEnum(TaskPriority).default(TaskPriority.MEDIUM),
-  category: z.nativeEnum(TaskCategory),
-  assigneeId: UuidSchema.optional(),
-  projectId: UuidSchema.optional(),
-  parentTaskId: UuidSchema.optional(),
-  estimatedHours: PositiveNumberSchema.optional(),
-  dueDate: z.date().optional(),
-  startDate: z.date().optional(),
-  tags: TaskTagsSchema,
-  metadata: TaskMetadataSchema,
-});
+  title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
+  description: z.string().max(1000, 'Description must be 1000 characters or less').optional(),
+  prompt: z.string().min(1, 'Prompt is required').max(10000, 'Prompt must be 10000 characters or less'),
+  config: TaskConfigSchema.optional(),
+  projectId: z.string().uuid('Invalid project ID format').optional(),
+  tags: z.array(z.string().max(50, 'Tag must be 50 characters or less')).max(10, 'Maximum 10 tags allowed').optional(),
+  scheduledAt: z.string().datetime('Invalid datetime format').optional()
+}).strict();
 
 /**
- * Update Task DTO Schema - Interface Segregation Principle applied
- * Specific validation interface for task update operations
- * All fields optional for partial updates
+ * Update task request schema for task modification endpoints
+ * Validates partial updates with same validation rules as creation
  */
 export const UpdateTaskSchema = z.object({
-  title: TaskTitleSchema.optional(),
-  description: TaskDescriptionSchema,
-  status: z.nativeEnum(TaskStatus).optional(),
-  priority: z.nativeEnum(TaskPriority).optional(),
-  category: z.nativeEnum(TaskCategory).optional(),
-  assigneeId: UuidSchema.optional(),
-  projectId: UuidSchema.optional(),
-  parentTaskId: UuidSchema.optional(),
-  estimatedHours: PositiveNumberSchema.optional(),
-  actualHours: PositiveNumberSchema.optional(),
-  dueDate: z.date().optional(),
-  startDate: z.date().optional(),
-  tags: TaskTagsSchema.optional(),
-  metadata: TaskMetadataSchema,
-});
+  title: z.string().min(1, 'Title cannot be empty').max(200, 'Title must be 200 characters or less').optional(),
+  description: z.string().max(1000, 'Description must be 1000 characters or less').optional(),
+  config: TaskConfigSchema.optional(),
+  tags: z.array(z.string().max(50, 'Tag must be 50 characters or less')).max(10, 'Maximum 10 tags allowed').optional(),
+  scheduledAt: z.string().datetime('Invalid datetime format').optional()
+}).strict();
 
 /**
- * Task Query Parameters Schema - Interface Segregation Principle applied
- * Specific validation interface for task search and filtering operations
- * Comprehensive filtering, sorting, and pagination support
+ * Task query schema for filtering and pagination
+ * Supports comprehensive filtering, sorting, and pagination options
  */
 export const TaskQuerySchema = z.object({
-  // Filtering parameters
-  status: z.nativeEnum(TaskStatus).optional(),
-  priority: z.nativeEnum(TaskPriority).optional(),
-  category: z.nativeEnum(TaskCategory).optional(),
-  assigneeId: UuidSchema.optional(),
-  createdById: UuidSchema.optional(),
-  projectId: UuidSchema.optional(),
-  parentTaskId: UuidSchema.optional(),
-
-  // Date range filtering
-  dueDateFrom: z.date().optional(),
-  dueDateTo: z.date().optional(),
-  createdFrom: z.date().optional(),
-  createdTo: z.date().optional(),
-
-  // Tag and text search
-  tags: z.array(z.string()).optional(),
-  search: z.string().max(100, 'Search query must not exceed 100 characters').optional(),
-
-  // Pagination parameters
-  page: z.number().positive('Page must be positive').default(1),
-  limit: z.number().positive('Limit must be positive').max(100, 'Limit must not exceed 100').default(20),
-
-  // Sorting parameters
-  sortBy: z.enum(['createdAt', 'updatedAt', 'dueDate', 'priority', 'status', 'title']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-});
+  page: z.number().int().min(1, 'Page must be at least 1').default(1),
+  limit: z.number().int().min(1, 'Limit must be at least 1').max(100, 'Limit cannot exceed 100').default(20),
+  status: z.array(z.nativeEnum(TaskStatus)).optional(),
+  priority: z.array(z.nativeEnum(TaskPriority)).optional(),
+  projectId: z.string().uuid('Invalid project ID format').optional(),
+  createdAfter: z.string().datetime('Invalid datetime format').optional(),
+  createdBefore: z.string().datetime('Invalid datetime format').optional(),
+  search: z.string().max(100, 'Search term must be 100 characters or less').optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'priority', 'status', 'title']).default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc')
+}).strict();
 
 /**
- * Task Response DTO Schema - Interface Segregation Principle applied
- * Specific validation interface for task API responses
- * Extends entity schema with additional computed fields
+ * Task response schema for API responses
+ * Complete task representation with all metadata and relationships
  */
-export const TaskResponseSchema = TaskEntitySchema.extend({
-  // Computed fields for response enrichment
-  isOverdue: z.boolean().optional(),
-  completionPercentage: z.number().min(0).max(100).optional(),
-  timeSpent: z.number().nonnegative().optional(),
-  subtaskCount: z.number().nonnegative().optional(),
-  commentCount: z.number().nonnegative().optional(),
-  attachmentCount: z.number().nonnegative().optional(),
-});
-
-// ============================= SUPPORTING ENTITY SCHEMAS =============================
+export const TaskResponseSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  description: z.string().nullable(),
+  prompt: z.string(),
+  status: z.nativeEnum(TaskStatus),
+  priority: z.nativeEnum(TaskPriority),
+  progress: z.number().min(0).max(1).nullable(),
+  config: TaskConfigSchema.nullable(),
+  createdBy: TaskUserSchema,
+  project: TaskProjectSchema.nullable(),
+  tags: z.array(z.string()),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  scheduledAt: z.string().datetime().nullable(),
+  startedAt: z.string().datetime().nullable(),
+  completedAt: z.string().datetime().nullable(),
+  estimatedDuration: z.number().min(0).nullable(),
+  actualDuration: z.number().min(0).nullable(),
+  errorMessage: z.string().nullable(),
+  retryCount: z.number().int().min(0).default(0)
+}).strict();
 
 /**
- * Task Comment Schema - Single Responsibility for comment validation
- * Focused validation for task discussion features
+ * Paginated task response schema for list endpoints
+ * Includes pagination metadata and task results
  */
-export const TaskCommentSchema = z.object({
-  id: UuidSchema,
-  taskId: UuidSchema,
-  authorId: UuidSchema,
-  content: NonEmptyStringSchema.max(1000, 'Comment content must not exceed 1000 characters'),
-  parentCommentId: UuidSchema.optional(),
-  isEdited: z.boolean().default(false),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
+export const PaginatedTaskResponseSchema = z.object({
+  data: z.array(TaskResponseSchema),
+  pagination: z.object({
+    page: z.number().int(),
+    limit: z.number().int(),
+    total: z.number().int(),
+    totalPages: z.number().int(),
+    hasNext: z.boolean(),
+    hasPrev: z.boolean()
+  }).strict()
+}).strict();
 
 /**
- * Create Task Comment DTO Schema - Interface Segregation Principle applied
- * Specific validation for comment creation
+ * Task status update schema for status change operations
+ * Validates status transitions and optional metadata
  */
-export const CreateTaskCommentSchema = z.object({
-  content: NonEmptyStringSchema.max(1000, 'Comment content must not exceed 1000 characters'),
-  parentCommentId: UuidSchema.optional(),
-});
+export const TaskStatusUpdateSchema = z.object({
+  status: z.nativeEnum(TaskStatus),
+  progress: z.number().min(0).max(1).optional(),
+  errorMessage: z.string().optional()
+}).strict();
 
 /**
- * Update Task Comment DTO Schema - Interface Segregation Principle applied
- * Specific validation for comment updates
- */
-export const UpdateTaskCommentSchema = z.object({
-  content: NonEmptyStringSchema.max(1000, 'Comment content must not exceed 1000 characters'),
-});
-
-/**
- * Task Attachment Schema - Single Responsibility for attachment validation
- * Focused validation for file attachment features
- */
-export const TaskAttachmentSchema = z.object({
-  id: UuidSchema,
-  taskId: UuidSchema,
-  uploadedById: UuidSchema,
-  fileName: NonEmptyStringSchema.max(255, 'File name must not exceed 255 characters'),
-  originalName: NonEmptyStringSchema.max(255, 'Original name must not exceed 255 characters'),
-  mimeType: NonEmptyStringSchema,
-  fileSize: PositiveNumberSchema,
-  filePath: NonEmptyStringSchema,
-  createdAt: z.date(),
-});
-
-/**
- * Task Time Log Schema - Single Responsibility for time tracking validation
- * Focused validation for time logging features
- */
-export const TaskTimeLogSchema = z.object({
-  id: UuidSchema,
-  taskId: UuidSchema,
-  userId: UuidSchema,
-  description: z.string().max(500, 'Description must not exceed 500 characters').optional(),
-  hoursSpent: PositiveNumberSchema,
-  dateLogged: z.date(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-/**
- * Create Task Time Log DTO Schema - Interface Segregation Principle applied
- * Specific validation for time log creation
- */
-export const CreateTaskTimeLogSchema = z.object({
-  description: z.string().max(500, 'Description must not exceed 500 characters').optional(),
-  hoursSpent: PositiveNumberSchema,
-  dateLogged: z.date(),
-});
-
-// ============================= BULK OPERATION SCHEMAS =============================
-
-/**
- * Bulk Task Operation Schema - Single Responsibility for bulk operations
- * Focused validation for batch task operations
+ * Bulk task operation schema for batch operations
+ * Supports bulk updates, deletions, and status changes
  */
 export const BulkTaskOperationSchema = z.object({
-  taskIds: z.array(UuidSchema).min(1, 'At least one task ID is required'),
-  operation: z.enum(['delete', 'updateStatus', 'updatePriority', 'updateAssignee', 'addTags', 'removeTags']),
-  data: z.record(z.any()).optional(),
-});
-
-// ============================= STATISTICS AND REPORTING SCHEMAS =============================
-
-/**
- * Task Statistics Schema - Single Responsibility for reporting validation
- * Focused validation for task analytics and reporting
- */
-export const TaskStatisticsSchema = z.object({
-  totalTasks: z.number().nonnegative(),
-  tasksByStatus: z.record(z.nativeEnum(TaskStatus), z.number().nonnegative()),
-  tasksByPriority: z.record(z.nativeEnum(TaskPriority), z.number().nonnegative()),
-  tasksByCategory: z.record(z.nativeEnum(TaskCategory), z.number().nonnegative()),
-  overdueTasks: z.number().nonnegative(),
-  completedThisWeek: z.number().nonnegative(),
-  completedThisMonth: z.number().nonnegative(),
-  averageCompletionTime: z.number().nonnegative().optional(),
-  totalHoursLogged: z.number().nonnegative().optional(),
-});
-
-// ============================= CONFIGURATION SCHEMAS =============================
+  taskIds: z.array(z.string().uuid()).min(1, 'At least one task ID required').max(100, 'Maximum 100 tasks per operation'),
+  operation: z.enum(['delete', 'cancel', 'retry']),
+  config: z.object({
+    force: z.boolean().default(false)
+  }).optional()
+}).strict();
 
 /**
- * Task Configuration Schema - Single Responsibility for task settings
- * Focused validation for task-related configuration
+ * Task metrics schema for analytics and monitoring
+ * Aggregated statistics for task performance tracking
  */
-export const TaskConfigurationSchema = z.object({
-  defaultPriority: z.nativeEnum(TaskPriority).default(TaskPriority.MEDIUM),
-  defaultCategory: z.nativeEnum(TaskCategory).default(TaskCategory.OTHER),
-  autoAssignCreator: z.boolean().default(false),
-  requireEstimation: z.boolean().default(false),
-  enableTimeTracking: z.boolean().default(true),
-  enableComments: z.boolean().default(true),
-  enableAttachments: z.boolean().default(true),
-  maxAttachmentSize: PositiveNumberSchema.default(10485760), // 10MB
-  allowedAttachmentTypes: z.array(z.string()).default(['image/*', 'application/pdf', 'text/*']),
-});
+export const TaskMetricsSchema = z.object({
+  totalTasks: z.number().int().min(0),
+  completedTasks: z.number().int().min(0),
+  failedTasks: z.number().int().min(0),
+  averageDuration: z.number().min(0).nullable(),
+  successRate: z.number().min(0).max(1)
+}).strict();
 
-// ============================= TYPESCRIPT TYPE EXPORTS =============================
-
-/**
- * TypeScript types derived from Zod schemas - Contract-driven type generation
- * Automatic type safety across the application
- */
-export type TaskEntity = z.infer<typeof TaskEntitySchema>;
+// Type exports for TypeScript usage
 export type CreateTaskDto = z.infer<typeof CreateTaskSchema>;
 export type UpdateTaskDto = z.infer<typeof UpdateTaskSchema>;
 export type TaskQueryDto = z.infer<typeof TaskQuerySchema>;
 export type TaskResponseDto = z.infer<typeof TaskResponseSchema>;
-export type TaskComment = z.infer<typeof TaskCommentSchema>;
-export type CreateTaskCommentDto = z.infer<typeof CreateTaskCommentSchema>;
-export type UpdateTaskCommentDto = z.infer<typeof UpdateTaskCommentSchema>;
-export type TaskAttachment = z.infer<typeof TaskAttachmentSchema>;
-export type TaskTimeLog = z.infer<typeof TaskTimeLogSchema>;
-export type CreateTaskTimeLogDto = z.infer<typeof CreateTaskTimeLogSchema>;
+export type PaginatedTaskResponseDto = z.infer<typeof PaginatedTaskResponseSchema>;
+export type TaskStatusUpdateDto = z.infer<typeof TaskStatusUpdateSchema>;
 export type BulkTaskOperationDto = z.infer<typeof BulkTaskOperationSchema>;
-export type TaskStatistics = z.infer<typeof TaskStatisticsSchema>;
-export type TaskConfiguration = z.infer<typeof TaskConfigurationSchema>;
-
-// ============================= VALIDATION HELPER FUNCTIONS =============================
+export type TaskMetricsDto = z.infer<typeof TaskMetricsSchema>;
 
 /**
- * Fail-fast validation functions - Dependency Inversion Principle applied
- * High-level validation functions depend on Zod abstractions, not implementation details
- * Immediate error throwing for invalid data
+ * Validation helper functions for runtime type checking
+ * Provides fail-fast validation with detailed error messages
  */
-
-export const validateTaskEntity = (data: unknown): TaskEntity => {
-  return TaskEntitySchema.parse(data);
-};
-
-export const validateCreateTask = (data: unknown): CreateTaskDto => {
+export const validateCreateTask = (data: unknown) => {
   return CreateTaskSchema.parse(data);
 };
 
-export const validateUpdateTask = (data: unknown): UpdateTaskDto => {
+export const validateUpdateTask = (data: unknown) => {
   return UpdateTaskSchema.parse(data);
 };
 
-export const validateTaskQuery = (data: unknown): TaskQueryDto => {
+export const validateTaskQuery = (data: unknown) => {
   return TaskQuerySchema.parse(data);
 };
 
-export const validateTaskResponse = (data: unknown): TaskResponseDto => {
+export const validateTaskResponse = (data: unknown) => {
   return TaskResponseSchema.parse(data);
 };
 
-export const validateTaskComment = (data: unknown): TaskComment => {
-  return TaskCommentSchema.parse(data);
+export const validateTaskStatusUpdate = (data: unknown) => {
+  return TaskStatusUpdateSchema.parse(data);
 };
 
-export const validateCreateTaskComment = (data: unknown): CreateTaskCommentDto => {
-  return CreateTaskCommentSchema.parse(data);
-};
-
-export const validateUpdateTaskComment = (data: unknown): UpdateTaskCommentDto => {
-  return UpdateTaskCommentSchema.parse(data);
-};
-
-export const validateTaskAttachment = (data: unknown): TaskAttachment => {
-  return TaskAttachmentSchema.parse(data);
-};
-
-export const validateTaskTimeLog = (data: unknown): TaskTimeLog => {
-  return TaskTimeLogSchema.parse(data);
-};
-
-export const validateCreateTaskTimeLog = (data: unknown): CreateTaskTimeLogDto => {
-  return CreateTaskTimeLogSchema.parse(data);
-};
-
-export const validateBulkTaskOperation = (data: unknown): BulkTaskOperationDto => {
+export const validateBulkTaskOperation = (data: unknown) => {
   return BulkTaskOperationSchema.parse(data);
 };
 
-export const validateTaskStatistics = (data: unknown): TaskStatistics => {
-  return TaskStatisticsSchema.parse(data);
-};
-
-export const validateTaskConfiguration = (data: unknown): TaskConfiguration => {
-  return TaskConfigurationSchema.parse(data);
-};
-
-// ============================= SAFE VALIDATION FUNCTIONS =============================
-
 /**
- * Safe validation functions that return results instead of throwing
- * Non-throwing alternatives for scenarios where errors should be handled gracefully
+ * Safe parsing functions that return results instead of throwing
+ * Useful for optional validation scenarios
  */
-
-export const safeValidateCreateTask = (data: unknown): { success: true; data: CreateTaskDto } | { success: false; error: z.ZodError } => {
-  const result = CreateTaskSchema.safeParse(data);
-  return result.success ? { success: true, data: result.data } : { success: false, error: result.error };
+export const safeParseCreateTask = (data: unknown) => {
+  return CreateTaskSchema.safeParse(data);
 };
 
-export const safeValidateUpdateTask = (data: unknown): { success: true; data: UpdateTaskDto } | { success: false; error: z.ZodError } => {
-  const result = UpdateTaskSchema.safeParse(data);
-  return result.success ? { success: true, data: result.data } : { success: false, error: result.error };
+export const safeParseUpdateTask = (data: unknown) => {
+  return UpdateTaskSchema.safeParse(data);
 };
 
-export const safeValidateTaskQuery = (data: unknown): { success: true; data: TaskQueryDto } | { success: false; error: z.ZodError } => {
-  const result = TaskQuerySchema.safeParse(data);
-  return result.success ? { success: true, data: result.data } : { success: false, error: result.error };
-};
-
-// ============================= SCHEMA COMPOSITION UTILITIES =============================
-
-/**
- * Schema composition utilities following Open/Closed Principle
- * Allow extending schemas without modifying existing ones
- */
-
-/**
- * Create a task schema with additional fields
- * Allows extending base task schema for specific use cases
- */
-export const createExtendedTaskSchema = <T extends z.ZodRawShape>(extensions: T) => {
-  return TaskEntitySchema.extend(extensions);
+export const safeParseTaskQuery = (data: unknown) => {
+  return TaskQuerySchema.safeParse(data);
 };
 
 /**
- * Create a filtered task query schema
- * Allows creating specialized query schemas for specific endpoints
+ * Schema refinements for business logic validation
+ * Additional validation rules beyond basic type checking
  */
-export const createFilteredQuerySchema = (allowedFields: (keyof TaskQueryDto)[]) => {
-  const filteredShape = Object.fromEntries(
-    allowedFields.map(field => [field, TaskQuerySchema.shape[field as keyof typeof TaskQuerySchema.shape]])
-  ) as any;
-  return z.object(filteredShape);
-};
-
-/**
- * Partial schema creator for update operations
- * Generic utility for creating partial schemas from any base schema
- */
-export const createPartialSchema = <T extends z.ZodRawShape>(schema: z.ZodObject<T>) => {
-  return schema.partial();
-};
-
-// ============================= EXPORT ALL SCHEMAS =============================
-
-/**
- * Centralized export object for all task-related schemas
- * Single point of access following SSOT principle
- */
-export const TaskSchemas = {
-  // Core entities
-  TaskEntity: TaskEntitySchema,
-  CreateTask: CreateTaskSchema,
-  UpdateTask: UpdateTaskSchema,
-  TaskQuery: TaskQuerySchema,
-  TaskResponse: TaskResponseSchema,
-
-  // Supporting entities
-  TaskComment: TaskCommentSchema,
-  CreateTaskComment: CreateTaskCommentSchema,
-  UpdateTaskComment: UpdateTaskCommentSchema,
-  TaskAttachment: TaskAttachmentSchema,
-  TaskTimeLog: TaskTimeLogSchema,
-  CreateTaskTimeLog: CreateTaskTimeLogSchema,
-
-  // Operations
-  BulkTaskOperation: BulkTaskOperationSchema,
-  TaskStatistics: TaskStatisticsSchema,
-  TaskConfiguration: TaskConfigurationSchema,
-
-  // Validation functions
-  validate: {
-    taskEntity: validateTaskEntity,
-    createTask: validateCreateTask,
-    updateTask: validateUpdateTask,
-    taskQuery: validateTaskQuery,
-    taskResponse: validateTaskResponse,
-    taskComment: validateTaskComment,
-    createTaskComment: validateCreateTaskComment,
-    updateTaskComment: validateUpdateTaskComment,
-    taskAttachment: validateTaskAttachment,
-    taskTimeLog: validateTaskTimeLog,
-    createTaskTimeLog: validateCreateTaskTimeLog,
-    bulkTaskOperation: validateBulkTaskOperation,
-    taskStatistics: validateTaskStatistics,
-    taskConfiguration: validateTaskConfiguration,
+export const CreateTaskSchemaWithBusinessRules = CreateTaskSchema.refine(
+  (data) => {
+    // If scheduledAt is provided, it must be in the future
+    if (data.scheduledAt) {
+      const scheduledDate = new Date(data.scheduledAt);
+      return scheduledDate > new Date();
+    }
+    return true;
   },
+  {
+    message: 'Scheduled time must be in the future',
+    path: ['scheduledAt']
+  }
+);
 
-  // Safe validation functions
-  safeValidate: {
-    createTask: safeValidateCreateTask,
-    updateTask: safeValidateUpdateTask,
-    taskQuery: safeValidateTaskQuery,
+export const UpdateTaskSchemaWithBusinessRules = UpdateTaskSchema.refine(
+  (data) => {
+    // Similar future date validation for updates
+    if (data.scheduledAt) {
+      const scheduledDate = new Date(data.scheduledAt);
+      return scheduledDate > new Date();
+    }
+    return true;
   },
-
-  // Utilities
-  utils: {
-    createExtendedTaskSchema,
-    createFilteredQuerySchema,
-    createPartialSchema,
-  },
-} as const;
-
-export default TaskSchemas;
+  {
+    message: 'Scheduled time must be in the future',
+    path: ['scheduledAt']
+  }
+);

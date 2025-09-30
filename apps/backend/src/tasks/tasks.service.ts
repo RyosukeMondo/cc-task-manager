@@ -1,17 +1,27 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import {
+  TaskExceptionFactory,
+  TaskNotFoundException,
+  TaskValidationException,
+  TaskAccessForbiddenException,
+  TaskConflictException,
+  TaskStatusTransitionException,
+} from './exceptions/task-exceptions';
+import { JWTPayload } from '../schemas/auth.schemas';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TasksRepository, ITasksRepository } from './tasks.repository';
 import { QueueService } from '../queue/queue.service';
-import { 
-  TaskBase, 
-  CreateTask, 
-  UpdateTask, 
+import { TaskEventsService } from './events/task-events.service';
+import {
+  TaskBase,
+  CreateTask,
+  UpdateTask,
   TaskQueryFilters,
   TaskStatus,
   TaskPriority,
   TaskCategory,
   TaskStatistics,
-  BulkTaskOperation 
+  BulkTaskOperation
 } from '../schemas/task.schemas';
 
 /**
@@ -48,6 +58,7 @@ export class TasksService {
     private readonly tasksRepository: ITasksRepository,
     private readonly schemaRegistry: BackendSchemaRegistry,
     private readonly queueService: QueueService,
+    private readonly taskEventsService: TaskEventsService,
   ) {}
 
   /**
@@ -62,11 +73,11 @@ export class TasksService {
     const validation = this.schemaRegistry.validateAgainstSchema('CreateTask', createTaskData);
     if (!validation.success) {
       this.logger.warn(`Task creation validation failed: ${validation.error}`);
-      throw new BadRequestException({
-        error: 'TaskValidationError',
-        message: validation.error,
-        details: 'Task creation data does not meet schema requirements',
-      });
+      throw TaskExceptionFactory.validation(
+        validation.error,
+        'createTaskData',
+        createTaskData
+      );
     }
 
     // Business rule validation
@@ -76,6 +87,14 @@ export class TasksService {
     const createdTask = await this.tasksRepository.create(validation.data, createdById);
 
     this.logger.log(`Created task: ${createdTask.id} - "${createdTask.title}" by user ${createdById}`);
+
+    // Emit real-time event for task creation
+    try {
+      await this.taskEventsService.emitTaskCreated(createdTask, createdById);
+    } catch (error) {
+      // Don't fail task creation if event emission fails
+      this.logger.error(`Failed to emit task created event: ${error.message}`);
+    }
 
     // Queue task notification job for assignee if assigned
     if (createdTask.assigneeId) {
@@ -104,8 +123,19 @@ export class TasksService {
   }
 
   /**
+   * Find task by ID with user context (for authorization)
+   * @param taskId Task ID to find
+   * @param user User making the request
+   * @returns Task if found
+   * @throws NotFoundException if task not found
+   */
+  async findOne(taskId: string, user: JWTPayload): Promise<TaskBase> {
+    return this.getTaskById(taskId);
+  }
+
+  /**
    * Get task by ID with existence validation
-   * 
+   *
    * @param taskId Task ID
    * @returns Task if found
    * @throws NotFoundException if task not found
@@ -114,13 +144,9 @@ export class TasksService {
     const task = await this.tasksRepository.findById(taskId);
     if (!task) {
       this.logger.warn(`Task not found: ${taskId}`);
-      throw new NotFoundException({
-        error: 'TaskNotFound',
-        message: `Task with ID ${taskId} not found`,
-        taskId,
-      });
+      throw TaskExceptionFactory.notFound(taskId);
     }
-    
+
     return task;
   }
 
@@ -135,11 +161,11 @@ export class TasksService {
     const validation = this.schemaRegistry.validateAgainstSchema('TaskQueryFilters', filters);
     if (!validation.success) {
       this.logger.warn(`Task query validation failed: ${validation.error}`);
-      throw new BadRequestException({
-        error: 'QueryValidationError',
-        message: validation.error,
-        details: 'Query filters do not meet schema requirements',
-      });
+      throw TaskExceptionFactory.validation(
+        validation.error,
+        'filters',
+        filters
+      );
     }
 
     const result = await this.tasksRepository.findAll(validation.data);
@@ -150,8 +176,70 @@ export class TasksService {
   }
 
   /**
+   * Get tasks with pagination (alias for getAllTasks with different return structure)
+   *
+   * @param filters Query filters
+   * @returns Paginated task response
+   */
+  async getTasks(filters: any): Promise<any> {
+    const result = await this.getAllTasks(filters);
+    return {
+      data: result.tasks,
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: Math.ceil(result.total / result.limit),
+        hasNext: result.page < Math.ceil(result.total / result.limit),
+        hasPrev: result.page > 1
+      }
+    };
+  }
+
+  /**
+   * Update task status with optional progress and error information
+   *
+   * @param taskId Task ID
+   * @param statusUpdate Status update data
+   * @returns Updated task
+   */
+  async updateTaskStatus(taskId: string, statusUpdate: any): Promise<TaskBase> {
+    const task = await this.getTaskById(taskId);
+
+    const updateData: UpdateTask = {
+      status: statusUpdate.status
+    };
+
+    if (statusUpdate.progress !== undefined) {
+      updateData.progress = statusUpdate.progress;
+    }
+
+    if (statusUpdate.errorMessage !== undefined) {
+      updateData.errorMessage = statusUpdate.errorMessage;
+    }
+
+    return this.updateTask(taskId, updateData, 'system');
+  }
+
+  /**
+   * Get task metrics and analytics
+   *
+   * @returns Task metrics
+   */
+  async getTaskMetrics(): Promise<any> {
+    const stats = await this.getTaskStatistics();
+    return {
+      totalTasks: stats.totalTasks,
+      completedTasks: stats.completedTasks,
+      failedTasks: stats.failedTasks,
+      averageDuration: stats.averageCompletionTime,
+      successRate: stats.successRate
+    };
+  }
+
+  /**
    * Update a task with validation and business rules
-   * 
+   *
    * @param taskId Task ID
    * @param updateData Update data
    * @param updatedById ID of the user updating the task
@@ -162,11 +250,12 @@ export class TasksService {
     const validation = this.schemaRegistry.validateAgainstSchema('UpdateTask', updateData);
     if (!validation.success) {
       this.logger.warn(`Task update validation failed: ${validation.error}`);
-      throw new BadRequestException({
-        error: 'TaskValidationError',
-        message: validation.error,
-        details: 'Task update data does not meet schema requirements',
-      });
+      throw TaskExceptionFactory.validation(
+        validation.error,
+        'updateData',
+        updateData,
+        taskId
+      );
     }
 
     // Get existing task for business rule validation
@@ -179,15 +268,24 @@ export class TasksService {
     const updatedTask = await this.tasksRepository.update(taskId, validation.data, updatedById);
     if (!updatedTask) {
       // This should not happen since we validated existence above
-      throw new NotFoundException({
-        error: 'TaskNotFound',
-        message: `Task with ID ${taskId} not found`,
-        taskId,
-      });
+      throw TaskExceptionFactory.notFound(taskId, { operation: 'update' });
     }
-    
+
     this.logger.log(`Updated task: ${taskId} - "${updatedTask.title}" by user ${updatedById}`);
-    
+
+    // Emit real-time event for task update
+    try {
+      await this.taskEventsService.emitTaskUpdated(
+        existingTask,
+        updatedTask,
+        updatedById,
+        validation.data
+      );
+    } catch (error) {
+      // Don't fail task update if event emission fails
+      this.logger.error(`Failed to emit task updated event: ${error.message}`);
+    }
+
     return updatedTask;
   }
 
@@ -208,15 +306,19 @@ export class TasksService {
     const deleted = await this.tasksRepository.delete(taskId);
     if (!deleted) {
       // This should not happen since we validated existence above
-      throw new NotFoundException({
-        error: 'TaskNotFound',
-        message: `Task with ID ${taskId} not found`,
-        taskId,
-      });
+      throw TaskExceptionFactory.notFound(taskId, { operation: 'delete' });
     }
-    
+
     this.logger.log(`Deleted task: ${taskId} - "${existingTask.title}" by user ${deletedById}`);
-    
+
+    // Emit real-time event for task deletion
+    try {
+      await this.taskEventsService.emitTaskDeleted(existingTask, deletedById);
+    } catch (error) {
+      // Don't fail task deletion if event emission fails
+      this.logger.error(`Failed to emit task deleted event: ${error.message}`);
+    }
+
     return { success: true, taskId };
   }
 
@@ -236,11 +338,11 @@ export class TasksService {
     const validation = this.schemaRegistry.validateAgainstSchema('BulkTaskOperation', operation);
     if (!validation.success) {
       this.logger.warn(`Bulk operation validation failed: ${validation.error}`);
-      throw new BadRequestException({
-        error: 'BulkOperationValidationError',
-        message: validation.error,
-        details: 'Bulk operation data does not meet schema requirements',
-      });
+      throw TaskExceptionFactory.validation(
+        validation.error,
+        'bulkOperation',
+        bulkOperation
+      );
     }
 
     const { taskIds, operation: operationType, data } = validation.data;
@@ -256,14 +358,22 @@ export class TasksService {
     switch (operationType) {
       case 'updateStatus':
         if (!data?.status) {
-          throw new BadRequestException('Status is required for updateStatus operation');
+          throw TaskExceptionFactory.validation(
+            'Status is required for updateStatus operation',
+            'status',
+            data
+          );
         }
         results = await this.tasksRepository.bulkUpdate(taskIds, { status: data.status });
         break;
-        
+
       case 'updatePriority':
         if (!data?.priority) {
-          throw new BadRequestException('Priority is required for updatePriority operation');
+          throw TaskExceptionFactory.validation(
+            'Priority is required for updatePriority operation',
+            'priority',
+            data
+          );
         }
         results = await this.tasksRepository.bulkUpdate(taskIds, { priority: data.priority });
         break;
@@ -280,11 +390,23 @@ export class TasksService {
         break;
         
       default:
-        throw new BadRequestException(`Unsupported bulk operation: ${operationType}`);
+        throw TaskExceptionFactory.validation(
+          `Unsupported bulk operation: ${operationType}`,
+          'operation',
+          operationType
+        );
     }
 
     this.logger.log(`Bulk operation ${operationType} completed on ${taskIds.length} tasks by user ${operatorId}`);
-    
+
+    // Emit real-time events for bulk operation
+    try {
+      await this.taskEventsService.emitBulkTaskOperation(results.length > 0 ? results : [], operationType, operatorId);
+    } catch (error) {
+      // Don't fail bulk operation if event emission fails
+      this.logger.error(`Failed to emit bulk operation events: ${error.message}`);
+    }
+
     return {
       success: true,
       affectedTasks: taskIds.length,
@@ -447,17 +569,29 @@ export class TasksService {
 
     // Business rule: Estimated hours should be reasonable
     if (createData.estimatedHours && createData.estimatedHours > 1000) {
-      throw new BadRequestException('Estimated hours cannot exceed 1000 hours');
+      throw TaskExceptionFactory.validation(
+        'Estimated hours cannot exceed 1000 hours',
+        'estimatedHours',
+        createData.estimatedHours
+      );
     }
 
     // Business rule: Due date should be in the future for new tasks
     if (createData.dueDate && createData.dueDate <= new Date()) {
-      throw new BadRequestException('Due date must be in the future');
+      throw TaskExceptionFactory.validation(
+        'Due date must be in the future',
+        'dueDate',
+        createData.dueDate
+      );
     }
 
     // Business rule: Start date should not be after due date
     if (createData.startDate && createData.dueDate && createData.startDate > createData.dueDate) {
-      throw new BadRequestException('Start date cannot be after due date');
+      throw TaskExceptionFactory.validation(
+        'Start date cannot be after due date',
+        'startDate',
+        { startDate: createData.startDate, dueDate: createData.dueDate }
+      );
     }
   }
 
@@ -481,10 +615,20 @@ export class TasksService {
     // Business rule: Actual hours validation
     if (updateData.actualHours !== undefined) {
       if (updateData.actualHours < 0) {
-        throw new BadRequestException('Actual hours cannot be negative');
+        throw TaskExceptionFactory.validation(
+          'Actual hours cannot be negative',
+          'actualHours',
+          updateData.actualHours,
+          existingTask.id
+        );
       }
       if (updateData.actualHours > 1000) {
-        throw new BadRequestException('Actual hours cannot exceed 1000 hours');
+        throw TaskExceptionFactory.validation(
+          'Actual hours cannot exceed 1000 hours',
+          'actualHours',
+          updateData.actualHours,
+          existingTask.id
+        );
       }
     }
 
@@ -494,7 +638,11 @@ export class TasksService {
       
       // Business rule: Cannot set self as parent
       if (updateData.parentTaskId === existingTask.id) {
-        throw new BadRequestException('Task cannot be its own parent');
+        throw TaskExceptionFactory.dependency(
+          existingTask.id,
+          'Task cannot be its own parent',
+          [updateData.parentTaskId]
+        );
       }
     }
   }
@@ -508,7 +656,12 @@ export class TasksService {
     // Permission check: Only creator or admin can delete
     if (task.createdById !== deletedById) {
       // In a real system, you would check for admin permissions here
-      throw new ForbiddenException('Only the task creator can delete this task');
+      throw TaskExceptionFactory.accessForbidden(
+        task.id,
+        deletedById,
+        'delete',
+        'Only the task creator can delete this task'
+      );
     }
 
     // Business rule: Cannot delete completed tasks (optional business rule)
@@ -528,7 +681,12 @@ export class TasksService {
     if (task.createdById !== userId && task.assigneeId !== userId) {
       // In a real system, you would check for admin permissions here
       // For now, we'll allow modification by creator and assignee only
-      throw new ForbiddenException('You do not have permission to modify this task');
+      throw TaskExceptionFactory.accessForbidden(
+        task.id,
+        userId,
+        'modify',
+        'You do not have permission to modify this task'
+      );
     }
   }
 }
