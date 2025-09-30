@@ -3,7 +3,7 @@
 ## ⚠️ MANDATORY: Contract-First Development
 All tasks must follow contract-driven development. Task 0 MUST be completed before any other tasks.
 
-- [ ] 0. Define Task API contract in shared schemas package
+- [x] 0. Define Task API contract in shared schemas package
   - File: packages/schemas/src/tasks/task.schemas.ts
   - Define all Zod schemas: TaskSchema, TaskStatus, TaskPriority, TaskFilterSchema, TaskCreateSchema, TaskUpdateSchema, TaskListResponseSchema
   - Export from packages/schemas/src/tasks/index.ts and packages/schemas/src/index.ts
@@ -39,7 +39,7 @@ All tasks must follow contract-driven development. Task 0 MUST be completed befo
   - _Requirements: 2.1, 2.2, 2.3_
   - _Prompt: Role: Frontend Developer specializing in React component design and UI/UX | Task: Create TaskItem presentational component following requirements 2.1, 2.2, and 2.3, using Card, Badge, and Button components from shadcn/ui | Restrictions: Must be a pure presentational component, no data fetching, ensure accessibility with proper ARIA labels, support theme variants | Success: Component renders task details correctly, provides visual feedback on interaction, is accessible and responsive_
 
-- [ ] 4. Create TaskList container component
+- [x] 4. Create TaskList container component
   - File: apps/frontend/src/components/tasks/TaskList.tsx
   - Implement main task list container with filtering and sorting
   - Purpose: Manage task list state and orchestrate TaskItem components
