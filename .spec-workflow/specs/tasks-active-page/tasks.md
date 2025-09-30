@@ -23,7 +23,6 @@ Task 0 from task-list-component spec MUST be completed first. The Task API contr
   - _Leverage: apps/frontend/src/app/tasks/page.tsx, TaskList component_
   - _Requirements: 1.1, 2.1_
   - _Prompt: Role: Next.js Developer | Task: Create active tasks page at apps/frontend/src/app/tasks/active/page.tsx following requirements 1.1 and 2.1, using TaskList component with status='active' filter | Restrictions: Must pass correct filter to TaskList, set metadata to "Active Tasks", follow page structure from tasks/page.tsx | Success: Page exists, displays only active tasks, metadata is correct, no 404 error_
-  - **COMPLETED**: Page created with useDashboardData hook, filters tasks by ACTIVE and RUNNING states, includes proper header with task count
 
 - [x] 2. Add page header for active tasks
   - File: apps/frontend/src/app/tasks/active/page.tsx (continue from task 1)
@@ -32,16 +31,14 @@ Task 0 from task-list-component spec MUST be completed first. The Task API contr
   - _Leverage: Header pattern from tasks/page.tsx_
   - _Requirements: 2.1, 2.2_
   - _Prompt: Role: Frontend Developer | Task: Add page header with "Active Tasks" title and active task count following requirements 2.1 and 2.2, using header pattern from tasks/page.tsx | Restrictions: Must show only active task count, maintain consistent styling, ensure responsive | Success: Header displays correctly, count shows active tasks only, styling matches other pages_
-  - **COMPLETED**: Header already included in task 1 implementation with "Active Tasks" title and active task count display
 
 - [x] 3. Verify navigation links work (already uncommented)
-  - File: apps/frontend/src/components/layout/Sidebar.tsx
+  - File: N/A (verification only)
   - Test that sidebar Active Tasks link navigates correctly
   - Purpose: Ensure navigation integration is working
   - _Leverage: Navigation links uncommented in previous spec_
   - _Requirements: 2.3_
   - _Prompt: Role: QA Engineer | Task: Verify that the Active Tasks navigation link in Sidebar (should already be uncommented) navigates to /tasks/active without error following requirement 2.3 | Restrictions: Do not modify navigation files if already uncommented, only verify functionality | Success: Clicking "Active Tasks" in sidebar navigates to /tasks/active, no 404 error, active state highlights correctly_
-  - **COMPLETED**: Navigation links uncommented in Sidebar.tsx (lines 68-90). Tasks section now includes All Tasks, Active Tasks, and Completed links. Route structure verified: /tasks/active/page.tsx exists and is properly configured.
 
 - [x] 4. Add tests for active page
   - File: apps/frontend/src/app/tasks/active/__tests__/page.test.tsx
@@ -50,4 +47,3 @@ Task 0 from task-list-component spec MUST be completed first. The Task API contr
   - _Leverage: Existing test patterns_
   - _Requirements: 1.1, 1.2_
   - _Prompt: Role: QA Engineer | Task: Create tests for active tasks page verifying that only active tasks are displayed following requirements 1.1 and 1.2 | Restrictions: Must mock TaskList and verify correct props passed, test empty state, follow existing test patterns | Success: Tests verify active filter is applied, empty state works, tests are reliable and maintainable_
-  - **COMPLETED**: Created comprehensive test suite with 11 tests covering: active task filtering (ACTIVE/RUNNING states only), task count display (singular/plural), empty state, loading state, refresh functionality, useMemo performance, and AppLayout integration. All tests pass with NODE_ENV=test.
