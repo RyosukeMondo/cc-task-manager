@@ -1,36 +1,5 @@
 /**
- * Settings Module Exports
- * Re-exports all settings-related schemas, types, enums, and validation functions
+ * Settings Schemas Barrel Export
+ * Centralized export point for all settings-related schemas
  */
-
-export {
-  // Enums
-  Theme,
-  Language,
-  DateFormat,
-  TimeFormat,
-  DefaultView,
-
-  // Schemas
-  ThemeSchema,
-  LanguageSchema,
-  UserProfileSchema,
-  AppPreferencesSchema,
-  NotificationSettingsSchema,
-  SettingsSchema,
-  SettingsUpdateSchema,
-
-  // Types
-  type Settings,
-  type SettingsUpdate,
-  type UserProfile,
-  type AppPreferences,
-  type NotificationSettings,
-
-  // Validation functions
-  validateSettings,
-  validateSettingsUpdate,
-  validateUserProfile,
-  validateAppPreferences,
-  validateNotificationSettings,
-} from './settings.schemas';
+export * from './settings.schemas';

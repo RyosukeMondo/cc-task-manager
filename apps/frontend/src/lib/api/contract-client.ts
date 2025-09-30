@@ -220,6 +220,26 @@ export class ContractApiClient {
       outputFormat: 'interface'
     })
   }
+
+  // Settings API
+  async getSettings(userId: string): Promise<import('@cc-task-manager/schemas').Settings> {
+    return this.request('GET', `/api/settings/${userId}`)
+  }
+
+  async updateSettings(
+    userId: string,
+    updates: import('@cc-task-manager/schemas').SettingsUpdate
+  ): Promise<import('@cc-task-manager/schemas').Settings> {
+    const { validateSettingsUpdate } = await import('@cc-task-manager/schemas')
+    return this.request(
+      'PATCH',
+      `/api/settings/${userId}`,
+      updates,
+      validateSettingsUpdate,
+      'Settings',
+      '1.0.0'
+    )
+  }
 }
 
 // Export a singleton instance following SOLID principles

@@ -88,7 +88,7 @@ Task 0 MUST be completed before any other tasks. All settings functionality depe
   - _Requirements: 2.2, 2.4_
   - _Prompt: Role: TypeScript Developer specializing in form validation | Task: Create frontend validation at apps/frontend/src/schemas/settings.ts by importing and re-exporting Zod schemas from @cc-task-manager/schemas for settings forms following requirements 2.2 and 2.4, add client-side specific refinements only if needed for UI validations not relevant to backend (e.g., password confirmation matching, real-time field validation) | Restrictions: Must import base schemas from @cc-task-manager/schemas, do not duplicate validation logic already in shared contract, only add UI-specific refinements using .refine() or .superRefine(), provide clear error messages, note that ideally all validation should be in shared contract from Task 0 | Success: Form validation uses shared contract schemas as foundation, client-specific refinements are minimal and clearly justified, validation works correctly in forms, error messages are clear, no duplicate validation logic between frontend and shared contract_
 
-- [ ] 10. Add tests for settings page
+- [x] 10. Add tests for settings page
   - File: apps/frontend/src/app/settings/__tests__/page.test.tsx
   - Write comprehensive tests for settings page and components
   - Purpose: Ensure settings functionality works correctly
@@ -96,7 +96,7 @@ Task 0 MUST be completed before any other tasks. All settings functionality depe
   - _Requirements: All requirements_
   - _Prompt: Role: QA Engineer | Task: Create comprehensive tests for settings page covering all requirements, testing forms, validation, saving, and user interactions | Restrictions: Must test user-facing behavior, mock API calls, follow test patterns | Success: Tests cover all settings functionality, forms, validation, persistence, and are reliable_
 
-- [ ] 11. Add E2E tests for settings workflow
+- [x] 11. Add E2E tests for settings workflow
   - File: apps/frontend/e2e/settings.spec.ts
   - Write end-to-end tests for complete settings workflow
   - Purpose: Verify complete user journey works

@@ -39,6 +39,14 @@ import {
   UserStatisticsSchema,
 } from './user.schemas';
 
+import {
+  SettingsSchema,
+  SettingsUpdateSchema,
+  UserProfileSchema as SettingsUserProfileSchema,
+  AppPreferencesSchema,
+  NotificationSettingsSchema,
+} from '@cc-task-manager/schemas';
+
 /**
  * Schema Registry Service
  *
@@ -84,6 +92,9 @@ export class SchemaRegistryService implements OnModuleInit {
 
       // User management schemas
       this.registerUserSchemas(),
+
+      // Settings schemas
+      this.registerSettingsSchemas(),
 
       // Project management schemas
       this.registerProjectSchemas(),
@@ -178,6 +189,30 @@ export class SchemaRegistryService implements OnModuleInit {
   }
 
   /**
+   * Register settings schemas
+   */
+  private async registerSettingsSchemas(): Promise<void> {
+    const settingsSchemas = [
+      { name: 'Settings', version: '1.0.0', schema: SettingsSchema },
+      { name: 'SettingsUpdate', version: '1.0.0', schema: SettingsUpdateSchema },
+      { name: 'SettingsUserProfile', version: '1.0.0', schema: SettingsUserProfileSchema },
+      { name: 'AppPreferences', version: '1.0.0', schema: AppPreferencesSchema },
+      { name: 'NotificationSettings', version: '1.0.0', schema: NotificationSettingsSchema },
+    ];
+
+    for (const { name, version, schema } of settingsSchemas) {
+      await this.contractRegistry.registerContract(name, version, schema, {
+        name,
+        version,
+        description: `Settings schema for ${name}`,
+        compatibleVersions: ['1.0.0'],
+      });
+    }
+
+    this.logger.log(`📋 Registered ${settingsSchemas.length} settings schemas`);
+  }
+
+  /**
    * Register project management schemas (placeholder - implement when project.schemas.ts exists)
    */
   private async registerProjectSchemas(): Promise<void> {
@@ -208,6 +243,9 @@ export class SchemaRegistryService implements OnModuleInit {
       /^Email/,
       /^Jwt/,
       /^Token/,
+      /^Settings/,
+      /^AppPreferences/,
+      /^NotificationSettings/,
     ];
 
     return backendSchemaPatterns.some(pattern => pattern.test(contractName));

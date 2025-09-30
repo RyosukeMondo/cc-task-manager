@@ -105,17 +105,17 @@ const sidebarSections = [
       }
     ]
   },
-  // {
-  //   title: 'System',
-  //   items: [
-  //     {
-  //       href: '/settings',
-  //       label: 'Settings',
-  //       icon: SettingsIcon,
-  //       description: 'Application settings'
-  //       }
-  //   ]
-  // }
+  {
+    title: 'System',
+    items: [
+      {
+        href: '/settings',
+        label: 'Settings',
+        icon: SettingsIcon,
+        description: 'Application settings'
+      }
+    ]
+  }
 ];
 
 interface SidebarProps {

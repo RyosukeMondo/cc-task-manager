@@ -54,12 +54,12 @@ const navigationItems = [
     icon: TaskIcon,
     description: 'Task management and monitoring'
   },
-  // {
-  //   href: '/settings',
-  //   label: 'Settings',
-  //   icon: SettingsIcon,
-  //   description: 'Application settings and preferences'
-  // }
+  {
+    href: '/settings',
+    label: 'Settings',
+    icon: SettingsIcon,
+    description: 'Application settings and preferences'
+  }
 ];
 
 interface NavigationProps {

@@ -7,6 +7,7 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Switch } from '../ui/switch';
 import { AlertCircle } from 'lucide-react';
 
 /**
@@ -67,6 +68,14 @@ export interface SelectOption {
 export interface SelectFieldProps<T extends FieldValues> extends BaseFieldProps<T> {
   options: SelectOption[];
   placeholder?: string;
+}
+
+/**
+ * Switch field props extending base field
+ */
+export interface SwitchFieldProps<T extends FieldValues> extends BaseFieldProps<T> {
+  onLabel?: string;
+  offLabel?: string;
 }
 
 /**
@@ -289,6 +298,48 @@ export function SelectField<T extends FieldValues>({
           ))}
         </SelectContent>
       </Select>
+    </FieldWrapper>
+  );
+}
+
+/**
+ * SwitchField component implementing Liskov Substitution Principle
+ * Can be substituted anywhere BaseFieldProps is expected
+ */
+export function SwitchField<T extends FieldValues>({
+  form,
+  name,
+  label,
+  required,
+  disabled,
+  className,
+  description,
+  onLabel,
+  offLabel,
+}: SwitchFieldProps<T>) {
+  const { setValue, watch, formState: { errors } } = form;
+  const value = watch(name);
+
+  return (
+    <FieldWrapper
+      label={label}
+      required={required}
+      description={description}
+      error={errors[name]}
+      className={className}
+    >
+      <div className="flex items-center gap-2">
+        <Switch
+          checked={value}
+          onCheckedChange={(checked) => setValue(name, checked as any)}
+          disabled={disabled}
+        />
+        {(onLabel || offLabel) && (
+          <span className="text-sm text-muted-foreground">
+            {value ? (onLabel || 'On') : (offLabel || 'Off')}
+          </span>
+        )}
+      </div>
     </FieldWrapper>
   );
 }

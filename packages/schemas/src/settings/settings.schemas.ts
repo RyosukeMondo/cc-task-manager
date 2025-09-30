@@ -9,9 +9,9 @@ import { z } from 'zod';
 
 /**
  * Theme enumeration for application appearance
- * - light: Light theme with bright colors
- * - dark: Dark theme with muted colors
- * - system: Automatically follow system theme preference
+ * - light: Light theme
+ * - dark: Dark theme
+ * - system: Follow system preference
  */
 export enum Theme {
   LIGHT = 'light',
@@ -33,165 +33,188 @@ export enum Language {
   JA = 'ja',
   ZH = 'zh',
   KO = 'ko',
+  RU = 'ru',
 }
 
 /**
- * Date format enumeration for display preferences
+ * Date format options for displaying dates
  */
 export enum DateFormat {
-  ISO = 'yyyy-MM-dd',           // 2025-09-30
-  US = 'MM/dd/yyyy',            // 09/30/2025
-  EU = 'dd/MM/yyyy',            // 30/09/2025
-  LONG = 'MMMM d, yyyy',        // September 30, 2025
+  MM_DD_YYYY = 'MM/DD/YYYY',
+  DD_MM_YYYY = 'DD/MM/YYYY',
+  YYYY_MM_DD = 'YYYY-MM-DD',
+  MMM_DD_YYYY = 'MMM DD, YYYY',
+  DD_MMM_YYYY = 'DD MMM YYYY',
 }
 
 /**
- * Time format enumeration for display preferences
+ * Time format options for displaying time
  */
 export enum TimeFormat {
-  TWELVE_HOUR = '12h',          // 2:30 PM
-  TWENTY_FOUR_HOUR = '24h',     // 14:30
+  TWELVE_HOUR = '12h',
+  TWENTY_FOUR_HOUR = '24h',
 }
 
 /**
- * Default view enumeration for initial page display
+ * Default view options for initial page load
  */
 export enum DefaultView {
   DASHBOARD = 'dashboard',
   TASKS = 'tasks',
   CALENDAR = 'calendar',
-  ANALYTICS = 'analytics',
+  SETTINGS = 'settings',
 }
 
 /**
- * Theme schema for application appearance settings
+ * Theme schema with validation
  */
 export const ThemeSchema = z.nativeEnum(Theme);
 
 /**
- * Language schema for application localization
+ * Language schema with validation
  */
 export const LanguageSchema = z.nativeEnum(Language);
 
 /**
+ * Date format schema with validation
+ */
+export const DateFormatSchema = z.nativeEnum(DateFormat);
+
+/**
+ * Time format schema with validation
+ */
+export const TimeFormatSchema = z.nativeEnum(TimeFormat);
+
+/**
+ * Default view schema with validation
+ */
+export const DefaultViewSchema = z.nativeEnum(DefaultView);
+
+/**
  * User profile schema for personal information
- * Contains user identity and profile data
+ * Contains user's display information and bio
  */
 export const UserProfileSchema = z.object({
   /**
-   * User's display name
-   * Must be between 1-100 characters
+   * Display name (full name or preferred name)
+   * Between 1 and 100 characters
    */
   name: z.string()
     .min(1, 'Name is required')
-    .max(100, 'Name must not exceed 100 characters'),
+    .max(100, 'Name must not exceed 100 characters')
+    .trim(),
 
   /**
    * User's email address
-   * Must be valid email format
+   * Must be a valid email format
    */
   email: z.string()
-    .email('Invalid email address'),
+    .email('Invalid email address')
+    .max(255, 'Email must not exceed 255 characters')
+    .trim()
+    .toLowerCase(),
 
   /**
-   * URL to user's avatar image
-   * Must be valid HTTPS URL if provided
+   * URL to user's avatar/profile image
+   * Must be a valid HTTP/HTTPS URL if provided
    */
   avatar: z.string()
     .url('Avatar must be a valid URL')
-    .regex(/^https:\/\//, 'Avatar URL must use HTTPS')
+    .max(2048, 'Avatar URL must not exceed 2048 characters')
     .optional()
     .nullable(),
 
   /**
-   * User's biographical information
-   * Max 500 characters for display purposes
+   * User's biography or description
+   * Up to 500 characters of personal information
    */
   bio: z.string()
     .max(500, 'Bio must not exceed 500 characters')
+    .trim()
     .optional()
     .nullable(),
 });
 
 /**
- * Application preferences schema for UI/UX customization
- * Controls how the application looks and behaves for the user
+ * Application preferences schema
+ * Controls UI behavior and display settings
  */
 export const AppPreferencesSchema = z.object({
   /**
-   * Theme preference (light, dark, or system)
-   * Controls application color scheme
+   * Theme preference for application appearance
+   * Options: light, dark, or system (follows OS setting)
    */
   theme: ThemeSchema.default(Theme.SYSTEM),
 
   /**
-   * Language preference for UI text
-   * Controls interface localization
+   * Language preference for UI localization
+   * ISO 639-1 language code (e.g., 'en', 'es', 'fr')
    */
   language: LanguageSchema.default(Language.EN),
 
   /**
-   * Date format preference
-   * Controls how dates are displayed throughout the app
+   * Preferred date format for displaying dates
+   * Determines how dates are formatted throughout the application
    */
-  dateFormat: z.nativeEnum(DateFormat).default(DateFormat.ISO),
+  dateFormat: DateFormatSchema.default(DateFormat.MM_DD_YYYY),
 
   /**
-   * Time format preference (12h or 24h)
-   * Controls how times are displayed throughout the app
+   * Preferred time format (12-hour or 24-hour)
+   * Determines how times are displayed throughout the application
    */
-  timeFormat: z.nativeEnum(TimeFormat).default(TimeFormat.TWENTY_FOUR_HOUR),
+  timeFormat: TimeFormatSchema.default(TimeFormat.TWELVE_HOUR),
 
   /**
-   * Default view when opening the application
-   * Controls which page user sees on login
+   * Default view to show on application load
+   * Determines which page users see when they first open the app
    */
-  defaultView: z.nativeEnum(DefaultView).default(DefaultView.DASHBOARD),
+  defaultView: DefaultViewSchema.default(DefaultView.DASHBOARD),
 });
 
 /**
- * Notification settings schema for communication preferences
- * Controls how and when the user receives notifications
+ * Notification settings schema
+ * Controls how and when users receive notifications
  */
 export const NotificationSettingsSchema = z.object({
   /**
-   * Enable/disable email notifications
-   * When true, user receives notifications via email
+   * Enable or disable email notifications
+   * When enabled, users receive notifications via email
    */
   emailNotifications: z.boolean().default(true),
 
   /**
-   * Enable/disable push notifications
-   * When true, user receives browser/mobile push notifications
+   * Enable or disable push notifications
+   * When enabled, users receive browser/mobile push notifications
    */
   pushNotifications: z.boolean().default(true),
 
   /**
-   * Enable/disable task reminder notifications
-   * When true, user receives reminders for upcoming tasks
+   * Enable or disable task reminder notifications
+   * When enabled, users receive reminders for upcoming tasks
    */
   taskReminders: z.boolean().default(true),
 
   /**
-   * Enable/disable daily digest emails
-   * When true, user receives a daily summary email
+   * Enable or disable daily digest emails
+   * When enabled, users receive a daily summary of activity
    */
   dailyDigest: z.boolean().default(false),
 });
 
 /**
- * Composite settings schema combining all setting categories
- * Represents the complete user settings entity in the database
+ * Complete settings schema
+ * Composite of all user settings with metadata
  */
 export const SettingsSchema = z.object({
   /**
-   * Unique identifier for settings record
+   * Unique identifier for the settings record
+   * UUID format
    */
   id: z.string().uuid('Settings ID must be a valid UUID').optional(),
 
   /**
-   * User ID this settings record belongs to
-   * Links settings to a specific user
+   * ID of the user these settings belong to
+   * UUID format
    */
   userId: z.string().uuid('User ID must be a valid UUID'),
 
@@ -222,38 +245,41 @@ export const SettingsSchema = z.object({
 });
 
 /**
- * Settings update schema for partial updates
- * Allows updating individual setting categories without providing all fields
+ * Partial settings schema for updates
+ * Allows updating individual setting sections without requiring all fields
  */
 export const SettingsUpdateSchema = z.object({
   profile: UserProfileSchema.partial().optional(),
   preferences: AppPreferencesSchema.partial().optional(),
   notifications: NotificationSettingsSchema.partial().optional(),
-}).refine(
-  (data) => data.profile || data.preferences || data.notifications,
-  'At least one settings category must be provided for update'
-);
+});
+
+/**
+ * Settings request schema for fetching user settings
+ */
+export const SettingsRequestSchema = z.object({
+  userId: z.string().uuid('User ID must be a valid UUID'),
+});
+
+/**
+ * Settings response schema for API responses
+ */
+export const SettingsResponseSchema = SettingsSchema;
 
 /**
  * TypeScript types derived from Zod schemas
  */
-export type Settings = z.infer<typeof SettingsSchema>;
-export type SettingsUpdate = z.infer<typeof SettingsUpdateSchema>;
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 export type AppPreferences = z.infer<typeof AppPreferencesSchema>;
 export type NotificationSettings = z.infer<typeof NotificationSettingsSchema>;
+export type Settings = z.infer<typeof SettingsSchema>;
+export type SettingsUpdate = z.infer<typeof SettingsUpdateSchema>;
+export type SettingsRequest = z.infer<typeof SettingsRequestSchema>;
+export type SettingsResponse = z.infer<typeof SettingsResponseSchema>;
 
 /**
  * Validation helper functions for runtime type checking
  */
-export const validateSettings = (data: unknown): Settings => {
-  return SettingsSchema.parse(data);
-};
-
-export const validateSettingsUpdate = (data: unknown): SettingsUpdate => {
-  return SettingsUpdateSchema.parse(data);
-};
-
 export const validateUserProfile = (data: unknown): UserProfile => {
   return UserProfileSchema.parse(data);
 };
@@ -264,4 +290,20 @@ export const validateAppPreferences = (data: unknown): AppPreferences => {
 
 export const validateNotificationSettings = (data: unknown): NotificationSettings => {
   return NotificationSettingsSchema.parse(data);
+};
+
+export const validateSettings = (data: unknown): Settings => {
+  return SettingsSchema.parse(data);
+};
+
+export const validateSettingsUpdate = (data: unknown): SettingsUpdate => {
+  return SettingsUpdateSchema.parse(data);
+};
+
+export const validateSettingsRequest = (data: unknown): SettingsRequest => {
+  return SettingsRequestSchema.parse(data);
+};
+
+export const validateSettingsResponse = (data: unknown): SettingsResponse => {
+  return SettingsResponseSchema.parse(data);
 };
