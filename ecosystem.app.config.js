@@ -29,7 +29,8 @@ module.exports = {
       env: {
         NODE_ENV: 'development',
         PORT: 3006,
-        NEXT_PUBLIC_API_URL: 'http://localhost:3005/api',
+        NEXT_PUBLIC_API_URL: 'http://192.168.11.26:3005',
+        NEXT_PUBLIC_WS_URL: 'ws://192.168.11.26:3005',
       },
       error_file: '/home/rmondo/repos/cc-task-manager/logs/pm2-frontend-error.log',
       out_file: '/home/rmondo/repos/cc-task-manager/logs/pm2-frontend-out.log',

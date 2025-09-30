@@ -55,6 +55,7 @@
     "class-validator": "^0.14.2",
     "commander": "^14.0.1",
     "js-yaml": "^4.1.0",
+    "libphonenumber-js": "^1.12.23",
     "lodash-es": "^4.17.21",
     "nestjs-pino": "^4.4.1",
     "pino": "^8.15.0",
