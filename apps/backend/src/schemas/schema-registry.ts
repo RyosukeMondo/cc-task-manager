@@ -52,6 +52,17 @@ import {
 // Import all database schemas
 import { DatabaseSchemas } from './database.schemas';
 
+// Import all analytics schemas
+import {
+  PerformanceMetricsSchema,
+  KPIDataSchema,
+  ChartDataSchema,
+  TimeSeriesDataSchema,
+  DateRangeSchema,
+  AnalyticsFilterSchema,
+  AnalyticsResponseSchema,
+} from '@cc-task-manager/schemas';
+
 // Import all queue schemas
 import {
   TaskNotificationJobSchema,
@@ -91,6 +102,7 @@ export class BackendSchemaRegistry implements OnModuleInit {
       await this.registerAuthSchemas();
       await this.registerTaskSchemas();
       await this.registerUserSchemas();
+      await this.registerAnalyticsSchemas();
       await this.registerDatabaseSchemas();
       await this.registerQueueSchemas();
 
@@ -396,6 +408,75 @@ export class BackendSchemaRegistry implements OnModuleInit {
     }
 
     this.logger.log(`Registered ${userSchemas.length} user management schemas`);
+  }
+
+  /**
+   * Register analytics schemas for performance metrics and reporting
+   */
+  private async registerAnalyticsSchemas(): Promise<void> {
+    const analyticsSchemas = [
+      {
+        name: 'PerformanceMetrics',
+        version: '1.0.0',
+        schema: PerformanceMetricsSchema,
+        description: 'Performance metrics schema for task completion analytics',
+      },
+      {
+        name: 'KPIData',
+        version: '1.0.0',
+        schema: KPIDataSchema,
+        description: 'Key performance indicator data schema with trend tracking',
+      },
+      {
+        name: 'ChartData',
+        version: '1.0.0',
+        schema: ChartDataSchema,
+        description: 'Chart data schema for visualization components',
+      },
+      {
+        name: 'TimeSeriesData',
+        version: '1.0.0',
+        schema: TimeSeriesDataSchema,
+        description: 'Time series data point schema for trend analysis',
+      },
+      {
+        name: 'DateRange',
+        version: '1.0.0',
+        schema: DateRangeSchema,
+        description: 'Date range schema for time-based filtering',
+      },
+      {
+        name: 'AnalyticsFilter',
+        version: '1.0.0',
+        schema: AnalyticsFilterSchema,
+        description: 'Analytics filter schema for query parameters',
+      },
+      {
+        name: 'AnalyticsResponse',
+        version: '1.0.0',
+        schema: AnalyticsResponseSchema,
+        description: 'Complete analytics response schema with metrics, charts, and KPIs',
+      },
+    ];
+
+    for (const schemaConfig of analyticsSchemas) {
+      const success = await this.contractRegistry.registerContract(
+        schemaConfig.name,
+        schemaConfig.version,
+        schemaConfig.schema,
+        {
+          name: schemaConfig.name,
+          version: schemaConfig.version,
+          description: schemaConfig.description,
+        }
+      );
+
+      if (!success) {
+        throw new Error(`Failed to register analytics schema: ${schemaConfig.name}`);
+      }
+    }
+
+    this.logger.log(`Registered ${analyticsSchemas.length} analytics schemas`);
   }
 
   /**
