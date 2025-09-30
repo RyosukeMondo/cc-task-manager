@@ -186,12 +186,16 @@ let DevValidationMiddleware = DevValidationMiddleware_1 = class DevValidationMid
                 persistent: true,
                 ignoreInitial: true
             });
-            if (this.fileWatcher) {
+            if (this.fileWatcher && typeof this.fileWatcher.on === 'function') {
                 this.fileWatcher
                     .on('change', (filePath) => this.handleFileChange(filePath))
                     .on('add', (filePath) => this.handleFileChange(filePath))
                     .on('unlink', (filePath) => this.handleFileRemoval(filePath))
                     .on('error', (error) => this.logger.error('File watcher error:', error));
+            }
+            else {
+                this.logger.warn('File watcher created but does not have event methods');
+                this.fileWatcher = undefined;
             }
         }
         catch (error) {
