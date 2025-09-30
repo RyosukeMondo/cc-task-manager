@@ -12,7 +12,9 @@ import type {
   ProcessConfig,
   TaskExecutionRequest,
   WorkerConfig,
-  TaskStatus
+  TaskStatus,
+  PerformanceMetrics,
+  AnalyticsFilter
 } from '@cc-task-manager/types'
 
 // Query Keys Factory - following TanStack Query best practices
@@ -25,6 +27,9 @@ export const queryKeys = {
   worker: (id: string) => ['workers', id] as const,
   auth: ['auth'] as const,
   contracts: ['contracts'] as const,
+  analytics: {
+    performance: (filter?: string) => ['analytics', 'performance', filter] as const,
+  },
 } as const
 
 // Task Management Hooks
@@ -225,6 +230,21 @@ export function useGenerateClientTypes(
     queryKey: ['contracts', 'types', contractName, version],
     queryFn: () => apiClient.generateClientTypes(contractName, version),
     enabled: !!contractName && !!version,
+    ...options,
+  })
+}
+
+// Analytics Hooks
+export function usePerformanceMetrics(
+  filter?: AnalyticsFilter,
+  options?: UseQueryOptions<PerformanceMetrics>
+) {
+  const filterKey = filter ? JSON.stringify(filter) : undefined
+
+  return useQuery({
+    queryKey: queryKeys.analytics.performance(filterKey),
+    queryFn: () => apiClient.getPerformanceMetrics(filter),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     ...options,
   })
 }

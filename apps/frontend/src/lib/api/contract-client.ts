@@ -5,6 +5,7 @@ import {
   validateTaskExecutionRequest,
   validateWorkerConfig,
   validateTaskStatus,
+  validateAnalyticsFilter,
   ProcessConfigSchema,
   TaskExecutionRequestSchema,
   WorkerConfigSchema,
@@ -14,7 +15,9 @@ import type {
   ProcessConfig,
   TaskExecutionRequest,
   WorkerConfig,
-  TaskStatus
+  TaskStatus,
+  PerformanceMetrics,
+  AnalyticsFilter
 } from '@cc-task-manager/types'
 
 /**
@@ -178,6 +181,30 @@ export class ContractApiClient {
 
   async refreshToken(): Promise<{ token: string }> {
     return this.request('POST', '/api/auth/refresh')
+  }
+
+  // Analytics API
+  async getPerformanceMetrics(filter?: AnalyticsFilter): Promise<PerformanceMetrics> {
+    const queryParams = filter
+      ? `?${new URLSearchParams({
+          startDate: filter.dateRange.startDate,
+          endDate: filter.dateRange.endDate,
+          groupBy: filter.groupBy,
+          ...(filter.metrics && { metrics: filter.metrics.join(',') }),
+          ...(filter.projectId && { projectId: filter.projectId }),
+          ...(filter.userId && { userId: filter.userId }),
+          ...(filter.tags && { tags: filter.tags.join(',') })
+        }).toString()}`
+      : ''
+
+    return this.request<PerformanceMetrics>(
+      'GET',
+      `/api/analytics/performance${queryParams}`,
+      undefined,
+      undefined,
+      'PerformanceMetrics',
+      '1.0.0'
+    )
   }
 
   // Contract metadata and discovery
