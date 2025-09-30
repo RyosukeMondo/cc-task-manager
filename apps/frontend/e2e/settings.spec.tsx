@@ -1,6 +1,4 @@
 /**
- * @jest-environment jsdom
- *
  * End-to-End Integration Tests for Settings Workflow
  *
  * These tests simulate complete user journeys through the settings page,
@@ -9,6 +7,8 @@
  * NOTE: These are integration-level E2E tests using Jest/RTL rather than
  * browser-based E2E tests (Playwright/Cypress), as no E2E framework is
  * currently configured in the project.
+ *
+ * @jest-environment jsdom
  */
 
 import React from 'react';
@@ -39,6 +39,76 @@ jest.mock('@/components/layout', () => ({
   ),
 }));
 
+jest.mock('lucide-react', () => ({
+  Loader2: () => <div role="progressbar" />,
+  User: () => <div>User Icon</div>,
+  Settings2: () => <div>Settings Icon</div>,
+  Bell: () => <div>Bell Icon</div>,
+  AlertCircle: () => <div>Alert Icon</div>,
+}));
+
+jest.mock('@/components/settings/ProfileSettings', () => ({
+  ProfileSettings: ({ initialProfile, onSave }: any) => (
+    <div data-testid="profile-settings">
+      <label htmlFor="name">Name</label>
+      <input id="name" aria-label="Name" defaultValue={initialProfile?.name} />
+      <label htmlFor="email">Email</label>
+      <input id="email" aria-label="Email" defaultValue={initialProfile?.email} />
+      <label htmlFor="bio">Bio</label>
+      <textarea id="bio" aria-label="Bio" defaultValue={initialProfile?.bio} />
+      <button onClick={() => onSave({ name: 'Updated' })}>Save Changes</button>
+      <button>Reset</button>
+    </div>
+  ),
+}));
+
+jest.mock('@/components/settings/PreferencesSettings', () => ({
+  PreferencesSettings: ({ initialPreferences, onSave }: any) => (
+    <div data-testid="preferences-settings">
+      <label htmlFor="theme">Theme</label>
+      <select id="theme" aria-label="Theme" defaultValue={initialPreferences?.theme}>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="system">System</option>
+      </select>
+      <label htmlFor="language">Language</label>
+      <select id="language" aria-label="Language" defaultValue={initialPreferences?.language}>
+        <option value="en">English</option>
+        <option value="es">Español</option>
+      </select>
+      <button onClick={() => onSave({ theme: 'dark' })}>Save</button>
+    </div>
+  ),
+}));
+
+jest.mock('@/components/settings/NotificationSettings', () => ({
+  NotificationSettings: ({ initialNotifications, onSave }: any) => (
+    <div data-testid="notification-settings">
+      <label>
+        <input
+          type="checkbox"
+          role="switch"
+          aria-label="Email Notifications"
+          defaultChecked={initialNotifications?.emailNotifications}
+        />
+        Email Notifications
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          role="switch"
+          aria-label="Push Notifications"
+          defaultChecked={initialNotifications?.pushNotifications}
+        />
+        Push Notifications
+      </label>
+      <button onClick={() => onSave({ emailNotifications: false })}>Save</button>
+    </div>
+  ),
+}));
+
+jest.mock('@/hooks/useSettings');
+
 // Mock settings data
 const mockSettings = {
   userId: 'current-user',
@@ -67,6 +137,10 @@ const mockSettings = {
 
 const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
 
+// Import the mocked hook
+import { useSettings } from '@/hooks/useSettings';
+const mockUseSettings = useSettings as jest.MockedFunction<typeof useSettings>;
+
 describe('Settings E2E Workflow', () => {
   let queryClient: QueryClient;
   let user: ReturnType<typeof userEvent.setup>;
@@ -87,6 +161,17 @@ describe('Settings E2E Workflow', () => {
       ...updates,
       updatedAt: new Date(),
     }));
+
+    // Mock useSettings hook
+    mockUseSettings.mockReturnValue({
+      settings: mockSettings,
+      isLoading: false,
+      isUpdating: false,
+      error: null,
+      updateProfile: jest.fn(),
+      updatePreferences: jest.fn(),
+      updateNotifications: jest.fn(),
+    });
   });
 
   afterEach(() => {
