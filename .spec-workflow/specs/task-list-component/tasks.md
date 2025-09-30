@@ -71,7 +71,7 @@ All tasks must follow contract-driven development. Task 0 MUST be completed befo
   - _Requirements: 3.2_
   - _Prompt: Role: Frontend Developer with expertise in data sorting and UX patterns | Task: Implement task sorting functionality following requirement 3.2, adding sort controls and logic for date, priority, and title | Restrictions: Must maintain sort state, provide visual indication of active sort, ensure stable sorting algorithm | Success: Sorting works correctly, users can easily change sort order, visual feedback is clear_
 
-- [ ] 8. Add unit tests for components
+- [x] 8. Add unit tests for components
   - File: apps/frontend/src/components/tasks/__tests__/TaskList.test.tsx
   - File: apps/frontend/src/components/tasks/__tests__/TaskItem.test.tsx
   - Write comprehensive unit tests for TaskList and TaskItem
