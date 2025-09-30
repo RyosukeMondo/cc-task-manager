@@ -61,7 +61,7 @@ Task 0 from task-list-component spec MUST be completed first. The Task API contr
   - _Requirements: All page requirements_
   - _Prompt: Role: QA Engineer with expertise in Next.js testing and React Testing Library | Task: Create comprehensive tests for tasks page covering all requirements, testing page rendering, TaskList integration, and navigation | Restrictions: Must test user-facing behavior not implementation, mock TaskList component for isolation, follow existing test patterns | Success: Tests verify page renders correctly, TaskList integration works, navigation functions properly, tests are reliable and maintainable_
 
-- [ ] 7. Test E2E user flow
+- [x] 7. Test E2E user flow
   - File: apps/frontend/e2e/tasks-page.spec.ts
   - Write end-to-end test for navigating to and using tasks page
   - Purpose: Verify complete user journey works in browser
