@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'cc-task-manager-backend',
       script: 'npx',
-      args: 'pnpm start:dev',
+      args: 'pnpm start:dev:transpile',
       cwd: '/home/rmondo/repos/cc-task-manager/apps/backend',
       autorestart: true,
       watch: false,
