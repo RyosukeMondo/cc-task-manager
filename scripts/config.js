@@ -9,7 +9,13 @@ const CONFIG = {
 
   // Projects configuration - just add your projects here
   projects: [
-     { available: true, name: 'cc-task-manager', path: '.', spec: 'database-schema-completion' }
+     { available: true, name: 'analytics-performance', path: 'worktree/analytics-performance-page', spec: 'analytics-performance-page' }
+    ,{ available: true, name: 'analytics-trends', path: 'worktree/analytics-trends-page', spec: 'analytics-trends-page' }
+    ,{ available: true, name: 'settings', path: 'worktree/settings-page', spec: 'settings-page' }
+    ,{ available: true, name: 'task-list', path: 'worktree/task-list-component', spec: 'task-list-component' }
+    ,{ available: true, name: 'tasks-active', path: 'worktree/tasks-active-page', spec: 'tasks-active-page' }
+    ,{ available: true, name: 'tasks-all', path: 'worktree/tasks-all-page', spec: 'tasks-all-page' }
+    ,{ available: true, name: 'tasks-completed', path: 'worktree/tasks-completed-page', spec: 'tasks-completed-page' }
     ,{ available: false, name: 'warps', path: '../warps', spec: 'battle-e2e-testing' }
     ,{ available: false, name: 'mind-advanced-evaluation-metrics', path: '../mind-training/worktree/advanced-evaluation-metrics', spec: 'advanced-evaluation-metrics' }
     ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'fix-all-existing-tests' }
