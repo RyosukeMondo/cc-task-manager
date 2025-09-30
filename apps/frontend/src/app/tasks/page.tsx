@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Plus } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { TaskList } from '@/components/tasks/TaskList';
+import { Button } from '@/components/ui/button';
 import { TaskStatus, TaskState } from '@cc-task-manager/types';
 import {
   useWebSocketConnection,
@@ -16,8 +18,8 @@ import {
 } from '@/lib/websocket/types';
 
 /**
- * All Tasks page - displays complete task list with filtering capabilities
- * Provides comprehensive view of all tasks across the system
+ * Tasks page displaying all tasks with filtering and search capabilities
+ * Provides comprehensive task list view with real-time updates
  */
 export default function TasksPage() {
   const [tasks, setTasks] = useState<TaskStatus[]>([]);
@@ -82,10 +84,38 @@ export default function TasksPage() {
     }, 500);
   };
 
+  const handleCreateTask = () => {
+    // TODO: Implement task creation modal/flow
+    console.log('Create task clicked');
+  };
+
   return (
     <AppLayout>
-      <div className="container mx-auto py-6 space-y-6">
-        <h1 className="text-3xl font-bold">All Tasks</h1>
+      <div className="p-6 space-y-6">
+        {/* Page Header */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight">All Tasks</h1>
+            <p className="text-sm text-muted-foreground">
+              {tasks.length > 0 ? (
+                <>
+                  {tasks.length} total task{tasks.length !== 1 ? 's' : ''} •{' '}
+                  {tasks.filter(t => t.state === TaskState.COMPLETED).length} completed •{' '}
+                  {tasks.filter(t => t.state === TaskState.RUNNING || t.state === TaskState.ACTIVE).length} active •{' '}
+                  {tasks.filter(t => t.state === TaskState.FAILED).length} failed
+                </>
+              ) : (
+                'No tasks yet'
+              )}
+            </p>
+          </div>
+          <Button onClick={handleCreateTask} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Create Task
+          </Button>
+        </div>
+
+        {/* Task List */}
         <TaskList
           tasks={tasks}
           onRefresh={handleRefresh}
