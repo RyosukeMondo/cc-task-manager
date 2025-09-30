@@ -7,19 +7,19 @@ export declare const ProcessConfigSchema: z.ZodObject<{
     wrapperScriptPath: z.ZodString;
     unbuffered: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    jobId?: string;
-    sessionName?: string;
     workingDirectory?: string;
+    jobId?: string;
+    unbuffered?: boolean;
+    sessionName?: string;
     pythonExecutable?: string;
     wrapperScriptPath?: string;
-    unbuffered?: boolean;
 }, {
-    jobId?: string;
-    sessionName?: string;
     workingDirectory?: string;
+    jobId?: string;
+    unbuffered?: boolean;
+    sessionName?: string;
     pythonExecutable?: string;
     wrapperScriptPath?: string;
-    unbuffered?: boolean;
 }>;
 export declare const ClaudeCodeOptionsSchema: z.ZodObject<{
     model: z.ZodOptional<z.ZodString>;
@@ -28,17 +28,17 @@ export declare const ClaudeCodeOptionsSchema: z.ZodObject<{
     timeout: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
     permission_mode: z.ZodOptional<z.ZodEnum<["bypassPermissions", "default", "plan", "acceptEdits"]>>;
 }, "strip", z.ZodTypeAny, {
+    timeout?: number;
+    permission_mode?: "default" | "bypassPermissions" | "plan" | "acceptEdits";
     model?: string;
     maxTokens?: number;
     temperature?: number;
-    timeout?: number;
-    permission_mode?: "bypassPermissions" | "default" | "plan" | "acceptEdits";
 }, {
+    timeout?: number;
+    permission_mode?: "default" | "bypassPermissions" | "plan" | "acceptEdits";
     model?: string;
     maxTokens?: number;
     temperature?: number;
-    timeout?: number;
-    permission_mode?: "bypassPermissions" | "default" | "plan" | "acceptEdits";
 }>;
 export declare const TaskExecutionRequestSchema: z.ZodObject<{
     id: z.ZodString;
@@ -52,44 +52,44 @@ export declare const TaskExecutionRequestSchema: z.ZodObject<{
         timeout: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
         permission_mode: z.ZodOptional<z.ZodEnum<["bypassPermissions", "default", "plan", "acceptEdits"]>>;
     }, "strip", z.ZodTypeAny, {
+        timeout?: number;
+        permission_mode?: "default" | "bypassPermissions" | "plan" | "acceptEdits";
         model?: string;
         maxTokens?: number;
         temperature?: number;
-        timeout?: number;
-        permission_mode?: "bypassPermissions" | "default" | "plan" | "acceptEdits";
     }, {
+        timeout?: number;
+        permission_mode?: "default" | "bypassPermissions" | "plan" | "acceptEdits";
         model?: string;
         maxTokens?: number;
         temperature?: number;
-        timeout?: number;
-        permission_mode?: "bypassPermissions" | "default" | "plan" | "acceptEdits";
     }>;
     timeoutMs: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
 }, "strip", z.ZodTypeAny, {
-    sessionName?: string;
-    workingDirectory?: string;
     options?: {
+        timeout?: number;
+        permission_mode?: "default" | "bypassPermissions" | "plan" | "acceptEdits";
         model?: string;
         maxTokens?: number;
         temperature?: number;
-        timeout?: number;
-        permission_mode?: "bypassPermissions" | "default" | "plan" | "acceptEdits";
     };
     id?: string;
     prompt?: string;
+    workingDirectory?: string;
+    sessionName?: string;
     timeoutMs?: number;
 }, {
-    sessionName?: string;
-    workingDirectory?: string;
     options?: {
+        timeout?: number;
+        permission_mode?: "default" | "bypassPermissions" | "plan" | "acceptEdits";
         model?: string;
         maxTokens?: number;
         temperature?: number;
-        timeout?: number;
-        permission_mode?: "bypassPermissions" | "default" | "plan" | "acceptEdits";
     };
     id?: string;
     prompt?: string;
+    workingDirectory?: string;
+    sessionName?: string;
     timeoutMs?: number;
 }>;
 export declare const WorkerConfigSchema: z.ZodObject<{
@@ -112,6 +112,8 @@ export declare const WorkerConfigSchema: z.ZodObject<{
     awaitWriteFinish: z.ZodDefault<z.ZodBoolean>;
     awaitWriteFinishMs: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
+    queueName?: string;
+    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
@@ -121,16 +123,16 @@ export declare const WorkerConfigSchema: z.ZodObject<{
     fileWatchTimeoutMs?: number;
     inactivityTimeoutMs?: number;
     wrapperWorkingDir?: string;
-    queueName?: string;
     redisHost?: string;
     redisPort?: number;
     redisPassword?: string;
-    logLevel?: "fatal" | "error" | "warn" | "info" | "debug" | "trace";
     enableDetailedLogs?: boolean;
     sessionLogsDir?: string;
     awaitWriteFinish?: boolean;
     awaitWriteFinishMs?: number;
 }, {
+    queueName?: string;
+    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
@@ -140,11 +142,9 @@ export declare const WorkerConfigSchema: z.ZodObject<{
     fileWatchTimeoutMs?: number;
     inactivityTimeoutMs?: number;
     wrapperWorkingDir?: string;
-    queueName?: string;
     redisHost?: string;
     redisPort?: number;
     redisPassword?: string;
-    logLevel?: "fatal" | "error" | "warn" | "info" | "debug" | "trace";
     enableDetailedLogs?: boolean;
     sessionLogsDir?: string;
     awaitWriteFinish?: boolean;
@@ -168,21 +168,21 @@ export declare const TaskStatusSchema: z.ZodObject<{
     error: z.ZodOptional<z.ZodString>;
     exitCode: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    error?: string;
     taskId?: string;
-    state?: TaskState;
-    pid?: number;
     progress?: string;
-    lastActivity?: Date;
+    error?: string;
     exitCode?: number;
+    state?: TaskState;
+    lastActivity?: Date;
+    pid?: number;
 }, {
-    error?: string;
     taskId?: string;
-    state?: TaskState;
-    pid?: number;
     progress?: string;
-    lastActivity?: Date;
+    error?: string;
     exitCode?: number;
+    state?: TaskState;
+    lastActivity?: Date;
+    pid?: number;
 }>;
 export type ProcessConfig = z.infer<typeof ProcessConfigSchema>;
 export type ClaudeCodeOptions = z.infer<typeof ClaudeCodeOptionsSchema>;
@@ -190,6 +190,8 @@ export type TaskExecutionRequest = z.infer<typeof TaskExecutionRequestSchema>;
 export type WorkerConfig = z.infer<typeof WorkerConfigSchema>;
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
 declare const _default: (() => {
+    queueName?: string;
+    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
@@ -199,16 +201,16 @@ declare const _default: (() => {
     fileWatchTimeoutMs?: number;
     inactivityTimeoutMs?: number;
     wrapperWorkingDir?: string;
-    queueName?: string;
     redisHost?: string;
     redisPort?: number;
     redisPassword?: string;
-    logLevel?: "fatal" | "error" | "warn" | "info" | "debug" | "trace";
     enableDetailedLogs?: boolean;
     sessionLogsDir?: string;
     awaitWriteFinish?: boolean;
     awaitWriteFinishMs?: number;
-}) & import("@nestjs/config").ConfigFactoryKeyHost<{
+}) & import("node_modules/@nestjs/config").ConfigFactoryKeyHost<{
+    queueName?: string;
+    logLevel?: "error" | "info" | "warn" | "trace" | "debug" | "fatal";
     pythonExecutable?: string;
     wrapperScriptPath?: string;
     maxConcurrentTasks?: number;
@@ -218,11 +220,9 @@ declare const _default: (() => {
     fileWatchTimeoutMs?: number;
     inactivityTimeoutMs?: number;
     wrapperWorkingDir?: string;
-    queueName?: string;
     redisHost?: string;
     redisPort?: number;
     redisPassword?: string;
-    logLevel?: "fatal" | "error" | "warn" | "info" | "debug" | "trace";
     enableDetailedLogs?: boolean;
     sessionLogsDir?: string;
     awaitWriteFinish?: boolean;
