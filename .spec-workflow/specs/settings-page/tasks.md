@@ -63,7 +63,7 @@ Task 0 MUST be completed before any other tasks. All settings functionality depe
   - _Requirements: 1.1, 1.2, 4.1_
   - _Prompt: Role: Next.js Developer | Task: Create settings page at apps/frontend/src/app/settings/page.tsx following requirements 1.1, 1.2, and 4.1, organizing settings into tabs/sections | Restrictions: Must set proper metadata, handle loading states, follow page structure patterns | Success: Page exists with organized settings layout, loads without 404, all sections accessible_
 
-- [ ] 7. Uncomment Settings navigation in Sidebar
+- [x] 7. Uncomment Settings navigation in Sidebar
   - File: apps/frontend/src/components/layout/Sidebar.tsx
   - Uncomment the System section with Settings link (lines 109-119)
   - Purpose: Enable navigation to settings page
@@ -71,7 +71,7 @@ Task 0 MUST be completed before any other tasks. All settings functionality depe
   - _Requirements: 4.1, 4.2, 4.3_
   - _Prompt: Role: Frontend Developer | Task: Uncomment the System section in Sidebar.tsx (lines 109-119) to enable settings navigation following requirements 4.1-4.3 | Restrictions: Ensure no syntax errors, verify active state highlighting | Success: System section visible, Settings link navigates to /settings without 404, active state works_
 
-- [ ] 8. Uncomment Settings navigation in Navigation
+- [x] 8. Uncomment Settings navigation in Navigation
   - File: apps/frontend/src/components/layout/Navigation.tsx
   - Uncomment the Settings navigation item (lines 58-63)
   - Purpose: Enable settings link in top navigation
@@ -79,7 +79,7 @@ Task 0 MUST be completed before any other tasks. All settings functionality depe
   - _Requirements: 4.1, 4.2, 4.3_
   - _Prompt: Role: Frontend Developer | Task: Uncomment the Settings navigation item in Navigation.tsx (lines 58-63) following requirements 4.1-4.3 | Restrictions: Ensure mobile navigation also works, verify no errors | Success: Settings link appears in navigation, navigates correctly, mobile menu works_
 
-- [ ] 9. Add form validation schemas (note: these should ideally be part of shared contract from Task 0)
+- [x] 9. Add form validation schemas (note: these should ideally be part of shared contract from Task 0)
   - File: apps/frontend/src/schemas/settings.ts
   - Import and re-use Zod validation schemas from shared contract (@cc-task-manager/schemas)
   - Add client-side specific validation refinements if needed (UI-only validations)
