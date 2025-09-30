@@ -30,7 +30,7 @@ Task 0 from task-list-component spec MUST be completed first. The Task API contr
   - _Requirements: 2.1, 2.2_
   - _Prompt: Role: Frontend Developer | Task: Add page header with "Completed Tasks" title and completed task count following requirements 2.1 and 2.2, using header pattern from other task pages | Restrictions: Must show only completed task count, maintain consistent styling | Success: Header displays correctly, count shows completed tasks only, styling is consistent_
 
-- [-] 3. Verify navigation links work (already uncommented)
+- [x] 3. Verify navigation links work (already uncommented)
   - File: N/A (verification only)
   - Test that sidebar Completed link navigates correctly
   - Purpose: Ensure navigation integration is working
@@ -38,7 +38,7 @@ Task 0 from task-list-component spec MUST be completed first. The Task API contr
   - _Requirements: 2.3_
   - _Prompt: Role: QA Engineer | Task: Verify that the Completed navigation link in Sidebar navigates to /tasks/completed without error following requirement 2.3 | Restrictions: Only verify functionality, do not modify if already working | Success: Clicking "Completed" in sidebar navigates to /tasks/completed, no 404 error, active state highlights_
 
-- [ ] 4. Add tests for completed page
+- [x] 4. Add tests for completed page
   - File: apps/frontend/src/app/tasks/completed/__tests__/page.test.tsx
   - Write tests verifying completed filter and sort
   - Purpose: Ensure page correctly filters and sorts completed tasks

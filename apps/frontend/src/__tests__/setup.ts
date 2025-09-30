@@ -2,6 +2,9 @@ import '@testing-library/jest-dom'
 import 'jest-canvas-mock'
 import React from 'react'
 
+// Set NODE_ENV to test to ensure React runs in development mode
+process.env.NODE_ENV = 'test'
+
 // Global test setup
 global.ResizeObserver = global.ResizeObserver || class ResizeObserver {
   constructor(cb: any) {}

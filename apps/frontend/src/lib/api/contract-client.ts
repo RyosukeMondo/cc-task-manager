@@ -36,7 +36,7 @@ export class ContractApiClient {
    * Make a type-safe API request using dual validation (contract + schema package)
    * Implements Dependency Inversion Principle (DIP) with contract abstractions
    */
-  private async request<T>(
+  async request<T>(
     method: string,
     path: string,
     data?: unknown,
