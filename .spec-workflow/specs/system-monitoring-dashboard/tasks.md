@@ -14,7 +14,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: Backend developer with NestJS expertise | Task: Create MonitoringModule following requirements 1, 2, and 3 | Restrictions: Do not hardcode configuration values | Success: Module compiles with no errors_
 
-- [ ] 2. Implement MonitoringService (system metrics collection)
+- [x] 2. Implement MonitoringService (system metrics collection)
   - File: apps/backend/src/monitoring/monitoring.service.ts
   - getMetrics(): Return { system, api, database, websocket }
   - System metrics (use Node.js os module): CPU usage (os.cpus()), memory (os.totalmem(), os.freemem()), disk (placeholder or check-disk-space library)
