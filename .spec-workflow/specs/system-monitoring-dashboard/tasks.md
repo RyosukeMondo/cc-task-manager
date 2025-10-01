@@ -27,7 +27,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: Backend developer with system monitoring expertise | Task: Implement MonitoringService following requirements 1, 2, and 3, collecting CPU, memory, API, and database metrics | Restrictions: Do not use external APM services, use built-in Node.js APIs | Success: All metrics calculated correctly_
 
-- [ ] 3. Create MonitoringController
+- [x] 3. Create MonitoringController
   - File: apps/backend/src/monitoring/monitoring.controller.ts
   - GET /api/monitoring/metrics: Returns system metrics (200 OK)
   - Protect with @UseGuards(JwtAuthGuard)
