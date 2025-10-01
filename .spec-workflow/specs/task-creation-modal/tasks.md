@@ -45,7 +45,7 @@
 
 ### Phase 2: API Integration (2 tasks)
 
-- [ ] 4. Enhance useCreateTask hook (add optimistic updates)
+- [x] 4. Enhance useCreateTask hook (add optimistic updates)
   - File: apps/frontend/src/hooks/useCreateTask.ts
   - Use useMutation from @tanstack/react-query
   - mutationFn: calls apiClient.createTask(data)
@@ -58,7 +58,7 @@
   - _Requirements: 3_
   - _Prompt: Role: Frontend developer with TanStack Query expertise | Task: Enhance useCreateTask hook with optimistic updates following requirement 3, showing task immediately before server response | Restrictions: Do not skip rollback on error, always revert optimistic updates on failure | Success: Optimistic updates work and task appears instantly_
 
-- [ ] 5. Wire up modal trigger in tasks page
+- [x] 5. Wire up modal trigger in tasks page
   - File: apps/frontend/src/app/tasks/page.tsx
   - Add state: const [createDialogOpen, setCreateDialogOpen] = useState(false)
   - Update "Create Task" button onClick to setCreateDialogOpen(true) (replace console.log)

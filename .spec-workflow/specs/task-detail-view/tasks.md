@@ -44,7 +44,7 @@
   - _Requirements: 3_
   - _Prompt: Role: Frontend developer with performance optimization expertise | Task: Create LogViewer component following requirement 3, implementing virtual scrolling for large log files | Restrictions: Do not render all logs at once, use virtual scrolling for > 1000 lines | Success: Logs display correctly, auto-scroll works, copy functionality works_
 
-- [-] 4. Create TaskActions component (action buttons)
+- [x] 4. Create TaskActions component (action buttons)
   - File: apps/frontend/src/components/tasks/TaskActions.tsx
   - Show "Cancel" button if status = PENDING or RUNNING (confirmation dialog, PATCH status=CANCELLED)
   - Show "Retry" button if status = FAILED (create new task with same params, navigate to new task)
