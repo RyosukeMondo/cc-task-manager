@@ -1,24 +1,24 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useMediaQuery } from "../../hooks/useMediaQuery";
+import * as React from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "../ui/sheet";
+} from '@/components/ui/sheet';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface TaskCreateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  children?: React.ReactNode;
+  children: React.ReactNode;
 }
 
 export function TaskCreateDialog({
@@ -26,12 +26,12 @@ export function TaskCreateDialog({
   onOpenChange,
   children,
 }: TaskCreateDialogProps) {
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>Create New Task</DialogTitle>
           </DialogHeader>

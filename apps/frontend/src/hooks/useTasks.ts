@@ -153,8 +153,8 @@ export function useCreateTask() {
         id: `temp-${Date.now()}`,
         title: newTask.title,
         description: newTask.description || '',
-        priority: newTask.priority || 'MEDIUM',
         status: 'PENDING' as TaskStatus,
+        priority: newTask.priority || 'MEDIUM',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -173,7 +173,7 @@ export function useCreateTask() {
     onError: (_err, _newTask, context) => {
       // Rollback to previous state on error
       if (context?.previousTasks) {
-        queryClient.setQueryData(taskQueryKeys.list(), context.previousTasks)
+        queryClient.setQueriesData({ queryKey: taskQueryKeys.lists() }, context.previousTasks)
       }
     },
     onSuccess: (newTask) => {

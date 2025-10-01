@@ -8,6 +8,7 @@ import { ReactQueryProvider } from '@/lib/api/providers'
 import { PerformanceMonitor } from '@/lib/accessibility/components'
 import { PWAClientProvider } from '@/lib/pwa/client-provider'
 import { SkipNavComplete } from '@/components/ui/skip-nav-complete'
+import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -59,6 +60,7 @@ export default function RootLayout({
             </ReactQueryProvider>
           </ThemeProvider>
         </PWAClientProvider>
+        <Toaster />
       </body>
     </html>
   )

@@ -5,7 +5,7 @@ import { Plus } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { TaskList } from '@/components/tasks/TaskList';
 import { Button } from '@/components/ui/button';
-import { TaskCreateDialog } from '@/components/tasks/TaskCreateDialog';
+import { TaskCreateResponsive } from '@/components/tasks/TaskCreateResponsive';
 
 /**
  * All Tasks Page
@@ -41,10 +41,10 @@ export default function TasksPage() {
 
         {/* Task List - handles its own data fetching, filtering, and updates */}
         <TaskList />
-      </div>
 
-      {/* Task Creation Modal */}
-      <TaskCreateDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
+        {/* Task Creation Modal */}
+        <TaskCreateResponsive open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
+      </div>
     </AppLayout>
   );
 }
