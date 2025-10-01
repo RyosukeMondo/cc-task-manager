@@ -132,15 +132,17 @@ export async function setupAuthenticatedSession(
 
   const authData = await response.json();
 
-  // Set auth token in storage
+  // Set auth token in storage using correct keys that match tokenStorage
   await page.goto('/');
   await page.evaluate((data) => {
-    localStorage.setItem('auth_token', data.token);
-    localStorage.setItem('user', JSON.stringify({
-      email: data.email,
-      role: data.role,
-    }));
-  }, { token: authData.token, email: user.email, role: user.role });
+    // Use correct localStorage keys from token-storage.ts
+    localStorage.setItem('auth_token', data.accessToken);
+    localStorage.setItem('refresh_token', data.refreshToken);
+    localStorage.setItem('auth_user', JSON.stringify(data.user));
+
+    // Also set cookies for middleware
+    document.cookie = `auth_token=${data.accessToken};path=/;SameSite=Lax`;
+  }, authData);
 
   // Reload to apply authentication
   await page.reload();

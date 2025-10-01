@@ -6,12 +6,12 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { login } from './fixtures/auth';
+import { setupAuthenticatedSession } from './fixtures/auth';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3006';
 
 test.describe('Authenticated Pages', () => {
-  // Login before each test using UI
+  // Setup authentication before each test using API (faster than UI login)
   test.beforeEach(async ({ page }) => {
     // Listen for errors
     page.on('console', (msg) => {
@@ -24,8 +24,8 @@ test.describe('Authenticated Pages', () => {
       console.error(`❌ Page Error on ${page.url()}: ${error.message}`);
     });
 
-    // Login via UI
-    await login(page, 'user');
+    // Setup auth via API (faster than UI login)
+    await setupAuthenticatedSession(page, 'user');
   });
 
   test('Dashboard page loads for authenticated user', async ({ page }) => {
@@ -54,10 +54,10 @@ test.describe('Authenticated Pages', () => {
     const errorOverlay = page.locator('[id*="nextjs"][id*="error"]');
     await expect(errorOverlay).not.toBeVisible({ timeout: 2000 }).catch(() => {});
 
-    // Should show task list or empty state
+    // Should show task list or empty state - use more specific selector
     const taskListOrEmpty = page
       .locator('[data-testid="task-list"]')
-      .or(page.locator('text=/No tasks|All Tasks/i'));
+      .or(page.locator('h1:has-text("All Tasks")').first());
     await expect(taskListOrEmpty).toBeVisible();
 
     console.log('✅ All Tasks page loaded for authenticated user');
@@ -128,9 +128,9 @@ test.describe('Authenticated Pages', () => {
     const errorOverlay = page.locator('[id*="nextjs"][id*="error"]');
     await expect(errorOverlay).not.toBeVisible({ timeout: 2000 }).catch(() => {});
 
-    // Settings should show tabs or sections
+    // Settings should show heading - use more specific selector
     await expect(
-      page.locator('text=/Settings|Profile|Notifications|Preferences/i')
+      page.locator('h1:has-text("Settings")').first()
     ).toBeVisible();
 
     console.log('✅ Settings page loaded for authenticated user');
