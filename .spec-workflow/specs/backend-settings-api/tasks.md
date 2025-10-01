@@ -28,7 +28,7 @@
 
 ### Phase 2: Module & DTOs (2 tasks)
 
-- [ ] 3. Create SettingsModule
+- [x] 3. Create SettingsModule
   - File: apps/backend/src/settings/settings.module.ts
   - Import AuthModule (provides JwtAuthGuard)
   - Import PrismaModule
