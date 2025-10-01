@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { TaskList } from '@/components/tasks/TaskList';
 import { Button } from '@/components/ui/button';
+import { TaskCreateResponsive } from '@/components/tasks/TaskCreateResponsive';
 
 /**
  * All Tasks Page
@@ -19,10 +20,7 @@ import { Button } from '@/components/ui/button';
  * - No local state management needed at page level
  */
 export default function TasksPage() {
-  const handleCreateTask = () => {
-    // TODO: Implement task creation modal/flow
-    console.log('Create task clicked');
-  };
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   return (
     <AppLayout>
@@ -35,7 +33,7 @@ export default function TasksPage() {
               View and manage all your tasks with filtering and search
             </p>
           </div>
-          <Button onClick={handleCreateTask} className="flex items-center gap-2">
+          <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             Create Task
           </Button>
@@ -43,6 +41,9 @@ export default function TasksPage() {
 
         {/* Task List - handles its own data fetching, filtering, and updates */}
         <TaskList />
+
+        {/* Task Creation Modal */}
+        <TaskCreateResponsive open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
       </div>
     </AppLayout>
   );
