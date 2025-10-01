@@ -11,8 +11,10 @@
 
 # Base configuration
 base:
+  # IMPORTANT: Use absolute paths for project_root and worktree_dir
+  # Relative paths may cause worktrees to be created in wrong locations
   project_root: /home/rmondo/repos/cc-task-manager
-  worktree_dir: worktree
+  worktree_dir: /home/rmondo/repos/cc-task-manager/worktree
   base_branch: main
   python_venv: .venv/bin/python3
   dashboard_port_base: 3412

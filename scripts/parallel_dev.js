@@ -91,6 +91,52 @@ class ParallelDevSetup {
     log(`✓ Loaded ${this.config.specifications.length} specifications`, 'green');
   }
 
+  // Phase 0: Validate Python dependencies
+  validatePythonDependencies() {
+    log(`\n🐍 Phase 0: Validating Python dependencies...`, 'cyan');
+
+    const pythonPath = path.join(this.projectRoot, this.config.base.python_venv);
+
+    if (!fs.existsSync(pythonPath)) {
+      log(`  ✗ Python venv not found: ${pythonPath}`, 'red');
+      log('', 'reset');
+      log('Setup Python virtual environment:', 'yellow');
+      log('  1. python3 -m venv .venv', 'cyan');
+      log('  2. source .venv/bin/activate', 'cyan');
+      log('  3. pip install -r requirements.txt', 'cyan');
+      log('', 'reset');
+      throw new Error('Python venv not found - see instructions above');
+    }
+
+    // Check if claude-code-sdk is installed
+    try {
+      const checkCommand = `${pythonPath} -c "import claude_code_sdk; print(claude_code_sdk.__version__)"`;
+      const version = execCommand(checkCommand, { silent: true });
+      log(`  ✓ claude-code-sdk installed: v${version}`, 'green');
+    } catch (error) {
+      log(`  ✗ claude-code-sdk not installed!`, 'red');
+      log('', 'reset');
+      log('Install required Python package:', 'yellow');
+      log('  source .venv/bin/activate', 'cyan');
+      log('  pip install -r requirements.txt', 'cyan');
+      log('', 'reset');
+      log('Or install manually:', 'yellow');
+      log('  pip install claude-code-sdk>=0.0.25', 'cyan');
+      log('', 'reset');
+      throw new Error('claude-code-sdk not installed - required for automation');
+    }
+
+    // Check if anthropic is installed
+    try {
+      const checkCommand = `${pythonPath} -c "import anthropic; print(anthropic.__version__)"`;
+      const version = execCommand(checkCommand, { silent: true });
+      log(`  ✓ anthropic installed: v${version}`, 'green');
+    } catch (error) {
+      log(`  ⚠ anthropic package not installed`, 'yellow');
+      log('  Install with: pip install anthropic>=0.69.0', 'cyan');
+    }
+  }
+
   getAvailableSpecs() {
     return this.config.specifications
       .filter(spec => spec.available === true)
@@ -403,6 +449,7 @@ class ParallelDevSetup {
       }
 
       // Full setup flow
+      this.validatePythonDependencies();
       this.setupWorktrees();
       this.setupMCPServers();
 
