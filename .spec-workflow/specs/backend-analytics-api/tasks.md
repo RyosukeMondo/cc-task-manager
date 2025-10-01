@@ -15,7 +15,7 @@
   - _Requirements: 1, 3_
   - _Prompt: Role: Backend developer with NestJS and Redis expertise | Task: Create AnalyticsModule with Redis cache configuration following requirements 1 and 3, ensuring proper DI setup for AnalyticsService and AnalyticsRepository | Restrictions: Do not hardcode Redis credentials, use environment variables | Success: Module compiles successfully and Redis connection is established_
 
-- [ ] 2. Define Zod schemas for analytics
+- [x] 2. Define Zod schemas for analytics
   - File: packages/schemas/src/analytics.schema.ts, packages/schemas/src/index.ts, apps/backend/src/analytics/dto/analytics-filter.dto.ts, apps/backend/src/analytics/dto/trend-filter.dto.ts
   - Create analyticsFilterSchema: startDate (date, optional), endDate (date, optional), validate startDate <= endDate
   - Create trendFilterSchema: extends analyticsFilterSchema, add groupBy (enum: day/week/month, default: day)
