@@ -30,7 +30,7 @@
   - _Requirements: Non-functional (Modularity)_
   - _Prompt: Role: NestJS Developer with expertise in module architecture and dependency injection | Task: Create TasksModule with proper DI configuration following NestJS best practices | Restrictions: Must not create circular dependencies, follow existing module patterns, ensure proper provider registration | Success: Module compiles without errors, all dependencies inject correctly, no circular dependency warnings_
 
-- [ ] 4. Define Zod schemas and DTOs
+- [x] 4. Define Zod schemas and DTOs
   - File: packages/schemas/src/task.schema.ts
   - Create createTaskSchema: title (required, max 200), description (optional, max 2000), priority (enum, default MEDIUM)
   - Create updateTaskSchema: status, priority, errorMessage (all optional)
