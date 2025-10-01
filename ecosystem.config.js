@@ -105,6 +105,32 @@ module.exports = {
       "time": true
     },
     {
+      "name": "spec-workflow-automation-mind-session-flow",
+      "script": "/home/rmondo/repos/cc-task-manager/.venv/bin/python3",
+      "args": [
+        "scripts/spec_workflow_automation.py",
+        "--spec-name",
+        "session-flow-foundation",
+        "--project",
+        "../mind-training/worktree/session-flow-foundation",
+        "--session-log",
+        "logs/spec-workflow-mind-session-flow.jsonl"
+      ],
+      "cwd": "/home/rmondo/repos/cc-task-manager",
+      "autorestart": false,
+      "error_file": "logs/pm2-spec-workflow-mind-session-flow-error.log",
+      "out_file": "logs/pm2-spec-workflow-mind-session-flow-out.log",
+      "instances": 1,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "merge_logs": true,
+      "time": true
+    },
+    {
       "name": "spec-workflow-dashboard-task-creation-modal",
       "script": "npx",
       "args": [
@@ -194,6 +220,31 @@ module.exports = {
       "autorestart": true,
       "error_file": "logs/pm2-dashboard-system-monitoring-dashboard-error.log",
       "out_file": "logs/pm2-dashboard-system-monitoring-dashboard-out.log",
+      "instances": 1,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "merge_logs": true,
+      "time": true
+    },
+    {
+      "name": "spec-workflow-dashboard-mind-session-flow",
+      "script": "npx",
+      "args": [
+        "-y",
+        "@pimzino/spec-workflow-mcp@latest",
+        "../mind-training/worktree/session-flow-foundation",
+        "--dashboard",
+        "--port",
+        "3418"
+      ],
+      "cwd": "/home/rmondo/repos/cc-task-manager",
+      "autorestart": true,
+      "error_file": "logs/pm2-dashboard-mind-session-flow-error.log",
+      "out_file": "logs/pm2-dashboard-mind-session-flow-out.log",
       "instances": 1,
       "watch": false,
       "max_memory_restart": "1G",

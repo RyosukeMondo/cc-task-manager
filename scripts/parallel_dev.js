@@ -3,6 +3,17 @@
 /**
  * Parallel Development Setup - SSOT Script
  *
+ * ============================================================================
+ * WHEN TO USE THIS SCRIPT:
+ * ============================================================================
+ * Use this for SINGLE-PROJECT parallel development (developing multiple specs
+ * within ONE project using parallel.yaml configuration).
+ *
+ * For CROSS-PROJECT automation (e.g., cc-task-manager → mind-training):
+ * → Edit scripts/config.js and use generate-ecosystem.js instead
+ * → See parallel_how_to.md for complete cross-project setup guide
+ * ============================================================================
+ *
  * Comprehensive automation for parallel spec development:
  * 1. Create git worktrees for each available spec
  * 2. Create/checkout feature branches

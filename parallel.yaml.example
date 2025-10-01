@@ -1,6 +1,17 @@
 # Parallel Development Configuration - Template
 #
-# SETUP INSTRUCTIONS:
+# ============================================================================
+# WHEN TO USE THIS FILE:
+# ============================================================================
+# Use parallel.yaml for SINGLE-PROJECT parallel development
+# (developing multiple specs within THIS project only)
+#
+# For CROSS-PROJECT automation (e.g., cc-task-manager → mind-training):
+# → Edit scripts/config.js instead (see parallel_how_to.md)
+#
+# ============================================================================
+# SETUP INSTRUCTIONS (Single-Project):
+# ============================================================================
 # 1. Copy this file to parallel.yaml:
 #    cp parallel.yaml.example parallel.yaml
 # 2. Edit parallel.yaml to set available: true for specs you want to develop
@@ -8,6 +19,7 @@
 #
 # NOTE: parallel.yaml is git-ignored to avoid conflicts with daily changes
 #       This template file shows all available options and variations
+# ============================================================================
 
 # Base configuration
 base:
@@ -16,7 +28,7 @@ base:
   project_root: /home/rmondo/repos/cc-task-manager
   worktree_dir: /home/rmondo/repos/cc-task-manager/worktree
   base_branch: main
-  python_venv: .venv/bin/python3
+  python_venv: .venv/bin/python3  # Host project's Python
   dashboard_port_base: 3412
 
 # Specifications to develop in parallel
