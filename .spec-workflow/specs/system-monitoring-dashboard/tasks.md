@@ -52,7 +52,7 @@
   - _Requirements: 1, 4, 6_
   - _Prompt: Role: Frontend developer with Next.js expertise | Task: Create monitoring dashboard route following requirements 1, 4, and 6 | Restrictions: Do not hardcode polling interval, use configurable value | Success: Page renders and polling works_
 
-- [ ] 5. Create SystemMetrics component (resource cards)
+- [x] 5. Create SystemMetrics component (resource cards)
   - File: apps/frontend/src/components/monitoring/SystemMetrics.tsx
   - 4 metric cards: CPU Usage (blue), Memory Usage (green), Disk Usage (purple), Database Pool (orange)
   - Each card: Icon, title, value (percentage or fraction), subtitle
