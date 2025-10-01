@@ -31,7 +31,7 @@
 
 ### Phase 2: Route & Components (4 tasks)
 
-- [ ] 3. Create queue dashboard route
+- [x] 3. Create queue dashboard route
   - File: apps/frontend/src/app/queue/page.tsx, apps/frontend/src/app/queue/loading.tsx, apps/frontend/src/app/queue/error.tsx
   - page.tsx: Use useQueue hook with 5s polling, render QueueMetrics/ThroughputChart/JobList
   - loading.tsx: Skeleton with shimmer
