@@ -139,7 +139,7 @@
 
 ### Phase 6: Testing & Configuration (2 tasks)
 
-- [ ] 12. Create E2E tests for auth flow
+- [x] 12. Create E2E tests for auth flow
   - File: apps/frontend/e2e/auth.spec.ts
   - Test: POST /api/auth/register creates user (expect 201, user object, no password field)
   - Test: POST /api/auth/register rejects duplicate email (expect 409)
