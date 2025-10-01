@@ -28,9 +28,11 @@ export default function LoginPage() {
 
   /**
    * Handle successful login
+   * Note: Redirect is handled by the useEffect above when isAuthenticated becomes true
    */
   const handleLoginSuccess = () => {
-    router.push(returnUrl);
+    // Redirect is handled by useEffect - no manual redirect needed here
+    // This prevents double-redirect issues
   };
 
   /**

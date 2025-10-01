@@ -76,13 +76,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       // Reset form on success
       reset();
 
-      // Call success callback
+      // Call success callback - let the parent handle redirectUrl is not being used by this form, parent should handle redirect
       onSuccess?.();
-
-      // Redirect if URL provided
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed';
       onError?.(errorMessage);
