@@ -1,4 +1,4 @@
-const { PrismaClient } = require('../node_modules/.prisma/client');
+const { PrismaClient } = require('@prisma/client');
 // Note: bcrypt would be used for password hashing in production
 
 const prisma = new PrismaClient();
@@ -23,7 +23,7 @@ async function seedUsers() {
         lastName: 'Admin',
         role: 'ADMIN',
         status: 'ACTIVE',
-        passwordHash: 'hashed_admin123', // Note: In production, use bcrypt.hash('admin123', 10)
+        password: 'hashed_admin123', // Note: In production, use bcrypt.hash('admin123', 10)
         lastLoginAt: new Date(),
       },
       {
@@ -34,7 +34,7 @@ async function seedUsers() {
         lastName: 'User',
         role: 'USER',
         status: 'ACTIVE',
-        passwordHash: 'hashed_dev123', // Note: In production, use bcrypt.hash('dev123', 10)
+        password: 'hashed_dev123', // Note: In production, use bcrypt.hash('dev123', 10)
         lastLoginAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
       },
       {
@@ -45,7 +45,7 @@ async function seedUsers() {
         lastName: 'Engineer',
         role: 'USER',
         status: 'ACTIVE',
-        passwordHash: 'hashed_test123', // Note: In production, use bcrypt.hash('test123', 10)
+        password: 'hashed_test123', // Note: In production, use bcrypt.hash('test123', 10)
         lastLoginAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       },
       {
@@ -56,7 +56,7 @@ async function seedUsers() {
         lastName: 'User',
         role: 'USER',
         status: 'INACTIVE',
-        passwordHash: 'hashed_inactive123', // Note: In production, use bcrypt.hash('inactive123', 10)
+        password: 'hashed_inactive123', // Note: In production, use bcrypt.hash('inactive123', 10)
       },
     ],
     skipDuplicates: true,
@@ -758,7 +758,7 @@ async function seedResultFiles() {
 async function seedUserSessions() {
   console.log('🌱 Seeding user sessions...');
 
-  const sessions = await prisma.userSession.createMany({
+  const sessions = await prisma.session.createMany({
     data: [
       {
         id: 'gg0e8400-e29b-41d4-a716-446655440001',
@@ -766,9 +766,9 @@ async function seedUserSessions() {
         deviceInfo: 'Chrome 118.0.0.0 on macOS 14.0',
         ipAddress: '192.168.1.100',
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-        isActive: true,
+        refreshToken: 'refresh_token_admin_' + Date.now(),
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        lastActivityAt: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
+        lastActive: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
       },
       {
         id: 'gg0e8400-e29b-41d4-a716-446655440002',
@@ -776,9 +776,9 @@ async function seedUserSessions() {
         deviceInfo: 'Firefox 118.0 on Ubuntu 22.04',
         ipAddress: '192.168.1.101',
         userAgent: 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:118.0) Gecko/20100101 Firefox/118.0',
-        isActive: true,
+        refreshToken: 'refresh_token_dev_' + Date.now(),
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-        lastActivityAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       },
       {
         id: 'gg0e8400-e29b-41d4-a716-446655440003',
@@ -786,9 +786,9 @@ async function seedUserSessions() {
         deviceInfo: 'Mobile Safari on iOS 17.0',
         ipAddress: '10.0.0.50',
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
-        isActive: false,
+        refreshToken: 'refresh_token_test_' + Date.now(),
         expiresAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Expired 1 day ago
-        lastActivityAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        lastActive: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       },
     ],
     skipDuplicates: true,
