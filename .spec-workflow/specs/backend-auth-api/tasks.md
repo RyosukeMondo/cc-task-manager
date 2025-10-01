@@ -122,7 +122,7 @@
 
 ### Phase 5: Frontend Integration (1 task)
 
-- [ ] 11. Add auth methods to contract-client.ts
+- [x] 11. Add auth methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: `// ========== Spec: backend-auth-api ==========`
   - Add register(data: RegisterDto): Promise<{ user: User }>

@@ -9,7 +9,15 @@ import {
   ProcessConfigSchema,
   TaskExecutionRequestSchema,
   WorkerConfigSchema,
-  TaskStatusSchema
+  TaskStatusSchema,
+  validateUserRegistration,
+  validateLoginRequest,
+  validateTokenRefresh,
+  type UserRegistration,
+  type LoginRequest,
+  type AuthResponse,
+  type UserBase,
+  type TokenRefresh
 } from '@cc-task-manager/schemas'
 import type {
   ProcessConfig,
@@ -101,7 +109,24 @@ export class ContractApiClient {
 
   private getAuthToken(): string | null {
     if (typeof window === 'undefined') return null
-    return localStorage.getItem('auth_token')
+    return localStorage.getItem('accessToken')
+  }
+
+  private setTokens(accessToken: string, refreshToken: string): void {
+    if (typeof window === 'undefined') return
+    localStorage.setItem('accessToken', accessToken)
+    localStorage.setItem('refreshToken', refreshToken)
+  }
+
+  private clearTokens(): void {
+    if (typeof window === 'undefined') return
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+  }
+
+  private getRefreshToken(): string | null {
+    if (typeof window === 'undefined') return null
+    return localStorage.getItem('refreshToken')
   }
 
   // Task Management API - using existing contract types
@@ -167,20 +192,79 @@ export class ContractApiClient {
     )
   }
 
-  // Authentication API
-  async login(credentials: { username: string; password: string }): Promise<{
-    token: string;
-    user: { id: string; username: string; role: string };
-  }> {
-    return this.request('POST', '/api/auth/login', credentials)
+  // ========== Spec: backend-auth-api ==========
+
+  /**
+   * Register a new user account
+   * @param data User registration data (email, username, password, firstName, lastName)
+   * @returns User object without password
+   */
+  async register(data: UserRegistration): Promise<{ user: UserBase }> {
+    const response = await this.request<{ user: UserBase }>(
+      'POST',
+      '/api/auth/register',
+      data,
+      validateUserRegistration
+    )
+    return response
   }
 
+  /**
+   * Authenticate user with email/username and password
+   * @param credentials Login credentials (identifier, password, rememberMe)
+   * @returns Authentication response with tokens and user
+   */
+  async login(credentials: LoginRequest): Promise<AuthResponse> {
+    const response = await this.request<AuthResponse>(
+      'POST',
+      '/api/auth/login',
+      credentials,
+      validateLoginRequest
+    )
+    // Store tokens in localStorage
+    this.setTokens(response.accessToken, response.refreshToken)
+    return response
+  }
+
+  /**
+   * Refresh access token using refresh token
+   * @param refreshToken Refresh token string (optional, uses stored token if not provided)
+   * @returns New authentication response with fresh tokens
+   */
+  async refreshToken(refreshToken?: string): Promise<AuthResponse> {
+    const token = refreshToken || this.getRefreshToken()
+    if (!token) {
+      throw new Error('No refresh token available')
+    }
+
+    const response = await this.request<AuthResponse>(
+      'POST',
+      '/api/auth/refresh',
+      { refreshToken: token },
+      validateTokenRefresh
+    )
+    // Update stored tokens
+    this.setTokens(response.accessToken, response.refreshToken)
+    return response
+  }
+
+  /**
+   * Log out the current user
+   * Requires authentication (JWT in Authorization header)
+   */
   async logout(): Promise<void> {
-    return this.request('POST', '/api/auth/logout')
+    await this.request<void>('POST', '/api/auth/logout')
+    // Clear tokens from localStorage
+    this.clearTokens()
   }
 
-  async refreshToken(): Promise<{ token: string }> {
-    return this.request('POST', '/api/auth/refresh')
+  /**
+   * Get current authenticated user
+   * Requires authentication (JWT in Authorization header)
+   * @returns User object without password
+   */
+  async getCurrentUser(): Promise<UserBase> {
+    return this.request<UserBase>('GET', '/api/auth/me')
   }
 
   // Analytics API
