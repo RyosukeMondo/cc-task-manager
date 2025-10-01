@@ -55,7 +55,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with data visualization expertise | Task: Create QueueMetrics component following requirement 1, implementing color-coded metric cards | Restrictions: Do not use custom colors, follow design system | Success: Metrics display correctly with color coding_
 
-- [ ] 5. Create ThroughputChart component (Recharts)
+- [x] 5. Create ThroughputChart component (Recharts)
   - File: apps/frontend/src/components/queue/ThroughputChart.tsx
   - Use Recharts LineChart
   - Data: Last 24 hours, hourly buckets
