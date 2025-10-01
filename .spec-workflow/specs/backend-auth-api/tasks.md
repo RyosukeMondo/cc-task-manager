@@ -62,7 +62,7 @@
   - _Requirements: 2, 6_
   - _Prompt: Role: Backend developer with NestJS and Passport expertise | Task: Create AuthModule with JWT configuration following requirements 2 and 6 | Restrictions: Do not hardcode JWT secret, use environment variables | Success: Module compiles with no errors_
 
-- [ ] 6. Implement JWT Strategy
+- [x] 6. Implement JWT Strategy
   - File: apps/backend/src/auth/strategies/jwt.strategy.ts
   - Extend PassportStrategy(Strategy)
   - Extract JWT from Authorization header (Bearer token)
