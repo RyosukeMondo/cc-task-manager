@@ -130,7 +130,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with TypeScript expertise | Task: Add getTaskById method to contract-client.ts following requirement 1 | Restrictions: Do not duplicate existing patterns | Success: Method exists and is type-safe_
 
-- [ ] 11. Create E2E test for task detail view
+- [x] 11. Create E2E test for task detail view
   - File: apps/frontend/e2e/task-detail.spec.ts
   - Test: Navigate to /tasks/:id displays task metadata
   - Test: Navigate to /tasks/invalid-uuid shows 404 page
@@ -161,7 +161,7 @@ Task 10 (contract-client) → Task 11 (E2E tests)
 
 Before marking this spec as complete, verify:
 
-- [ ] All 11 tasks marked as `[x]`
+- [x] All 11 tasks marked as `[x]`
 - [ ] All E2E tests passing (0 failures)
 - [ ] Can navigate to task detail page by clicking task in list
 - [ ] Task metadata displays correctly (title, status, priority, timestamps)

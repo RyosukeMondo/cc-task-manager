@@ -98,7 +98,7 @@
 
 ### Phase 4: Testing (1 task)
 
-- [ ] 8. Create E2E test for task creation flow
+- [x] 8. Create E2E test for task creation flow
   - File: apps/frontend/e2e/task-create.spec.ts
   - Test: Click "Create Task" button opens modal
   - Test: Submit without title shows error "Title is required"

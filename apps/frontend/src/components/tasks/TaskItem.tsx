@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { Task, TaskStatus, TaskPriority } from '@/types/task';
 import {
   Card,
@@ -37,6 +38,17 @@ export const TaskItem = React.memo<TaskItemProps>(({
   onDelete,
   className,
 }) => {
+  const router = useRouter();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent navigation if clicking on buttons
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) {
+      return;
+    }
+    router.push(`/tasks/${task.id}`);
+  };
+
   const getStatusVariant = (status: TaskStatus): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
       case TaskStatus.COMPLETED:
@@ -74,11 +86,12 @@ export const TaskItem = React.memo<TaskItemProps>(({
   return (
     <Card
       className={cn(
-        'transition-all hover:shadow-md focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+        'transition-all hover:shadow-md hover:bg-muted/50 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 cursor-pointer',
         className
       )}
       role="article"
       aria-label={`Task: ${task.title}`}
+      onClick={handleCardClick}
     >
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
