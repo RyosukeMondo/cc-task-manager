@@ -4,7 +4,7 @@
 
 ### Phase 1: Backend API (2 tasks)
 
-- [ ] 1. Create QueueController with status endpoint
+- [x] 1. Create QueueController with status endpoint
   - File: apps/backend/src/queue/queue.controller.ts
   - GET /api/queue/status: Returns { metrics, jobs, throughput }
   - metrics: { activeCount, pendingCount, completedCount, failedCount } via BullMQ Queue.getJobCounts()
@@ -17,7 +17,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: Backend developer with BullMQ expertise | Task: Create QueueController endpoint following requirements 1, 2, and 3, exposing queue metrics and job lists | Restrictions: Do not expose sensitive job data, protect with authentication | Success: Endpoint returns queue status correctly_
 
-- [ ] 2. Add job management endpoints
+- [x] 2. Add job management endpoints
   - File: apps/backend/src/queue/queue.controller.ts
   - POST /api/queue/jobs/:id/retry: Retry failed job (call job.retry())
   - POST /api/queue/jobs/:id/cancel: Cancel pending/active job (call job.remove())
@@ -31,7 +31,7 @@
 
 ### Phase 2: Route & Components (4 tasks)
 
-- [ ] 3. Create queue dashboard route
+- [x] 3. Create queue dashboard route
   - File: apps/frontend/src/app/queue/page.tsx, apps/frontend/src/app/queue/loading.tsx, apps/frontend/src/app/queue/error.tsx
   - page.tsx: Use useQueue hook with 5s polling, render QueueMetrics/ThroughputChart/JobList
   - loading.tsx: Skeleton with shimmer
@@ -43,7 +43,7 @@
   - _Requirements: 1, 5_
   - _Prompt: Role: Frontend developer with Next.js expertise | Task: Create queue dashboard route following requirements 1 and 5, implementing 5s polling | Restrictions: Do not hardcode polling interval, use configurable value | Success: Page renders correctly and polling works_
 
-- [ ] 4. Create QueueMetrics component (metrics cards)
+- [x] 4. Create QueueMetrics component (metrics cards)
   - File: apps/frontend/src/components/queue/QueueMetrics.tsx
   - 4 metric cards: Active Jobs (yellow), Pending Jobs (blue), Completed Jobs (green), Failed Jobs (red)
   - Each card: Icon, title, count, color-coded
@@ -55,7 +55,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with data visualization expertise | Task: Create QueueMetrics component following requirement 1, implementing color-coded metric cards | Restrictions: Do not use custom colors, follow design system | Success: Metrics display correctly with color coding_
 
-- [ ] 5. Create ThroughputChart component (Recharts)
+- [x] 5. Create ThroughputChart component (Recharts)
   - File: apps/frontend/src/components/queue/ThroughputChart.tsx
   - Use Recharts LineChart
   - Data: Last 24 hours, hourly buckets
@@ -70,7 +70,7 @@
   - _Requirements: 2_
   - _Prompt: Role: Frontend developer with charting expertise | Task: Create ThroughputChart component following requirement 2, showing completed and failed job trends | Restrictions: Do not exceed 100 data points, sample if necessary | Success: Chart displays throughput correctly_
 
-- [ ] 6. Create JobList component (table with pagination)
+- [x] 6. Create JobList component (table with pagination)
   - File: apps/frontend/src/components/queue/JobList.tsx
   - Table columns: ID (truncated), Name, Status (badge), Progress (progress bar), Attempts, Timestamp, Actions
   - Status filter: All, Active, Pending, Completed, Failed
@@ -86,7 +86,7 @@
 
 ### Phase 3: Data Fetching & Actions (2 tasks)
 
-- [ ] 7. Implement useQueue hook (polling)
+- [x] 7. Implement useQueue hook (polling)
   - File: apps/frontend/src/hooks/useQueue.ts
   - Use useQuery with queryKey: ['queue', 'status']
   - queryFn: apiClient.getQueueStatus()
@@ -98,7 +98,7 @@
   - _Requirements: 5_
   - _Prompt: Role: Frontend developer with polling optimization expertise | Task: Implement useQueue hook following requirement 5, reducing polling frequency when tab inactive | Restrictions: Do not poll when tab hidden, use visibility API | Success: Polling works and reduces frequency when tab inactive_
 
-- [ ] 8. Implement useJobActions hook (mutations)
+- [x] 8. Implement useJobActions hook (mutations)
   - File: apps/frontend/src/hooks/useJobActions.ts
   - retryJob: useMutation with POST /api/queue/jobs/:id/retry
   - cancelJob: useMutation with POST /api/queue/jobs/:id/cancel
@@ -112,7 +112,7 @@
 
 ### Phase 4: Integration & Testing (3 tasks)
 
-- [ ] 9. Add queue methods to contract-client.ts
+- [x] 9. Add queue methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: `// ========== Spec: queue-management-dashboard ==========`
   - getQueueStatus(): Promise<QueueStatusResponse>
@@ -124,7 +124,7 @@
   - _Requirements: 1, 4_
   - _Prompt: Role: Frontend developer with TypeScript expertise | Task: Add queue methods to contract-client.ts following requirements 1 and 4 | Restrictions: Do not duplicate patterns, follow conventions | Success: Methods exist and are type-safe_
 
-- [ ] 10. Add "Queue" link to Sidebar
+- [x] 10. Add "Queue" link to Sidebar
   - File: apps/frontend/src/components/layout/Sidebar.tsx
   - Add section comment: `// ========== Spec: queue-management-dashboard ==========`
   - Add navigation item: { name: 'Queue', href: '/queue', icon: QueueIcon }
@@ -134,7 +134,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with navigation expertise | Task: Add Queue link to Sidebar following requirement 1 | Restrictions: Do not modify other navigation items | Success: Queue link appears in sidebar and navigates correctly_
 
-- [ ] 11. Create E2E test for queue dashboard
+- [x] 11. Create E2E test for queue dashboard
   - File: apps/frontend/e2e/queue-dashboard.spec.ts
   - Test: Navigate to /queue displays metrics cards
   - Test: Throughput chart renders
