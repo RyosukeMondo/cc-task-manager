@@ -138,7 +138,13 @@ export function TaskCreateForm({ onSuccess, onCancel }: TaskCreateFormProps) {
   const isLoading = isSubmitting || createTaskMutation.isPending;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleKeyDown} className="space-y-4 p-4">
+    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleKeyDown} className="space-y-4 p-4" aria-label="Create new task">
+      {/* Screen reader announcements for form status */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {isLoading && 'Creating task, please wait...'}
+        {Object.keys(errors).length > 0 && `Form has ${Object.keys(errors).length} validation error${Object.keys(errors).length > 1 ? 's' : ''}`}
+      </div>
+
       {/* Title field */}
       <div className="space-y-2">
         <Label htmlFor="title" className="flex items-center justify-between">
@@ -158,14 +164,15 @@ export function TaskCreateForm({ onSuccess, onCancel }: TaskCreateFormProps) {
           aria-invalid={!!errors.title}
           aria-describedby={errors.title ? 'title-error' : undefined}
           aria-required="true"
+          aria-label="Task title (required, maximum 200 characters)"
           onKeyDown={handleTitleKeyDown}
         />
         {errors.title && (
           <p
             id="title-error"
-            className="text-sm text-red-600"
+            className="text-sm text-red-600 dark:text-red-400 font-medium"
             role="alert"
-            aria-live="polite"
+            aria-live="assertive"
           >
             {errors.title.message}
           </p>
@@ -188,13 +195,14 @@ export function TaskCreateForm({ onSuccess, onCancel }: TaskCreateFormProps) {
           disabled={isLoading}
           aria-invalid={!!errors.description}
           aria-describedby={errors.description ? 'description-error' : undefined}
+          aria-label="Task description (optional, maximum 2000 characters)"
         />
         {errors.description && (
           <p
             id="description-error"
-            className="text-sm text-red-600"
+            className="text-sm text-red-600 dark:text-red-400 font-medium"
             role="alert"
-            aria-live="polite"
+            aria-live="assertive"
           >
             {errors.description.message}
           </p>
@@ -217,6 +225,7 @@ export function TaskCreateForm({ onSuccess, onCancel }: TaskCreateFormProps) {
                 id="priority"
                 aria-invalid={!!errors.priority}
                 aria-describedby={errors.priority ? 'priority-error' : undefined}
+                aria-label="Task priority"
               >
                 <SelectValue placeholder="Select priority" />
               </SelectTrigger>
@@ -232,9 +241,9 @@ export function TaskCreateForm({ onSuccess, onCancel }: TaskCreateFormProps) {
         {errors.priority && (
           <p
             id="priority-error"
-            className="text-sm text-red-600"
+            className="text-sm text-red-600 dark:text-red-400 font-medium"
             role="alert"
-            aria-live="polite"
+            aria-live="assertive"
           >
             {errors.priority.message}
           </p>
@@ -249,6 +258,7 @@ export function TaskCreateForm({ onSuccess, onCancel }: TaskCreateFormProps) {
             variant="outline"
             onClick={onCancel}
             disabled={isLoading}
+            aria-label="Cancel task creation"
           >
             Cancel
           </Button>
@@ -256,10 +266,12 @@ export function TaskCreateForm({ onSuccess, onCancel }: TaskCreateFormProps) {
         <Button
           type="submit"
           disabled={isLoading || Object.keys(errors).length > 0}
+          aria-label={isLoading ? 'Creating task, please wait' : 'Create task'}
+          aria-disabled={isLoading || Object.keys(errors).length > 0}
         >
           {isLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
               Creating...
             </>
           ) : (
@@ -269,8 +281,8 @@ export function TaskCreateForm({ onSuccess, onCancel }: TaskCreateFormProps) {
       </div>
 
       {/* Keyboard shortcut hint */}
-      <p className="text-xs text-muted-foreground text-center pt-2">
-        Press <kbd className="px-1 py-0.5 bg-muted rounded">Ctrl+Enter</kbd> to submit
+      <p className="text-xs text-muted-foreground text-center pt-2" role="note" aria-label="Keyboard shortcuts: Press Control plus Enter to submit the form">
+        Press <kbd className="px-1 py-0.5 bg-muted rounded" aria-label="Control plus Enter">Ctrl+Enter</kbd> to submit
       </p>
     </form>
   );
