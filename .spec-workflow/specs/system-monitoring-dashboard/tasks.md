@@ -118,7 +118,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with TypeScript expertise | Task: Add getSystemMetrics method to contract-client.ts following requirement 1 | Restrictions: Do not duplicate patterns | Success: Method exists and is type-safe_
 
-- [ ] 10. Add "Monitoring" link to Sidebar
+- [x] 10. Add "Monitoring" link to Sidebar
   - File: apps/frontend/src/components/layout/Sidebar.tsx
   - Add section comment: `// ========== Spec: system-monitoring-dashboard ==========`
   - Add navigation item: { name: 'Monitoring', href: '/monitoring', icon: ActivityIcon }

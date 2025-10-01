@@ -51,6 +51,14 @@ const SettingsIcon = () => (
   </svg>
 );
 
+// ========== Spec: system-monitoring-dashboard ==========
+const ActivityIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.5l3.75-3.75L9 12l5.25-6L18 9.75l3-3" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 10.5v-3h-3" />
+  </svg>
+);
+
 // Sidebar navigation structure
 // TODO: Uncomment routes as pages are implemented
 const sidebarSections = [
@@ -108,6 +116,13 @@ const sidebarSections = [
   {
     title: 'System',
     items: [
+      // ========== Spec: system-monitoring-dashboard ==========
+      {
+        href: '/monitoring',
+        label: 'Monitoring',
+        icon: ActivityIcon,
+        description: 'System resource monitoring'
+      },
       {
         href: '/settings',
         label: 'Settings',
