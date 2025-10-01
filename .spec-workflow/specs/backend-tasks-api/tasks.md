@@ -12,7 +12,7 @@
   - _Requirements: 1.1, 1.2_
   - _Prompt: Role: Database Engineer with expertise in Prisma ORM and PostgreSQL | Task: Create comprehensive Task model schema following requirements 1.1 and 1.2, with proper indexes and relations to existing User model | Restrictions: Must maintain referential integrity, do not modify existing models, follow Prisma naming conventions | Success: Schema validates with npx prisma format, all fields properly typed, indexes optimize common queries_
 
-- [ ] 2. Generate and apply Prisma migration
+- [x] 2. Generate and apply Prisma migration
   - File: prisma/migrations/
   - Run: npx prisma migrate dev --name create_tasks_table
   - Purpose: Apply database schema changes
