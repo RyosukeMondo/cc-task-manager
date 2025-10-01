@@ -134,7 +134,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with navigation expertise | Task: Add Queue link to Sidebar following requirement 1 | Restrictions: Do not modify other navigation items | Success: Queue link appears in sidebar and navigates correctly_
 
-- [ ] 11. Create E2E test for queue dashboard
+- [x] 11. Create E2E test for queue dashboard
   - File: apps/frontend/e2e/queue-dashboard.spec.ts
   - Test: Navigate to /queue displays metrics cards
   - Test: Throughput chart renders
