@@ -7,7 +7,7 @@ import {
   ApiTaskFilterDto,
   ApiTaskDto,
   PaginatedTasksDto,
-} from '@repo/schemas';
+} from '@schemas/tasks';
 
 /**
  * TasksRepository - Data access layer for API tasks

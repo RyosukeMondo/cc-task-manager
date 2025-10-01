@@ -1,4 +1,4 @@
-import { loginSchema } from '@repo/schemas';
+import { loginSchema } from '@schemas/auth';
 import { createZodDto } from 'nestjs-zod';
 
 /**

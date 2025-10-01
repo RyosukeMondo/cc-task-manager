@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { updateSettingsSchema } from '@repo/schemas';
+import { updateSettingsSchema } from '@schemas/settings';
 
 /**
  * DTO for updating user settings

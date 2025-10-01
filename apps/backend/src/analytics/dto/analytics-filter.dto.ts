@@ -1,4 +1,4 @@
-import { analyticsFilterSchema } from '@repo/schemas';
+import { analyticsFilterSchema } from '@schemas/analytics';
 import { createZodDto } from 'nestjs-zod';
 
 /**
