@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useQueue } from '@/hooks/useQueue';
+import { QueueMetrics } from '@/components/queue/QueueMetrics';
 
 /**
  * Queue Management Dashboard Page
@@ -39,11 +40,8 @@ export default function QueuePage() {
           </Button>
         </div>
 
-        {/* Placeholder for QueueMetrics component */}
-        {/* Will be implemented in task 4 */}
-        <div className="text-sm text-muted-foreground">
-          QueueMetrics component will be rendered here
-        </div>
+        {/* QueueMetrics component - Task 4 */}
+        {metrics && <QueueMetrics metrics={metrics} isLoading={isLoading} />}
 
         {/* Placeholder for ThroughputChart component */}
         {/* Will be implemented in task 5 */}

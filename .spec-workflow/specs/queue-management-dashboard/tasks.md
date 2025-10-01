@@ -43,7 +43,7 @@
   - _Requirements: 1, 5_
   - _Prompt: Role: Frontend developer with Next.js expertise | Task: Create queue dashboard route following requirements 1 and 5, implementing 5s polling | Restrictions: Do not hardcode polling interval, use configurable value | Success: Page renders correctly and polling works_
 
-- [ ] 4. Create QueueMetrics component (metrics cards)
+- [x] 4. Create QueueMetrics component (metrics cards)
   - File: apps/frontend/src/components/queue/QueueMetrics.tsx
   - 4 metric cards: Active Jobs (yellow), Pending Jobs (blue), Completed Jobs (green), Failed Jobs (red)
   - Each card: Icon, title, count, color-coded
