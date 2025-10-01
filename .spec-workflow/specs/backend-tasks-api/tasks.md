@@ -86,7 +86,7 @@
   - _Requirements: Non-functional (Contract-Driven)_
   - _Prompt: Role: Full-stack Developer with expertise in API client design and TypeScript | Task: Add type-safe task API methods to contract-client following contract-driven principles | Restrictions: Must use shared Zod schemas for types, maintain section comments for parallel development, follow existing client patterns | Success: All API methods are type-safe, frontend can call without type errors, follows contract-client conventions_
 
-- [ ] 10. Create E2E tests for all endpoints
+- [x] 10. Create E2E tests for all endpoints
   - File: apps/frontend/e2e/tasks-api.spec.ts
   - Test: POST /api/tasks creates task (201), GET /api/tasks returns list (200), GET /api/tasks/:id returns task (200/404), PATCH updates (200), DELETE soft-deletes (204), all require auth (401 without JWT)
   - Purpose: Validate API contract compliance
