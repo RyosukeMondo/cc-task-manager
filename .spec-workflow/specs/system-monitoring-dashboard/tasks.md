@@ -80,7 +80,7 @@
   - _Requirements: 4_
   - _Prompt: Role: Frontend developer with charting expertise | Task: Create MetricsChart component following requirement 4, implementing time-series visualization | Restrictions: Do not exceed 720 data points, implement sliding window | Success: Chart displays correctly_
 
-- [ ] 7. Create APIPerformanceMetrics component
+- [x] 7. Create APIPerformanceMetrics component
   - File: apps/frontend/src/components/monitoring/APIPerformanceMetrics.tsx
   - Card with API metrics: averageResponseTime, p95ResponseTime, requestsPerSecond
   - Warning if p95 > 500ms (yellow), critical if > 1000ms (red)
