@@ -59,7 +59,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
   - _Prompt: Role: Backend Developer with expertise in service layer architecture and NestJS | Task: Implement TasksService business logic following requirements 1.1-1.5 with proper ownership verification and event emission | Restrictions: Must enforce user ownership, emit WebSocket events for all mutations, use soft deletes only, maintain separation from data layer | Success: All CRUD operations work with ownership enforced, WebSocket events emit correctly, business rules properly encapsulated_
 
-- [ ] 7. Implement TasksController (REST endpoints)
+- [x] 7. Implement TasksController (REST endpoints)
   - File: apps/backend/src/tasks/tasks.controller.ts
   - Implement: POST /api/tasks, GET /api/tasks, GET /api/tasks/:id, PATCH /api/tasks/:id, DELETE /api/tasks/:id
   - All routes protected with @UseGuards(JwtAuthGuard), extract userId from @User()
