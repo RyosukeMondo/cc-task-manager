@@ -36,7 +36,7 @@
 
 ### Phase 2: Schemas & DTOs (1 task)
 
-- [ ] 4. Define Zod schemas for auth
+- [x] 4. Define Zod schemas for auth
   - File: packages/schemas/src/auth.schema.ts, packages/schemas/src/index.ts, apps/backend/src/auth/dto/register.dto.ts, apps/backend/src/auth/dto/login.dto.ts
   - Create passwordSchema: min 8 chars, 1 uppercase, 1 number, 1 special char (regex validation)
   - Create registerSchema: email (valid email), password (passwordSchema), name (optional, max 100)
