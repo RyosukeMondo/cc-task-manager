@@ -128,7 +128,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with navigation expertise | Task: Add Monitoring link to Sidebar following requirement 1 | Restrictions: Do not modify other navigation items | Success: Monitoring link appears in sidebar_
 
-- [ ] 11. Create E2E test for monitoring dashboard
+- [x] 11. Create E2E test for monitoring dashboard
   - File: apps/frontend/e2e/monitoring.spec.ts
   - Test: Navigate to /monitoring displays system metrics cards
   - Test: CPU/Memory/Disk usage display with percentages
