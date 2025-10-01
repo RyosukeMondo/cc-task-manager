@@ -305,23 +305,32 @@ export class ContractApiClient {
     })
   }
 
-  // Settings API
-  async getSettings(userId: string): Promise<import('@cc-task-manager/schemas').Settings> {
-    return this.request('GET', `/api/settings/${userId}`)
+  // ========== Spec: backend-settings-api ==========
+
+  /**
+   * Get current user's settings (auto-creates with defaults if not exists)
+   * Requires authentication (JWT in Authorization header)
+   * @returns Settings object with all user preferences
+   */
+  async getSettings(): Promise<import('@cc-task-manager/schemas').SettingsResponse> {
+    return this.request('GET', '/api/settings')
   }
 
+  /**
+   * Update current user's settings
+   * Requires authentication (JWT in Authorization header)
+   * @param data Partial settings update (all fields optional)
+   * @returns Updated settings object
+   */
   async updateSettings(
-    userId: string,
-    updates: import('@cc-task-manager/schemas').SettingsUpdate
-  ): Promise<import('@cc-task-manager/schemas').Settings> {
-    const { validateSettingsUpdate } = await import('@cc-task-manager/schemas')
+    data: import('@cc-task-manager/schemas').UpdateSettingsDto
+  ): Promise<import('@cc-task-manager/schemas').SettingsResponse> {
+    const { updateSettingsSchema } = await import('@cc-task-manager/schemas')
     return this.request(
       'PATCH',
-      `/api/settings/${userId}`,
-      updates,
-      validateSettingsUpdate,
-      'Settings',
-      '1.0.0'
+      '/api/settings',
+      data,
+      (input) => updateSettingsSchema.parse(input)
     )
   }
 }

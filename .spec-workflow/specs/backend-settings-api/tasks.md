@@ -85,7 +85,7 @@
 
 ### Phase 5: Frontend Integration & Testing (3 tasks)
 
-- [ ] 8. Add settings methods to contract-client.ts
+- [x] 8. Add settings methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: `// ========== Spec: backend-settings-api ==========`
   - Add getSettings(): Promise<Settings>
