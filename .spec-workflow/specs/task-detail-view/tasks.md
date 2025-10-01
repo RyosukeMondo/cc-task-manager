@@ -70,7 +70,7 @@
   - _Requirements: 1, 5_
   - _Prompt: Role: Frontend developer with TanStack Query expertise | Task: Implement useTask hook following requirements 1 and 5, with 10s polling for real-time updates | Restrictions: Do not skip error handling, return proper loading states | Success: Hook fetches task data correctly_
 
-- [ ] 6. Add WebSocket real-time subscription
+- [x] 6. Add WebSocket real-time subscription
   - File: apps/frontend/src/hooks/useTask.ts
   - Use useEffect to subscribe to socket events on mount
   - socket.on('task:updated', handler): Update query cache when task updates
@@ -83,7 +83,7 @@
   - _Requirements: 5_
   - _Prompt: Role: Frontend developer with WebSocket expertise | Task: Add WebSocket subscription to useTask hook following requirement 5, updating cache in real-time | Restrictions: Do not forget to unsubscribe on unmount, prevent memory leaks | Success: Real-time updates work without page refresh_
 
-- [ ] 7. Implement useTaskActions hook (mutations)
+- [x] 7. Implement useTaskActions hook (mutations)
   - File: apps/frontend/src/hooks/useTaskActions.ts
   - cancelTask: useMutation with PATCH /api/tasks/:id (status=CANCELLED)
   - retryTask: useMutation with POST /api/tasks (same params as failed task)
