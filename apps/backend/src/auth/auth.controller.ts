@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, Get, Request } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, Get, Request, HttpCode, HttpStatus, NotFoundException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -55,6 +55,7 @@ export class AuthController {
    */
   @Public()
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register new user account' })
   @ApiResponse({
     status: 201,
@@ -98,45 +99,45 @@ export class AuthController {
    * Get current user profile
    * Protected endpoint demonstrating JWT authentication
    */
-  @Get('profile')
+  @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiOperation({ summary: 'Get current user' })
   @ApiResponse({
     status: 200,
-    description: 'User profile retrieved successfully',
+    description: 'User retrieved successfully',
   })
   @ApiResponse({
     status: 401,
     description: 'Unauthorized access',
   })
-  async getProfile(@Request() req: any) {
-    // User information is available from JWT payload via the guard
-    return {
-      user: req.user,
-      message: 'Profile retrieved successfully',
-    };
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  async getCurrentUser(@CurrentUser() currentUser: JWTPayload) {
+    const user = await this.authService.findUserById(currentUser.sub);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   /**
    * Logout endpoint
-   * Placeholder for token invalidation logic
+   * Invalidates all active sessions for the user
    */
   @Post('logout')
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout user and invalidate session' })
   @ApiResponse({
-    status: 200,
+    status: 204,
     description: 'Logout successful',
   })
-  async logout(@Request() req: any) {
-    // In real implementation, this would invalidate the token/session
-    // For now, we'll just return a success message
-    return {
-      message: 'Logout successful',
-      userId: req.user.sub,
-    };
+  async logout(@CurrentUser() currentUser: JWTPayload): Promise<void> {
+    await this.authService.logout(currentUser.sub);
   }
 
   /**

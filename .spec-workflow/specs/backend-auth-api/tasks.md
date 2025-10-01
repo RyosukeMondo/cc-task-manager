@@ -97,7 +97,7 @@
   - _Requirements: 1, 2, 3, 4, 5_
   - _Prompt: Role: Security engineer with authentication expertise | Task: Implement AuthService following requirements 1-5, ensuring passwords are hashed with bcrypt and never leaked in responses | Restrictions: Do not return password fields, use bcrypt with 10 rounds minimum | Success: All auth operations work and passwords are never leaked_
 
-- [ ] 9. Implement AuthController (REST endpoints)
+- [x] 9. Implement AuthController (REST endpoints)
   - File: apps/backend/src/auth/auth.controller.ts
   - POST /api/auth/register: Body=RegisterDto, returns user (201 Created or 409 Conflict)
   - POST /api/auth/login: Body=LoginDto, returns accessToken, refreshToken, user (200 OK or 401)
