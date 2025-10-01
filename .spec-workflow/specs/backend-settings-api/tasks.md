@@ -50,7 +50,7 @@
 
 ### Phase 3: Business Logic (2 tasks)
 
-- [ ] 5. Implement SettingsRepository
+- [x] 5. Implement SettingsRepository
   - File: apps/backend/src/settings/settings.repository.ts
   - Implement findByUserId(userId): Get settings by userId
   - Implement create(data): Create new settings
