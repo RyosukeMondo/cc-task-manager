@@ -95,7 +95,7 @@
   - _Requirements: 1, 2_
   - _Prompt: Role: Frontend developer with TypeScript expertise | Task: Add settings API methods to contract-client.ts following requirements 1 and 2 | Restrictions: Do not duplicate existing patterns | Success: Frontend can call methods without type errors_
 
-- [ ] 9. Create E2E tests for settings API
+- [x] 9. Create E2E tests for settings API
   - File: apps/frontend/e2e/settings-api.spec.ts
   - Test: GET /api/settings auto-creates defaults on first request (expect 200, theme=SYSTEM, notifications=true)
   - Test: PATCH /api/settings updates preferences (expect 200, updated values)
