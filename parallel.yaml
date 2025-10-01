@@ -27,7 +27,7 @@ specifications:
 
   - name: task-detail-view
     description: Task detail page with logs and actions
-    available: true
+    available: false
     priority: 2
     spec_file: task-detail-view
     mcp_servers:
