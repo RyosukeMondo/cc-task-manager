@@ -16,7 +16,10 @@ const CONFIG = {
     ,{ available: false, name: 'tasks-active', path: 'worktree/tasks-active-page', spec: 'tasks-active-page' }
     ,{ available: false, name: 'tasks-all', path: 'worktree/tasks-all-page', spec: 'tasks-all-page' }
     ,{ available: false, name: 'tasks-completed', path: 'worktree/tasks-completed-page', spec: 'tasks-completed-page' }
-    ,{ available: true, name: 'backend-auth-api', path: '.', spec: 'backend-auth-api' }
+    ,{ available: false, name: 'backend-auth-api', path: '.', spec: 'backend-auth-api' }
+    ,{ available: true, name: 'backend-tasks-api', path: 'worktree/backend-tasks-api', spec: 'backend-tasks-api' }
+    ,{ available: true, name: 'backend-analytics-api', path: 'worktree/backend-analytics-api', spec: 'backend-analytics-api' }
+    ,{ available: true, name: 'backend-settings-api', path: 'worktree/backend-settings-api', spec: 'backend-settings-api' }
     ,{ available: false, name: 'warps', path: '../warps', spec: 'battle-e2e-testing' }
     ,{ available: false, name: 'mind-advanced-evaluation-metrics', path: '../mind-training/worktree/advanced-evaluation-metrics', spec: 'advanced-evaluation-metrics' }
     ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'fix-all-existing-tests' }
