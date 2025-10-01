@@ -4,7 +4,8 @@ import * as React from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useTasks, useUpdateTask, useDeleteTask } from '@/hooks/useTasks'
 import { TaskItem } from './TaskItem'
-import { Task, TaskStatus, TaskPriority, type TaskFilter } from '@/types/task'
+import { Task, type TaskFilter } from '@/types/task'
+import { ApiTaskStatus as TaskStatus, ApiTaskPriority as TaskPriority } from '@cc-task-manager/schemas'
 import { Alert } from '@/components/ui/alert'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -19,7 +20,7 @@ export type SortField = 'createdAt' | 'updatedAt' | 'priority' | 'title'
 export type SortOrder = 'asc' | 'desc'
 
 export interface TaskListProps {
-  initialFilters?: TaskFilter
+  initialFilters?: Partial<TaskFilter>
   onTaskEdit?: (taskId: string) => void
   className?: string
 }
@@ -48,7 +49,7 @@ export const TaskList = React.memo<TaskListProps>(({
   const searchParams = useSearchParams()
 
   // Initialize filters from URL params or initial filters
-  const [localFilters, setLocalFilters] = React.useState<TaskFilter>(() => {
+  const [localFilters, setLocalFilters] = React.useState<Partial<TaskFilter>>(() => {
     const status = searchParams.get('status') as TaskStatus | null
     const priority = searchParams.get('priority') as TaskPriority | null
     const search = searchParams.get('search')
@@ -247,11 +248,11 @@ export const TaskList = React.memo<TaskListProps>(({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
-                  <SelectItem value={TaskStatus.IN_PROGRESS}>In Progress</SelectItem>
-                  <SelectItem value={TaskStatus.IN_REVIEW}>In Review</SelectItem>
-                  <SelectItem value={TaskStatus.DONE}>Done</SelectItem>
-                  <SelectItem value={TaskStatus.CANCELLED}>Cancelled</SelectItem>
+                  <SelectItem value="TODO">To Do</SelectItem>
+                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                  <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                  <SelectItem value="DONE">Done</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -270,10 +271,10 @@ export const TaskList = React.memo<TaskListProps>(({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All priorities</SelectItem>
-                  <SelectItem value={TaskPriority.LOW}>Low</SelectItem>
-                  <SelectItem value={TaskPriority.MEDIUM}>Medium</SelectItem>
-                  <SelectItem value={TaskPriority.HIGH}>High</SelectItem>
-                  <SelectItem value={TaskPriority.URGENT}>Urgent</SelectItem>
+                  <SelectItem value="LOW">Low</SelectItem>
+                  <SelectItem value="MEDIUM">Medium</SelectItem>
+                  <SelectItem value="HIGH">High</SelectItem>
+                  <SelectItem value="URGENT">Urgent</SelectItem>
                 </SelectContent>
               </Select>
             </div>

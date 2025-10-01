@@ -3,7 +3,6 @@
 import React from 'react';
 import { AppLayout } from '@/components/layout';
 import { TaskList } from '@/components/tasks/TaskList';
-import { TaskStatus } from '@/types/task';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle } from 'lucide-react';
 
@@ -44,7 +43,7 @@ export default function CompletedTasksPage() {
         {/* Task List with Completed Status Filter */}
         <TaskList
           initialFilters={{
-            status: [TaskStatus.DONE],
+            status: ['DONE'],
           }}
         />
       </div>

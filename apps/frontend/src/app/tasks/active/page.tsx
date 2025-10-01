@@ -3,7 +3,6 @@
 import React from 'react';
 import { AppLayout } from '@/components/layout';
 import { TaskList } from '@/components/tasks/TaskList';
-import { TaskStatus } from '@/types/task';
 
 /**
  * Active Tasks Page
@@ -34,7 +33,7 @@ export default function ActiveTasksPage() {
         {/* Task List with Active Status Filter */}
         <TaskList
           initialFilters={{
-            status: [TaskStatus.TODO, TaskStatus.IN_PROGRESS],
+            status: ['TODO', 'IN_PROGRESS'],
           }}
         />
       </div>

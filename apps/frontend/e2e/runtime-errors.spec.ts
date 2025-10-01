@@ -11,7 +11,7 @@
  */
 
 import { test, expect, Page } from '@playwright/test';
-import { login } from './fixtures/auth';
+import { setupAuthenticatedSession } from './fixtures/auth';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3006';
 
@@ -76,8 +76,8 @@ function setupErrorListeners(page: Page): RuntimeError[] {
 
 test.describe('Runtime Error Detection', () => {
   test.beforeEach(async ({ page }) => {
-    // Login before each test
-    await login(page, 'user');
+    // Setup authentication before each test using API (faster than UI login)
+    await setupAuthenticatedSession(page, 'user');
   });
 
   test('Settings page should load without runtime errors', async ({ page }) => {
