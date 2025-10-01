@@ -98,7 +98,7 @@
   - _Requirements: 5_
   - _Prompt: Role: Frontend developer with polling optimization expertise | Task: Implement useQueue hook following requirement 5, reducing polling frequency when tab inactive | Restrictions: Do not poll when tab hidden, use visibility API | Success: Polling works and reduces frequency when tab inactive_
 
-- [ ] 8. Implement useJobActions hook (mutations)
+- [x] 8. Implement useJobActions hook (mutations)
   - File: apps/frontend/src/hooks/useJobActions.ts
   - retryJob: useMutation with POST /api/queue/jobs/:id/retry
   - cancelJob: useMutation with POST /api/queue/jobs/:id/cancel
