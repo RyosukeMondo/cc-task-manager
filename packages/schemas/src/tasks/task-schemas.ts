@@ -69,7 +69,8 @@ export const TaskProjectSchema = z.object({
 export const CreateTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be 200 characters or less'),
   description: z.string().max(1000, 'Description must be 1000 characters or less').optional(),
-  prompt: z.string().min(1, 'Prompt is required').max(10000, 'Prompt must be 10000 characters or less'),
+  prompt: z.string().min(1, 'Prompt is required').max(10000, 'Prompt must be 10000 characters or less').optional(),
+  priority: TaskPrioritySchema.optional(),
   config: TaskConfigSchema.optional(),
   projectId: z.string().uuid('Invalid project ID format').optional(),
   tags: z.array(z.string().max(50, 'Tag must be 50 characters or less')).max(10, 'Maximum 10 tags allowed').optional(),
@@ -83,9 +84,12 @@ export const CreateTaskSchema = z.object({
 export const UpdateTaskSchema = z.object({
   title: z.string().min(1, 'Title cannot be empty').max(200, 'Title must be 200 characters or less').optional(),
   description: z.string().max(1000, 'Description must be 1000 characters or less').optional(),
+  status: TaskStatusSchema.optional(),
+  priority: TaskPrioritySchema.optional(),
   config: TaskConfigSchema.optional(),
   tags: z.array(z.string().max(50, 'Tag must be 50 characters or less')).max(10, 'Maximum 10 tags allowed').optional(),
-  scheduledAt: z.string().datetime('Invalid datetime format').optional()
+  scheduledAt: z.string().datetime('Invalid datetime format').optional(),
+  errorMessage: z.string().max(2000, 'Error message must be 2000 characters or less').optional()
 }).strict();
 
 /**
@@ -95,6 +99,7 @@ export const UpdateTaskSchema = z.object({
 export const TaskQuerySchema = z.object({
   page: z.number().int().min(1, 'Page must be at least 1').default(1),
   limit: z.number().int().min(1, 'Limit must be at least 1').max(100, 'Limit cannot exceed 100').default(20),
+  offset: z.number().int().min(0, 'Offset must be at least 0').optional(),
   status: z.array(TaskStatusSchema).optional(),
   priority: z.array(TaskPrioritySchema).optional(),
   projectId: z.string().uuid('Invalid project ID format').optional(),
@@ -149,6 +154,17 @@ export const PaginatedTaskResponseSchema = z.object({
 }).strict();
 
 /**
+ * Simple paginated response schema for API task repository
+ * Flatter structure matching Prisma repository return type
+ */
+export const SimplePaginatedTaskResponseSchema = z.object({
+  data: z.array(z.any()), // Will be ApiTask[] from Prisma
+  total: z.number().int(),
+  limit: z.number().int(),
+  offset: z.number().int().optional()
+});
+
+/**
  * Task status update schema for status change operations
  * Validates status transitions and optional metadata
  */
@@ -188,6 +204,7 @@ export type UpdateTaskDto = z.infer<typeof UpdateTaskSchema>;
 export type TaskQueryDto = z.infer<typeof TaskQuerySchema>;
 export type TaskResponseDto = z.infer<typeof TaskResponseSchema>;
 export type PaginatedTaskResponseDto = z.infer<typeof PaginatedTaskResponseSchema>;
+export type SimplePaginatedTaskResponseDto = z.infer<typeof SimplePaginatedTaskResponseSchema>;
 export type TaskStatusUpdateDto = z.infer<typeof TaskStatusUpdateSchema>;
 export type BulkTaskOperationDto = z.infer<typeof BulkTaskOperationSchema>;
 export type TaskMetricsDto = z.infer<typeof TaskMetricsSchema>;
@@ -278,4 +295,4 @@ export { CreateTaskDto as CreateApiTaskDto };
 export { UpdateTaskDto as UpdateApiTaskDto };
 export { TaskQueryDto as ApiTaskFilterDto };
 export { TaskResponseDto as ApiTaskDto };
-export { PaginatedTaskResponseDto as PaginatedTasksDto };
+export { SimplePaginatedTaskResponseDto as PaginatedTasksDto };

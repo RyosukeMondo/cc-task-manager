@@ -45,7 +45,7 @@ import {
   UserProfileSchema as SettingsUserProfileSchema,
   AppPreferencesSchema,
   NotificationSettingsSchema,
-} from '@cc-task-manager/schemas';
+} from '@schemas/settings';
 
 /**
  * Schema Registry Service

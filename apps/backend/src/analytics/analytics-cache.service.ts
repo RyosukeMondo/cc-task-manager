@@ -30,7 +30,6 @@ export class AnalyticsCacheService implements OnModuleDestroy {
         password: this.configService.get<string>('REDIS_PASSWORD'),
         db: this.configService.get<number>('REDIS_DB', 0),
         keyPrefix: 'analytics:',
-        retryDelayOnFailover: 100,
         enableReadyCheck: true,
         maxRetriesPerRequest: 3,
         lazyConnect: false,

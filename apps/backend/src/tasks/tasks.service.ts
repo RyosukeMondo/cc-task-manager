@@ -58,7 +58,7 @@ export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
   constructor(
-    @Inject('ITasksRepository') private readonly tasksRepository: ITasksRepository,
+    private readonly tasksRepository: TasksRepository,
     @Optional() private readonly schemaRegistry?: BackendSchemaRegistry,
     @Optional() private readonly queueService?: QueueService,
     @Optional() private readonly taskEventsService?: TaskEventsService,
@@ -788,7 +788,13 @@ export class TasksService {
 
     try {
       // Get all cache keys (if store supports it)
-      const store = this.cacheManager.store as any;
+      // cache-manager v7 uses .stores array instead of .store
+      const stores = (this.cacheManager as any).stores;
+      const store = stores && stores.length > 0 ? stores[0] as any : null;
+
+      if (!store) {
+        return; // No store available
+      }
 
       if (store.keys) {
         // Redis store supports keys() method

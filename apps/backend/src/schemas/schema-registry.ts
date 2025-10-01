@@ -61,7 +61,7 @@ import {
   DateRangeSchema,
   AnalyticsFilterSchema,
   AnalyticsResponseSchema,
-} from '@cc-task-manager/schemas';
+} from '@schemas/analytics';
 
 // Import all queue schemas
 import {
