@@ -97,7 +97,7 @@
 
 ### Phase 3: Navigation & Integration (2 tasks)
 
-- [ ] 8. Add breadcrumbs and navigation
+- [x] 8. Add breadcrumbs and navigation
   - File: apps/frontend/src/app/tasks/[id]/page.tsx
   - Add Breadcrumb component: "Tasks > [Task Title]"
   - "Tasks" link navigates to /tasks
@@ -108,7 +108,7 @@
   - _Requirements: 6_
   - _Prompt: Role: Frontend developer with navigation expertise | Task: Add breadcrumbs to task detail page following requirement 6 | Restrictions: Do not hardcode breadcrumb items, use task title dynamically | Success: Breadcrumbs display and navigation works_
 
-- [ ] 9. Update TaskList to link to detail page
+- [x] 9. Update TaskList to link to detail page
   - File: apps/frontend/src/components/tasks/TaskList.tsx
   - Make task rows clickable (onClick navigates to /tasks/:id)
   - Add cursor-pointer and hover:bg-muted/50 classes
@@ -120,7 +120,7 @@
 
 ### Phase 4: Testing & Configuration (2 tasks)
 
-- [ ] 10. Add getTaskById to contract-client.ts
+- [x] 10. Add getTaskById to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add to existing backend-tasks-api section (or create if missing)
   - getTaskById(id: string): Promise<Task>
