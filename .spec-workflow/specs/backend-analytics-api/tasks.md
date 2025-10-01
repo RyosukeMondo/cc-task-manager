@@ -41,7 +41,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: Database specialist with Prisma and PostgreSQL expertise | Task: Implement AnalyticsRepository with optimized aggregation queries following requirements 1, 2, and 3, using database-level calculations to avoid loading full task objects into memory | Restrictions: Do not load all tasks into memory, use Prisma aggregate and raw SQL | Success: Queries return correct aggregated data efficiently with < 500ms p95 response time_
 
-- [ ] 4. Implement AnalyticsService (caching logic)
+- [x] 4. Implement AnalyticsService (caching logic)
   - File: apps/backend/src/analytics/analytics.service.ts
   - Implement getPerformanceMetrics(filter, userId): Generate cache key, check cache first (5 min TTL), query repository on cache miss
   - Default date range: last 30 days if not specified
