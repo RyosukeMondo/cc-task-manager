@@ -109,7 +109,7 @@
 
 ### Phase 4: Integration & Testing (3 tasks)
 
-- [ ] 9. Add monitoring methods to contract-client.ts
+- [x] 9. Add monitoring methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: `// ========== Spec: system-monitoring-dashboard ==========`
   - getSystemMetrics(): Promise<SystemMetricsResponse>
