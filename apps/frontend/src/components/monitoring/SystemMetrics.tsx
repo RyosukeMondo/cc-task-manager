@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Cpu, MemoryStick, HardDrive, Database, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SystemMetricsProps {
-  metrics: {
+  metrics?: {
     system: {
       cpu: {
         usage: number;
@@ -27,6 +28,7 @@ interface SystemMetricsProps {
       queueDepth: number;
     };
   };
+  isLoading?: boolean;
 }
 
 function formatBytes(bytes: number): string {
@@ -98,7 +100,36 @@ function MetricCard({ icon, title, value, subtitle, warningLevel, color }: Metri
   );
 }
 
-export function SystemMetrics({ metrics }: SystemMetricsProps) {
+export function SystemMetrics({ metrics, isLoading }: SystemMetricsProps) {
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-4 rounded-full" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-8 w-16 mb-2" />
+              <Skeleton className="h-3 w-32" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (!metrics) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-10">
+          <p className="text-sm text-muted-foreground">No metrics available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const cpuUsage = metrics.system.cpu.usage;
   const memoryUsage = (metrics.system.memory.used / metrics.system.memory.total) * 100;
   const diskUsage = (metrics.system.disk.used / metrics.system.disk.total) * 100;

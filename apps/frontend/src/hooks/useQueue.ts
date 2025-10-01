@@ -24,6 +24,7 @@ export interface QueueJob {
 }
 
 export interface ThroughputDataPoint {
+  timestamp: number
   hour: string
   completed: number
   failed: number

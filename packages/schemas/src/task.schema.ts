@@ -50,18 +50,25 @@ export const updateTaskSchema = z.object({
 
 /**
  * Task filter schema for GET /api/tasks endpoint
- * Supports filtering by status, priority with pagination
+ * Supports filtering by status (single or array), priority (single or array) with pagination
  */
 export const taskFilterSchema = z.object({
-  status: z.nativeEnum(ApiTaskStatus).optional(),
-  priority: z.nativeEnum(ApiTaskPriority).optional(),
+  status: z.union([
+    z.nativeEnum(ApiTaskStatus),
+    z.array(z.nativeEnum(ApiTaskStatus))
+  ]).optional(),
+  priority: z.union([
+    z.nativeEnum(ApiTaskPriority),
+    z.array(z.nativeEnum(ApiTaskPriority))
+  ]).optional(),
   limit: z
     .number()
     .int()
     .min(1, 'Limit must be at least 1')
     .max(100, 'Limit cannot exceed 100')
+    .optional()
     .default(20),
-  offset: z.number().int().min(0, 'Offset must be at least 0').default(0),
+  offset: z.number().int().min(0, 'Offset must be at least 0').optional().default(0),
 });
 
 /**

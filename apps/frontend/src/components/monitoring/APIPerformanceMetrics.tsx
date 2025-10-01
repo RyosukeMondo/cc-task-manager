@@ -1,11 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Activity, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface APIPerformanceMetricsProps {
-  metrics: {
+  metrics?: {
     api: {
       averageResponseTime: number;
       p95ResponseTime: number;
@@ -17,6 +18,7 @@ interface APIPerformanceMetricsProps {
       }>;
     };
   };
+  isLoading?: boolean;
 }
 
 function getPerformanceLevel(p95Time: number): 'normal' | 'warning' | 'critical' {
@@ -33,7 +35,33 @@ function formatResponseTime(ms: number): string {
   return `${ms.toFixed(0)}ms`;
 }
 
-export function APIPerformanceMetrics({ metrics }: APIPerformanceMetricsProps) {
+export function APIPerformanceMetrics({ metrics, isLoading }: APIPerformanceMetricsProps) {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-5 w-48" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!metrics) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-10">
+          <p className="text-sm text-muted-foreground">No API metrics available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const { averageResponseTime, p95ResponseTime, requestsPerSecond, endpointBreakdown } = metrics.api;
   const performanceLevel = getPerformanceLevel(p95ResponseTime);
 

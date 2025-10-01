@@ -16,7 +16,7 @@ import { TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ThroughputDataPoint {
-  timestamp: number;
+  timestamp?: number;
   hour: string;
   completed: number;
   failed: number;

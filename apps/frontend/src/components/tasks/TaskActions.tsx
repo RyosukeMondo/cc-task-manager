@@ -29,9 +29,9 @@ export interface TaskActionsProps {
  * TaskActions Component
  *
  * Provides action buttons for task lifecycle management:
- * - Cancel: Available for PENDING or RUNNING tasks
- * - Retry: Available for FAILED tasks (creates new task with same params)
- * - Delete: Available for COMPLETED, FAILED, or CANCELLED tasks
+ * - Cancel: Available for TODO or IN_PROGRESS tasks
+ * - Retry: Available for CANCELLED tasks (creates new task with same params)
+ * - Delete: Available for DONE or CANCELLED tasks
  *
  * All actions require confirmation via AlertDialog
  * Shows loading state during mutations
@@ -121,11 +121,10 @@ export const TaskActions = React.memo<TaskActionsProps>(
 
     // Determine which buttons to show based on task status
     const showCancel =
-      task.status === ApiTaskStatus.PENDING || task.status === ApiTaskStatus.RUNNING;
-    const showRetry = task.status === ApiTaskStatus.FAILED;
+      task.status === ApiTaskStatus.TODO || task.status === ApiTaskStatus.IN_PROGRESS;
+    const showRetry = task.status === ApiTaskStatus.CANCELLED;
     const showDelete =
-      task.status === ApiTaskStatus.COMPLETED ||
-      task.status === ApiTaskStatus.FAILED ||
+      task.status === ApiTaskStatus.DONE ||
       task.status === ApiTaskStatus.CANCELLED;
 
     // If no actions are available, don't render anything
