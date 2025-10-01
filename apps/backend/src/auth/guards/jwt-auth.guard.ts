@@ -36,9 +36,27 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   /**
    * Handle request after successful authentication
    * Adds user context to the request object
+   * Provides better error messages for different JWT errors
    */
   handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+    // Handle errors or missing user
     if (err || !user) {
+      // Check for token expiration
+      if (info?.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('TOKEN_EXPIRED');
+      }
+
+      // Check for other JWT errors
+      if (info?.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      // Check for missing token
+      if (info?.message === 'No auth token') {
+        throw new UnauthorizedException('No auth token');
+      }
+
+      // Default error
       throw err || new UnauthorizedException('Invalid authentication token');
     }
 

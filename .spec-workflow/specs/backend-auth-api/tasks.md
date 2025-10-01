@@ -74,7 +74,7 @@
   - _Requirements: 2, 6_
   - _Prompt: Role: Security engineer with JWT expertise | Task: Implement JWT strategy following requirements 2 and 6, validating both user and session existence | Restrictions: Do not skip session validation, always verify user exists | Success: Strategy validates tokens correctly and rejects invalid tokens_
 
-- [ ] 7. Create JwtAuthGuard and WsJwtGuard
+- [x] 7. Create JwtAuthGuard and WsJwtGuard
   - File: apps/backend/src/auth/guards/jwt-auth.guard.ts, apps/backend/src/auth/guards/ws-jwt.guard.ts
   - JwtAuthGuard: Extend AuthGuard('jwt'), implement custom handleRequest for better error messages (TOKEN_EXPIRED, Invalid token)
   - WsJwtGuard: Implement CanActivate, extract token from WebSocket handshake, verify via JwtService, attach user to socket.data
