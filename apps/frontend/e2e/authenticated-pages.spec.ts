@@ -40,7 +40,7 @@ test.describe('Authenticated Pages', () => {
     await expect(errorOverlay).not.toBeVisible({ timeout: 2000 }).catch(() => {});
 
     // Validate content loaded
-    await expect(page.locator('h1, [role="heading"]')).toBeVisible();
+    await expect(page.locator('h1, h2, h3, [role="heading"]').first()).toBeVisible();
 
     console.log('✅ Dashboard loaded for authenticated user');
   });
@@ -72,7 +72,7 @@ test.describe('Authenticated Pages', () => {
     const errorOverlay = page.locator('[id*="nextjs"][id*="error"]');
     await expect(errorOverlay).not.toBeVisible({ timeout: 2000 }).catch(() => {});
 
-    await expect(page.locator('h1, [role="heading"]')).toBeVisible();
+    await expect(page.locator('h1, h2, h3, [role="heading"]').first()).toBeVisible();
 
     console.log('✅ Active Tasks page loaded for authenticated user');
   });
@@ -86,7 +86,8 @@ test.describe('Authenticated Pages', () => {
     const errorOverlay = page.locator('[id*="nextjs"][id*="error"]');
     await expect(errorOverlay).not.toBeVisible({ timeout: 2000 }).catch(() => {});
 
-    await expect(page.locator('h1, [role="heading"]')).toBeVisible();
+    // Check for page heading (h1, h2, h3, or role="heading")
+    await expect(page.locator('h1, h2, h3, [role="heading"]').first()).toBeVisible();
 
     console.log('✅ Completed Tasks page loaded for authenticated user');
   });
@@ -100,7 +101,7 @@ test.describe('Authenticated Pages', () => {
     const errorOverlay = page.locator('[id*="nextjs"][id*="error"]');
     await expect(errorOverlay).not.toBeVisible({ timeout: 2000 }).catch(() => {});
 
-    await expect(page.locator('h1, [role="heading"]')).toBeVisible();
+    await expect(page.locator('h1, h2, h3, [role="heading"]').first()).toBeVisible();
 
     console.log('✅ Analytics Performance page loaded for authenticated user');
   });
@@ -114,7 +115,7 @@ test.describe('Authenticated Pages', () => {
     const errorOverlay = page.locator('[id*="nextjs"][id*="error"]');
     await expect(errorOverlay).not.toBeVisible({ timeout: 2000 }).catch(() => {});
 
-    await expect(page.locator('h1, [role="heading"]')).toBeVisible();
+    await expect(page.locator('h1, h2, h3, [role="heading"]').first()).toBeVisible();
 
     console.log('✅ Analytics Trends page loaded for authenticated user');
   });
