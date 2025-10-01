@@ -86,7 +86,7 @@
 
 ### Phase 3: Data Fetching & Actions (2 tasks)
 
-- [ ] 7. Implement useQueue hook (polling)
+- [x] 7. Implement useQueue hook (polling)
   - File: apps/frontend/src/hooks/useQueue.ts
   - Use useQuery with queryKey: ['queue', 'status']
   - queryFn: apiClient.getQueueStatus()

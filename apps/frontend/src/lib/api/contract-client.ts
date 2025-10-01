@@ -424,6 +424,70 @@ export class ContractApiClient {
       (input) => updateSettingsSchema.parse(input)
     )
   }
+
+  // ========== Spec: queue-management-dashboard ==========
+
+  /**
+   * Get queue status with metrics, jobs, and throughput data
+   * Requires authentication (JWT in Authorization header)
+   * Rate limited to 20 requests per minute per user
+   * @returns Queue status including metrics, job list, and 24-hour throughput
+   */
+  async getQueueStatus(): Promise<{
+    metrics: {
+      activeCount: number
+      pendingCount: number
+      completedCount: number
+      failedCount: number
+    }
+    jobs: Array<{
+      id: string
+      name: string
+      status: string
+      progress: number
+      attemptsMade: number
+      attemptsMax: number
+      timestamp: Date
+      data: any
+      failedReason?: string
+    }>
+    throughput: Array<{
+      hour: string
+      completed: number
+      failed: number
+    }>
+  }> {
+    return this.request('GET', '/api/queue/status')
+  }
+
+  /**
+   * Retry a failed job
+   * Requires authentication (JWT in Authorization header)
+   * @param jobId Job ID to retry
+   * @returns Success response
+   */
+  async retryJob(jobId: string): Promise<{ success: boolean }> {
+    return this.request('POST', `/api/queue/jobs/${jobId}/retry`)
+  }
+
+  /**
+   * Cancel a pending or active job
+   * Requires authentication (JWT in Authorization header)
+   * @param jobId Job ID to cancel
+   * @returns Success response
+   */
+  async cancelJob(jobId: string): Promise<{ success: boolean }> {
+    return this.request('POST', `/api/queue/jobs/${jobId}/cancel`)
+  }
+
+  /**
+   * Retry all failed jobs across all queues
+   * Requires authentication (JWT in Authorization header)
+   * @returns Count of retried jobs
+   */
+  async retryAllFailedJobs(): Promise<{ count: number }> {
+    return this.request('POST', '/api/queue/jobs/retry-all')
+  }
 }
 
 // Export a singleton instance following SOLID principles
