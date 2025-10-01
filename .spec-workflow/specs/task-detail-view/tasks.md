@@ -4,7 +4,7 @@
 
 ### Phase 1: Route & Components (4 tasks)
 
-- [ ] 1. Create Next.js dynamic route
+- [x] 1. Create Next.js dynamic route
   - File: apps/frontend/src/app/tasks/[id]/page.tsx, apps/frontend/src/app/tasks/[id]/loading.tsx, apps/frontend/src/app/tasks/[id]/error.tsx, apps/frontend/src/app/tasks/[id]/not-found.tsx
   - page.tsx: Extract id from params, use useTask hook, render TaskDetail/LogViewer/TaskActions
   - loading.tsx: TaskDetailSkeleton with shimmer animation
@@ -16,7 +16,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with Next.js App Router expertise | Task: Create task detail dynamic route following requirement 1, implementing all state pages (loading, error, not-found) | Restrictions: Do not use pages router, use App Router conventions | Success: Route works and handles loading/error/404 states_
 
-- [ ] 2. Create TaskDetail component (metadata display)
+- [x] 2. Create TaskDetail component (metadata display)
   - File: apps/frontend/src/components/tasks/TaskDetail.tsx
   - Card layout with task metadata
   - Display: title, description, status badge (with icon + color), priority badge
@@ -29,7 +29,7 @@
   - _Requirements: 2_
   - _Prompt: Role: Frontend developer with UI component expertise | Task: Create TaskDetail component following requirement 2, displaying all metadata with proper color coding | Restrictions: Do not use custom badge styles, use shadcn/ui variants | Success: All task metadata displays correctly with proper styling_
 
-- [ ] 3. Create LogViewer component (syntax highlighting + virtual scroll)
+- [x] 3. Create LogViewer component (syntax highlighting + virtual scroll)
   - File: apps/frontend/src/components/tasks/LogViewer.tsx
   - Use react-syntax-highlighter for log highlighting
   - Virtual scrolling with react-window for > 1000 log lines
