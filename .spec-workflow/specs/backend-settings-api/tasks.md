@@ -61,7 +61,7 @@
   - _Requirements: 1, 2_
   - _Prompt: Role: Backend developer with Prisma expertise | Task: Implement SettingsRepository with CRUD methods following requirements 1 and 2 | Restrictions: Do not expose raw Prisma client, use repository pattern | Success: Repository methods work correctly_
 
-- [ ] 6. Implement SettingsService (auto-create logic)
+- [x] 6. Implement SettingsService (auto-create logic)
   - File: apps/backend/src/settings/settings.service.ts
   - Implement getOrCreateSettings(userId): Try findByUserId, if not found create with defaults (theme=SYSTEM, notifications=true, displayDensity=COMFORTABLE, language from env or "en")
   - Implement updateSettings(userId, dto): Use upsert to handle both create and update, merge dto with defaults for create case
