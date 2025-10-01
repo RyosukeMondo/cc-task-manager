@@ -12,12 +12,13 @@ export enum ApiTaskPriority {
 
 /**
  * API Task Status enumeration for REST API operations
+ * Aligned with Prisma ApiTaskStatus enum (Option B: Kanban workflow)
  */
 export enum ApiTaskStatus {
-  PENDING = 'PENDING',
-  RUNNING = 'RUNNING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
+  TODO = 'TODO',
+  IN_PROGRESS = 'IN_PROGRESS',
+  IN_REVIEW = 'IN_REVIEW',
+  DONE = 'DONE',
   CANCELLED = 'CANCELLED',
 }
 
