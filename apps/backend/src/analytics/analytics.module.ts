@@ -4,6 +4,7 @@ import { DatabaseModule } from '../database/database.module';
 import { AnalyticsCacheService } from './analytics-cache.service';
 import { AnalyticsRepository } from './analytics.repository';
 import { AnalyticsService } from './analytics.service';
+import { AnalyticsController } from './analytics.controller';
 
 /**
  * Analytics Module
@@ -15,6 +16,7 @@ import { AnalyticsService } from './analytics.service';
  * - Trend data calculation
  * - Redis-based caching with 5-minute TTL
  * - Integration with PrismaModule for database access
+ * - REST API endpoints with JWT authentication
  *
  * Configuration:
  * - Redis connection via environment variables (REDIS_HOST, REDIS_PORT)
@@ -24,6 +26,9 @@ import { AnalyticsService } from './analytics.service';
   imports: [
     ConfigModule,
     DatabaseModule,
+  ],
+  controllers: [
+    AnalyticsController,
   ],
   providers: [
     AnalyticsCacheService,

@@ -55,7 +55,7 @@
 
 ### Phase 3: HTTP API (1 task)
 
-- [ ] 5. Implement AnalyticsController (REST endpoints)
+- [x] 5. Implement AnalyticsController (REST endpoints)
   - File: apps/backend/src/analytics/analytics.controller.ts
   - Implement GET /api/analytics/performance?startDate=&endDate=: Use AnalyticsFilterDto query params, return PerformanceMetricsDto
   - Implement GET /api/analytics/trends?groupBy=day&startDate=&endDate=: Use TrendFilterDto query params, return TrendDataResponseDto

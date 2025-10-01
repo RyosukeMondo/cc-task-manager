@@ -7,7 +7,7 @@ import {
   PerformanceMetricsDto,
   TrendDataResponseDto,
   GroupByPeriod,
-} from '@task-manager/schemas/analytics';
+} from '@schemas/analytics';
 
 /**
  * Analytics Service
