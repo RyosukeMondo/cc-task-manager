@@ -124,7 +124,7 @@
   - _Requirements: 1, 4_
   - _Prompt: Role: Frontend developer with TypeScript expertise | Task: Add queue methods to contract-client.ts following requirements 1 and 4 | Restrictions: Do not duplicate patterns, follow conventions | Success: Methods exist and are type-safe_
 
-- [ ] 10. Add "Queue" link to Sidebar
+- [x] 10. Add "Queue" link to Sidebar
   - File: apps/frontend/src/components/layout/Sidebar.tsx
   - Add section comment: `// ========== Spec: queue-management-dashboard ==========`
   - Add navigation item: { name: 'Queue', href: '/queue', icon: QueueIcon }

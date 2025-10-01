@@ -51,6 +51,13 @@ const SettingsIcon = () => (
   </svg>
 );
 
+// ========== Spec: queue-management-dashboard ==========
+const QueueIcon = () => (
+  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" />
+  </svg>
+);
+
 // Sidebar navigation structure
 // TODO: Uncomment routes as pages are implemented
 const sidebarSections = [
@@ -108,6 +115,13 @@ const sidebarSections = [
   {
     title: 'System',
     items: [
+      // ========== Spec: queue-management-dashboard ==========
+      {
+        href: '/queue',
+        label: 'Queue',
+        icon: QueueIcon,
+        description: 'Queue management dashboard'
+      },
       {
         href: '/settings',
         label: 'Settings',
