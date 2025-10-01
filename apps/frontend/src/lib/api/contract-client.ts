@@ -29,6 +29,7 @@ import type {
   WorkerConfig,
   TaskStatus
 } from '@cc-task-manager/types'
+import type { SystemMetricsResponse } from '../../../backend/src/monitoring/monitoring.service'
 
 /**
  * Contract-driven API client using existing ContractRegistry infrastructure
@@ -423,6 +424,17 @@ export class ContractApiClient {
    */
   async retryAllFailedJobs(): Promise<{ count: number }> {
     return this.request('POST', '/api/queue/jobs/retry-all')
+  }
+
+  // ========== Spec: system-monitoring-dashboard ==========
+
+  /**
+   * Get comprehensive system metrics including CPU, memory, disk, API performance, database pool, and WebSocket stats
+   * Requires authentication (JWT in Authorization header)
+   * @returns System metrics response with all monitoring data
+   */
+  async getSystemMetrics(): Promise<SystemMetricsResponse> {
+    return this.request<SystemMetricsResponse>('GET', '/api/monitoring/metrics')
   }
 }
 

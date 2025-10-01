@@ -4,7 +4,7 @@
 
 ### Phase 1: Backend API (3 tasks)
 
-- [ ] 1. Create MonitoringModule
+- [x] 1. Create MonitoringModule
   - File: apps/backend/src/monitoring/monitoring.module.ts
   - Import PrismaModule
   - Provide: MonitoringService
@@ -14,7 +14,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: Backend developer with NestJS expertise | Task: Create MonitoringModule following requirements 1, 2, and 3 | Restrictions: Do not hardcode configuration values | Success: Module compiles with no errors_
 
-- [ ] 2. Implement MonitoringService (system metrics collection)
+- [x] 2. Implement MonitoringService (system metrics collection)
   - File: apps/backend/src/monitoring/monitoring.service.ts
   - getMetrics(): Return { system, api, database, websocket }
   - System metrics (use Node.js os module): CPU usage (os.cpus()), memory (os.totalmem(), os.freemem()), disk (placeholder or check-disk-space library)
@@ -27,7 +27,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: Backend developer with system monitoring expertise | Task: Implement MonitoringService following requirements 1, 2, and 3, collecting CPU, memory, API, and database metrics | Restrictions: Do not use external APM services, use built-in Node.js APIs | Success: All metrics calculated correctly_
 
-- [ ] 3. Create MonitoringController
+- [x] 3. Create MonitoringController
   - File: apps/backend/src/monitoring/monitoring.controller.ts
   - GET /api/monitoring/metrics: Returns system metrics (200 OK)
   - Protect with @UseGuards(JwtAuthGuard)
@@ -40,7 +40,7 @@
 
 ### Phase 2: Route & Components (4 tasks)
 
-- [ ] 4. Create monitoring dashboard route
+- [x] 4. Create monitoring dashboard route
   - File: apps/frontend/src/app/monitoring/page.tsx, apps/frontend/src/app/monitoring/loading.tsx, apps/frontend/src/app/monitoring/error.tsx
   - page.tsx: Use useSystemMetrics hook with 5s polling, render SystemMetrics/APIPerformanceMetrics/MetricsChart/WebSocketStatus
   - loading.tsx: Skeleton with shimmer
@@ -52,7 +52,7 @@
   - _Requirements: 1, 4, 6_
   - _Prompt: Role: Frontend developer with Next.js expertise | Task: Create monitoring dashboard route following requirements 1, 4, and 6 | Restrictions: Do not hardcode polling interval, use configurable value | Success: Page renders and polling works_
 
-- [ ] 5. Create SystemMetrics component (resource cards)
+- [x] 5. Create SystemMetrics component (resource cards)
   - File: apps/frontend/src/components/monitoring/SystemMetrics.tsx
   - 4 metric cards: CPU Usage (blue), Memory Usage (green), Disk Usage (purple), Database Pool (orange)
   - Each card: Icon, title, value (percentage or fraction), subtitle
@@ -65,7 +65,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with data visualization expertise | Task: Create SystemMetrics component following requirement 1, implementing color-coded warning states | Restrictions: Do not use hardcoded thresholds, make configurable | Success: Metrics display with color-coded warnings_
 
-- [ ] 6. Create MetricsChart component (Recharts time-series)
+- [x] 6. Create MetricsChart component (Recharts time-series)
   - File: apps/frontend/src/components/monitoring/MetricsChart.tsx
   - Use Recharts AreaChart
   - Props: title, data (array of { timestamp, value }), dataKey, color
@@ -80,7 +80,7 @@
   - _Requirements: 4_
   - _Prompt: Role: Frontend developer with charting expertise | Task: Create MetricsChart component following requirement 4, implementing time-series visualization | Restrictions: Do not exceed 720 data points, implement sliding window | Success: Chart displays correctly_
 
-- [ ] 7. Create APIPerformanceMetrics component
+- [x] 7. Create APIPerformanceMetrics component
   - File: apps/frontend/src/components/monitoring/APIPerformanceMetrics.tsx
   - Card with API metrics: averageResponseTime, p95ResponseTime, requestsPerSecond
   - Warning if p95 > 500ms (yellow), critical if > 1000ms (red)
@@ -93,7 +93,7 @@
 
 ### Phase 3: Data Fetching (1 task)
 
-- [ ] 8. Implement useSystemMetrics hook (polling + history)
+- [x] 8. Implement useSystemMetrics hook (polling + history)
   - File: apps/frontend/src/hooks/useSystemMetrics.ts
   - Use useQuery with queryKey: ['system', 'metrics']
   - queryFn: apiClient.getSystemMetrics()
@@ -109,7 +109,7 @@
 
 ### Phase 4: Integration & Testing (3 tasks)
 
-- [ ] 9. Add monitoring methods to contract-client.ts
+- [x] 9. Add monitoring methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: `// ========== Spec: system-monitoring-dashboard ==========`
   - getSystemMetrics(): Promise<SystemMetricsResponse>
@@ -118,7 +118,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with TypeScript expertise | Task: Add getSystemMetrics method to contract-client.ts following requirement 1 | Restrictions: Do not duplicate patterns | Success: Method exists and is type-safe_
 
-- [ ] 10. Add "Monitoring" link to Sidebar
+- [x] 10. Add "Monitoring" link to Sidebar
   - File: apps/frontend/src/components/layout/Sidebar.tsx
   - Add section comment: `// ========== Spec: system-monitoring-dashboard ==========`
   - Add navigation item: { name: 'Monitoring', href: '/monitoring', icon: ActivityIcon }
@@ -128,7 +128,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with navigation expertise | Task: Add Monitoring link to Sidebar following requirement 1 | Restrictions: Do not modify other navigation items | Success: Monitoring link appears in sidebar_
 
-- [ ] 11. Create E2E test for monitoring dashboard
+- [x] 11. Create E2E test for monitoring dashboard
   - File: apps/frontend/e2e/monitoring.spec.ts
   - Test: Navigate to /monitoring displays system metrics cards
   - Test: CPU/Memory/Disk usage display with percentages
