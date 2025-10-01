@@ -38,7 +38,7 @@
   - _Requirements: 1, 2_
   - _Prompt: Role: Backend developer with NestJS expertise | Task: Create SettingsModule with proper DI setup following requirements 1 and 2 | Restrictions: Do not expose settings without authentication | Success: Module compiles with no errors_
 
-- [ ] 4. Define Zod schemas for settings
+- [x] 4. Define Zod schemas for settings
   - File: packages/schemas/src/settings.schema.ts, packages/schemas/src/index.ts, apps/backend/src/settings/dto/update-settings.dto.ts
   - Create updateSettingsSchema: theme (enum: LIGHT/DARK/SYSTEM, optional), notifications (boolean, optional), displayDensity (enum: COMFORTABLE/COMPACT/SPACIOUS, optional), language (string, length 2, regex /^[a-z]{2}$/, optional)
   - Create settingsResponseSchema: all fields required (id, userId, theme, notifications, displayDensity, language, createdAt, updatedAt)
