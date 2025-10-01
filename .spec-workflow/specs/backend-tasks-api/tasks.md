@@ -20,7 +20,7 @@
   - _Requirements: 1.1_
   - _Prompt: Role: DevOps Engineer with expertise in database migrations | Task: Generate and apply Prisma migration for Task model safely | Restrictions: Must ensure migration is reversible, do not drop existing tables, maintain data integrity | Success: Migration file created, database updated, can query tasks table via Prisma Studio_
 
-- [ ] 3. Create TasksModule with dependency injection
+- [x] 3. Create TasksModule with dependency injection
   - File: apps/backend/src/tasks/tasks.module.ts
   - Import AuthModule (provides JwtAuthGuard), PrismaModule
   - Provide: TasksService, TasksRepository, TasksGateway

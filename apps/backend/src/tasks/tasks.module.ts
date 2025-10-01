@@ -11,8 +11,11 @@ import { TaskPerformanceMiddleware } from './middleware/task-performance.middlew
 import { TaskPerformanceService } from './middleware/task-performance.service';
 // import { QueueModule } from '../queue/queue.module';
 // import { WebSocketModule } from '../websocket/websocket.module';
+// import { TasksGateway } from './tasks.gateway'; // Will be implemented in task #8
 import { CaslAbilityFactory } from '../auth/casl-ability.factory';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AuthModule } from '../auth/auth.module';
+import { DatabaseModule } from '../database/database.module';
 
 /**
  * Task Management Module
@@ -41,6 +44,12 @@ import { ScheduleModule } from '@nestjs/schedule';
  */
 @Module({
   imports: [
+    // Database module for Prisma access and repository pattern
+    DatabaseModule,
+
+    // Auth module provides JwtAuthGuard and authentication services
+    AuthModule,
+
     // QueueModule, // Temporarily disabled due to ApplicationConfigService dependency issues
     // WebSocketModule, // Temporarily disabled due to dependency issues
     // ScheduleModule.forRoot(), // Temporarily disabled due to crypto polyfill issues in Node 18
@@ -54,6 +63,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       provide: 'ITasksRepository',
       useExisting: TasksRepository,
     },
+    // TasksGateway, // Will be implemented in task #8
     // TaskEventsService, // Temporarily disabled due to WebSocketModule dependency
     TaskOwnershipGuard,
     TaskPerformanceMiddleware,
