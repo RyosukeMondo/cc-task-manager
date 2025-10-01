@@ -80,3 +80,6 @@ worktree/**
 # Generated configuration files
 scripts/config.yaml
 ecosystem.config.js
+
+# Parallel development configuration (user-specific)
+parallel.yaml

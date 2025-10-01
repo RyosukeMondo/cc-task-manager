@@ -67,6 +67,19 @@ class ParallelDevSetup {
 
   loadConfig() {
     log('📖 Loading configuration from parallel.yaml...', 'blue');
+
+    // Check if parallel.yaml exists
+    if (!fs.existsSync(this.configPath)) {
+      log('✗ parallel.yaml not found!', 'red');
+      log('', 'reset');
+      log('First time setup:', 'yellow');
+      log('  1. Copy the template: cp parallel.yaml.example parallel.yaml', 'cyan');
+      log('  2. Edit parallel.yaml and set available: true for specs you want to develop', 'cyan');
+      log('  3. Run this script again: node scripts/parallel_dev.js', 'cyan');
+      log('', 'reset');
+      throw new Error('parallel.yaml not found - see instructions above');
+    }
+
     const configContent = fs.readFileSync(this.configPath, 'utf8');
     this.config = yaml.load(configContent);
 

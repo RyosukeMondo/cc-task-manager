@@ -1,5 +1,13 @@
-# Parallel Development Configuration - SSOT
-# Single source of truth for parallel spec development setup
+# Parallel Development Configuration - Template
+#
+# SETUP INSTRUCTIONS:
+# 1. Copy this file to parallel.yaml:
+#    cp parallel.yaml.example parallel.yaml
+# 2. Edit parallel.yaml to set available: true for specs you want to develop
+# 3. Run: node scripts/parallel_dev.js
+#
+# NOTE: parallel.yaml is git-ignored to avoid conflicts with daily changes
+#       This template file shows all available options and variations
 
 # Base configuration
 base:
@@ -12,7 +20,8 @@ base:
 # Specifications to develop in parallel
 # Each spec gets: worktree, feature branch, MCP servers, PM2 automation
 specifications:
-  # All specs now merged to main! (available: false)
+  # MERGED SPECS (available: false) - Completed and merged to main
+  # --------------------------------------------------------------------
   - name: task-creation-modal
     description: Task creation dialog UI with form validation
     available: false
@@ -61,7 +70,6 @@ specifications:
       - serena
       - spec-workflow
 
-  # Completed specs (available: false)
   - name: backend-tasks-api
     description: Task CRUD API endpoints
     available: false
@@ -92,10 +100,11 @@ specifications:
       - serena
       - spec-workflow
 
-  # Future specs (available: false)
+  # AVAILABLE SPECS - Set available: true to activate
+  # --------------------------------------------------------------------
   - name: analytics-performance-page
     description: Performance analytics page
-    available: false
+    available: false  # 👈 Change to true to activate
     priority: 20
     spec_file: analytics-performance-page
     mcp_servers:
@@ -106,7 +115,7 @@ specifications:
 
   - name: analytics-trends-page
     description: Trends analytics page
-    available: false
+    available: false  # 👈 Change to true to activate
     priority: 21
     spec_file: analytics-trends-page
     mcp_servers:
@@ -117,7 +126,7 @@ specifications:
 
   - name: settings-page
     description: User settings page
-    available: false
+    available: false  # 👈 Change to true to activate
     priority: 22
     spec_file: settings-page
     mcp_servers:
@@ -128,7 +137,7 @@ specifications:
 
   - name: task-list-component
     description: Reusable task list component
-    available: false
+    available: false  # 👈 Change to true to activate
     priority: 23
     spec_file: task-list-component
     mcp_servers:
@@ -139,7 +148,7 @@ specifications:
 
   - name: tasks-active-page
     description: Active tasks page
-    available: false
+    available: false  # 👈 Change to true to activate
     priority: 24
     spec_file: tasks-active-page
     mcp_servers:
@@ -150,7 +159,7 @@ specifications:
 
   - name: tasks-all-page
     description: All tasks page
-    available: false
+    available: false  # 👈 Change to true to activate
     priority: 25
     spec_file: tasks-all-page
     mcp_servers:
@@ -161,7 +170,7 @@ specifications:
 
   - name: tasks-completed-page
     description: Completed tasks page
-    available: false
+    available: false  # 👈 Change to true to activate
     priority: 26
     spec_file: tasks-completed-page
     mcp_servers:
@@ -171,6 +180,7 @@ specifications:
       - spec-workflow
 
 # MCP Server Definitions
+# Available servers and their commands
 mcp_servers:
   - name: context7
     command: npx @upstash/context7-mcp@latest
@@ -228,3 +238,34 @@ static_services:
     cwd: /home/rmondo/repos/claude-code-viewer/dist/standalone
     port: 3400
     autorestart: true
+
+# USAGE EXAMPLES:
+# ===============
+#
+# Example 1: Develop single spec
+# -------------------------------
+# Set available: true for one spec:
+#   - name: analytics-performance-page
+#     available: true
+# Run: node scripts/parallel_dev.js
+#
+# Example 2: Develop multiple specs in parallel
+# ----------------------------------------------
+# Set available: true for multiple specs:
+#   - name: analytics-performance-page
+#     available: true
+#   - name: analytics-trends-page
+#     available: true
+# Run: node scripts/parallel_dev.js
+#
+# Example 3: Preview changes before execution
+# --------------------------------------------
+# Run: node scripts/parallel_dev.js --dry-run
+#
+# Example 4: Setup without starting PM2
+# --------------------------------------
+# Run: node scripts/parallel_dev.js --setup-only
+#
+# Example 5: Cleanup all worktrees
+# ---------------------------------
+# Run: node scripts/parallel_dev.js --cleanup
