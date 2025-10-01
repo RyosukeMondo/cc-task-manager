@@ -77,7 +77,7 @@
   - _Requirements: 1.6_
   - _Prompt: Role: Real-time Developer with expertise in WebSocket and Socket.IO | Task: Implement TasksGateway for real-time events following requirement 1.6 | Restrictions: Must broadcast to all authenticated clients, use proper event names (task:created, task:updated, task:deleted), handle connection lifecycle | Success: Events broadcast to all connected clients, WebSocket authentication works, events contain correct data_
 
-- [ ] 9. Add tasks methods to contract-client.ts
+- [x] 9. Add tasks methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: // ========== Spec: backend-tasks-api ==========
   - Add methods: getTasks(filter), createTask(data), getTaskById(id), updateTask(id, data), deleteTask(id)
