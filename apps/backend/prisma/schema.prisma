@@ -33,6 +33,7 @@ model User {
   assignedTasks Task[]       @relation("TaskAssignee")
   claudeTasks   ClaudeTask[] @relation("ClaudeTaskCreator")
   sessions      Session[]
+  settings      Settings?
 
   @@index([email])
   @@map("users")
@@ -55,6 +56,46 @@ enum UserStatus {
   PENDING_VERIFICATION
 
   @@map("user_status")
+}
+
+// =============================================================================
+// USER SETTINGS - User preferences and configuration
+// =============================================================================
+
+// Settings model for user preferences
+model Settings {
+  id             String         @id @default(uuid())
+  userId         String         @unique @map("user_id")
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme          Theme          @default(SYSTEM)
+  notifications  Boolean        @default(true)
+  displayDensity DisplayDensity @default(COMFORTABLE) @map("display_density")
+  language       String         @default("en")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("settings")
+}
+
+// Theme enumeration for display preferences
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+
+  @@map("theme")
+}
+
+// Display density enumeration for UI spacing
+enum DisplayDensity {
+  COMFORTABLE
+  COMPACT
+  SPACIOUS
+
+  @@map("display_density")
 }
 
 // Task model aligned with existing task schemas

@@ -4,7 +4,7 @@
 
 ### Phase 1: Data Model & Schema (2 tasks)
 
-- [ ] 1. Create Settings Prisma model with enums
+- [x] 1. Create Settings Prisma model with enums
   - File: prisma/schema.prisma
   - Add Settings model: id (uuid), userId (unique FK), theme (enum, default SYSTEM), notifications (boolean, default true), displayDensity (enum, default COMFORTABLE), language (string, default "en"), createdAt, updatedAt
   - Add Theme enum: LIGHT, DARK, SYSTEM
