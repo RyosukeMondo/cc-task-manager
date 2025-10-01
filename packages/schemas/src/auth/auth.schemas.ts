@@ -10,23 +10,33 @@ import { z } from 'zod';
 /**
  * User role enumeration for authorization control
  * Matches Prisma schema enum values
+ * Using z.enum() for Prisma compatibility (contract-driven development)
  */
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
-  MODERATOR = 'MODERATOR',
-}
+export const UserRoleSchema = z.enum(['ADMIN', 'USER', 'MODERATOR']);
+export type UserRole = z.infer<typeof UserRoleSchema>;
+
+// Export as const object for runtime usage
+export const UserRole = {
+  ADMIN: 'ADMIN',
+  USER: 'USER',
+  MODERATOR: 'MODERATOR',
+} as const;
 
 /**
  * User account status enumeration
  * Matches Prisma schema enum values
+ * Using z.enum() for Prisma compatibility (contract-driven development)
  */
-export enum UserStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  SUSPENDED = 'SUSPENDED',
-  PENDING_VERIFICATION = 'PENDING_VERIFICATION',
-}
+export const UserStatusSchema = z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED', 'PENDING_VERIFICATION']);
+export type UserStatus = z.infer<typeof UserStatusSchema>;
+
+// Export as const object for runtime usage
+export const UserStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  PENDING_VERIFICATION: 'PENDING_VERIFICATION',
+} as const;
 
 /**
  * User base schema with common user properties
@@ -40,8 +50,8 @@ export const UserBaseSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens'),
   firstName: z.string().min(1, 'First name is required').max(50, 'First name must not exceed 50 characters'),
   lastName: z.string().min(1, 'Last name is required').max(50, 'Last name must not exceed 50 characters'),
-  role: z.nativeEnum(UserRole),
-  status: z.nativeEnum(UserStatus),
+  role: UserRoleSchema,
+  status: UserStatusSchema,
   createdAt: z.date(),
   updatedAt: z.date(),
   lastLoginAt: z.date().optional(),
@@ -86,7 +96,7 @@ export const JWTPayloadSchema = z.object({
   username: z.string(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  role: z.nativeEnum(UserRole),
+  role: UserRoleSchema,
   permissions: z.array(z.string()).optional(),
   iat: z.number(),
   exp: z.number(),
@@ -175,7 +185,7 @@ export const PermissionSchema = z.object({
  * Role permissions schema
  */
 export const RolePermissionsSchema = z.object({
-  role: z.nativeEnum(UserRole),
+  role: UserRoleSchema,
   permissions: z.array(PermissionSchema),
 });
 
@@ -245,3 +255,10 @@ export const validatePermission = (data: unknown): Permission => {
 export const validateRolePermissions = (data: unknown): RolePermissions => {
   return RolePermissionsSchema.parse(data);
 };
+
+/**
+ * Aliased exports for backend compatibility
+ * These provide alternative names for schemas to maintain backward compatibility
+ */
+export const loginSchema = LoginRequestSchema;
+export const registerSchema = UserRegistrationSchema;

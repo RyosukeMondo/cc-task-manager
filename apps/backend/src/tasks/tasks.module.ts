@@ -4,7 +4,7 @@ import { ContractValidationPipe } from '@contracts/ContractValidationPipe';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
 import { TaskController } from './task.controller';
 import { TasksService } from './tasks.service';
-import { TasksRepository, ITasksRepository } from './tasks.repository';
+import { TasksRepository } from './tasks.repository';
 import { TaskOwnershipGuard } from './guards/task-ownership.guard';
 import { TaskEventsService } from './events/task-events.service';
 import { TaskPerformanceMiddleware } from './middleware/task-performance.middleware';

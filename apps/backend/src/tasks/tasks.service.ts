@@ -11,7 +11,7 @@ import {
 } from './exceptions/task-exceptions';
 import { JWTPayload } from '@schemas/auth';
 import { BackendSchemaRegistry } from '../schemas/schema-registry';
-import { TasksRepository, ITasksRepository } from './tasks.repository';
+import { TasksRepository } from './tasks.repository';
 import { QueueService } from '../queue/queue.service';
 import { TaskEventsService } from '../websocket/events/task-events.service';
 import { WebSocketEventType } from '../websocket/websocket-events.schemas';

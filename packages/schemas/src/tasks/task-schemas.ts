@@ -3,25 +3,35 @@ import { z } from 'zod';
 /**
  * Task Priority enumeration for schema validation
  * Defines all supported priority levels for task scheduling and processing
+ * Using z.enum() for Prisma compatibility (contract-driven development)
  */
-export enum TaskPriority {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH',
-  URGENT = 'URGENT'
-}
+export const TaskPrioritySchema = z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
+export type TaskPriority = z.infer<typeof TaskPrioritySchema>;
+
+// Export as const object for runtime usage
+export const TaskPriority = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT'
+} as const;
 
 /**
  * Task Status enumeration for schema validation
  * Defines all possible states in the task lifecycle
+ * Using z.enum() for Prisma compatibility (contract-driven development)
  */
-export enum TaskStatus {
-  PENDING = 'PENDING',
-  RUNNING = 'RUNNING',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED'
-}
+export const TaskStatusSchema = z.enum(['PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED']);
+export type TaskStatus = z.infer<typeof TaskStatusSchema>;
+
+// Export as const object for runtime usage
+export const TaskStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+} as const;
 
 /**
  * Task configuration schema for execution parameters
@@ -30,7 +40,7 @@ export enum TaskStatus {
 export const TaskConfigSchema = z.object({
   timeout: z.number().int().min(1).max(3600).optional(),
   retryAttempts: z.number().int().min(0).max(5).optional(),
-  priority: z.nativeEnum(TaskPriority).optional()
+  priority: TaskPrioritySchema.optional()
 }).strict();
 
 /**
@@ -85,8 +95,8 @@ export const UpdateTaskSchema = z.object({
 export const TaskQuerySchema = z.object({
   page: z.number().int().min(1, 'Page must be at least 1').default(1),
   limit: z.number().int().min(1, 'Limit must be at least 1').max(100, 'Limit cannot exceed 100').default(20),
-  status: z.array(z.nativeEnum(TaskStatus)).optional(),
-  priority: z.array(z.nativeEnum(TaskPriority)).optional(),
+  status: z.array(TaskStatusSchema).optional(),
+  priority: z.array(TaskPrioritySchema).optional(),
   projectId: z.string().uuid('Invalid project ID format').optional(),
   createdAfter: z.string().datetime('Invalid datetime format').optional(),
   createdBefore: z.string().datetime('Invalid datetime format').optional(),
@@ -104,8 +114,8 @@ export const TaskResponseSchema = z.object({
   title: z.string(),
   description: z.string().nullable(),
   prompt: z.string(),
-  status: z.nativeEnum(TaskStatus),
-  priority: z.nativeEnum(TaskPriority),
+  status: TaskStatusSchema,
+  priority: TaskPrioritySchema,
   progress: z.number().min(0).max(1).nullable(),
   config: TaskConfigSchema.nullable(),
   createdBy: TaskUserSchema,
@@ -143,7 +153,7 @@ export const PaginatedTaskResponseSchema = z.object({
  * Validates status transitions and optional metadata
  */
 export const TaskStatusUpdateSchema = z.object({
-  status: z.nativeEnum(TaskStatus),
+  status: TaskStatusSchema,
   progress: z.number().min(0).max(1).optional(),
   errorMessage: z.string().optional()
 }).strict();
@@ -259,3 +269,13 @@ export const UpdateTaskSchemaWithBusinessRules = UpdateTaskSchema.refine(
     path: ['scheduledAt']
   }
 );
+
+/**
+ * Aliased exports for backend API compatibility
+ * These provide alternative names for schemas to maintain consistency with API naming conventions
+ */
+export { CreateTaskDto as CreateApiTaskDto };
+export { UpdateTaskDto as UpdateApiTaskDto };
+export { TaskQueryDto as ApiTaskFilterDto };
+export { TaskResponseDto as ApiTaskDto };
+export { PaginatedTaskResponseDto as PaginatedTasksDto };

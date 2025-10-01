@@ -88,10 +88,11 @@ export const WorkerConfigSchema = z.object({
 });
 
 /**
- * Task status schema for runtime state tracking
+ * Worker task monitoring status schema for runtime state tracking
  * Combines state information with metadata for comprehensive monitoring
+ * Renamed to avoid conflict with task-schemas TaskStatusSchema enum
  */
-export const TaskStatusSchema = z.object({
+export const WorkerTaskStatusSchema = z.object({
   taskId: z.string(),
   state: z.nativeEnum(TaskState),
   pid: z.number().optional(),
@@ -121,5 +122,5 @@ export const validateWorkerConfig = (data: unknown) => {
 };
 
 export const validateTaskStatus = (data: unknown) => {
-  return TaskStatusSchema.parse(data);
+  return WorkerTaskStatusSchema.parse(data);
 };
