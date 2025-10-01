@@ -109,7 +109,7 @@
   - _Requirements: 1, 2, 3, 4, 5_
   - _Prompt: Role: Backend API developer with NestJS expertise | Task: Implement AuthController REST endpoints following requirements 1-5, ensuring proper HTTP status codes | Restrictions: Do not expose protected endpoints without guards | Success: All endpoints return correct status codes_
 
-- [ ] 10. Apply JwtAuthGuard to protected routes
+- [x] 10. Apply JwtAuthGuard to protected routes
   - File: apps/backend/src/tasks/tasks.controller.ts, apps/backend/src/settings/settings.controller.ts, apps/backend/src/analytics/analytics.controller.ts
   - Add @UseGuards(JwtAuthGuard) to all TasksController routes
   - Add @UseGuards(JwtAuthGuard) to all SettingsController routes (if exists)

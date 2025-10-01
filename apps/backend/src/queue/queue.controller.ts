@@ -10,10 +10,12 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { QueueService } from './queue.service';
 import { QueueJob, JobOptions, QueueMetrics } from './queue.schemas';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 /**
  * Queue Controller
@@ -29,6 +31,8 @@ import { QueueJob, JobOptions, QueueMetrics } from './queue.schemas';
  */
 @ApiTags('queues')
 @Controller('queues')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT')
 export class QueueController {
   private readonly logger = new Logger(QueueController.name);
 
