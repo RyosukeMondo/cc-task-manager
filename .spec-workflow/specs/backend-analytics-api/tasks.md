@@ -104,7 +104,7 @@
   - _Requirements: 3_
   - _Prompt: Role: DevOps engineer with NestJS configuration expertise | Task: Document environment variables and register AnalyticsModule following requirement 3, ensuring Redis is available | Restrictions: Do not hardcode any configuration values | Success: Backend starts successfully, Redis connects, and /api/analytics/performance responds_
 
-- [ ] 9. Implement cache invalidation in TasksService
+- [x] 9. Implement cache invalidation in TasksService
   - File: apps/backend/src/tasks/tasks.service.ts
   - Inject CacheManager in constructor
   - After create/update/delete task operations, invalidate analytics cache for userId
