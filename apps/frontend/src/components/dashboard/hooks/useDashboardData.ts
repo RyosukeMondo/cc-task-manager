@@ -1,8 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { TaskStatus, TaskState } from '@cc-task-manager/types';
+import { TaskState } from '@cc-task-manager/types';
 import { useWebSocket } from '@/lib/websocket';
+
+// Simple task interface for ClaudeTask workflow monitoring (not ApiTask REST API)
+// Matches WorkerTaskStatus structure
+interface TaskStatus {
+  taskId: string;
+  state: TaskState;
+  pid?: number;
+  progress?: string;
+  lastActivity: Date;
+  error?: string;
+  exitCode?: number;
+}
 
 interface DashboardMetrics {
   taskStatusCounts: Record<TaskState, number>;

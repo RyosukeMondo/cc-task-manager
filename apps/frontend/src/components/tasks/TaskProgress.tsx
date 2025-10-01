@@ -16,11 +16,11 @@ import {
   TrendingUp,
   Activity
 } from 'lucide-react';
-import { TaskStatus, TaskState } from '@cc-task-manager/types';
+import { WorkerTaskStatus, TaskState } from '@cc-task-manager/types';
 import { cn } from '@/lib/utils';
 
 interface TaskProgressProps {
-  task: TaskStatus;
+  task: WorkerTaskStatus;
   showDetails?: boolean;
   className?: string;
   compact?: boolean;

@@ -32,6 +32,15 @@ import {
   LiveRegion
 } from '@/lib/accessibility/screen-reader';
 
+// Simple task interface for ClaudeTask workflow monitoring (not ApiTask REST API)
+interface TaskStatus {
+  id: string;
+  state: TaskState;
+  sessionName?: string;
+  name?: string;
+  lastActivity?: Date;
+}
+
 interface TaskDashboardProps {
   className?: string;
   refreshInterval?: number;

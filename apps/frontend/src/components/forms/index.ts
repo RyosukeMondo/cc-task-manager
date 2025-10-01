@@ -46,5 +46,5 @@ export {
   useTaskExecutionRequestValidation,
   useWorkerConfigValidation,
   useClaudeCodeOptionsValidation,
-  useTaskStatusValidation
+  useWorkerTaskStatusValidation
 } from './hooks';

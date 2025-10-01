@@ -21,7 +21,7 @@ import {
   Users,
   Zap
 } from 'lucide-react';
-import { TaskStatus, TaskState } from '@cc-task-manager/types';
+import { WorkerTaskStatus, TaskState } from '@cc-task-manager/types';
 import { TaskProgress, TaskProgressList } from '@/components/tasks/TaskProgress';
 import { ChartCard, createBaseChartOptions, taskStateColors } from '@/components/dashboard/charts/BaseChart';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
@@ -30,6 +30,17 @@ import {
   useWebSocketConnection,
   useSystemStatus
 } from '@/lib/websocket/hooks';
+
+// Local task status interface for ClaudeTask workflow monitoring
+interface TaskStatus {
+  taskId: string;
+  state: TaskState;
+  pid?: number;
+  progress?: string;
+  lastActivity: Date;
+  error?: string;
+  exitCode?: number;
+}
 
 interface ExecutionMonitorProps {
   className?: string;

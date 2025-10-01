@@ -1,14 +1,14 @@
 'use client';
 
 import React from 'react';
-import { TaskStatus, TaskState } from '@cc-task-manager/types';
+import { WorkerTaskStatus, TaskState } from '@cc-task-manager/types';
 import { cn } from '../../lib/utils';
 import { Badge } from '../ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Clock, CheckCircle, XCircle, AlertCircle, Pause, Play } from 'lucide-react';
 
 interface TaskDisplayProps {
-  task: TaskStatus;
+  task: WorkerTaskStatus;
   className?: string;
   showDetails?: boolean;
 }
@@ -16,7 +16,7 @@ interface TaskDisplayProps {
 /**
  * TaskDisplay component following Single Responsibility Principle
  * Responsible only for displaying task status information
- * Uses existing contract-validated TaskStatus type
+ * Uses existing contract-validated WorkerTaskStatus type for ClaudeTask worker monitoring
  */
 export function TaskDisplay({ task, className, showDetails = false }: TaskDisplayProps) {
   const getStateIcon = (state: TaskState) => {
@@ -66,8 +66,8 @@ export function TaskDisplay({ task, className, showDetails = false }: TaskDispla
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium">{task.taskId}</CardTitle>
-          <Badge variant={getStateVariant(task.state)} className="flex items-center gap-1">
-            {getStateIcon(task.state)}
+          <Badge variant={getStateVariant(task.state!)} className="flex items-center gap-1">
+            {getStateIcon(task.state!)}
             {task.state}
           </Badge>
         </div>
@@ -83,7 +83,7 @@ export function TaskDisplay({ task, className, showDetails = false }: TaskDispla
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Last Activity:</span>
-              <span>{formatDate(task.lastActivity)}</span>
+              <span>{formatDate(task.lastActivity!)}</span>
             </div>
 
             {task.pid && (

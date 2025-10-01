@@ -14,7 +14,7 @@ import {
   type VisibilityState,
   type PaginationState
 } from '@tanstack/react-table';
-import { TaskStatus, TaskState } from '@cc-task-manager/types';
+import { WorkerTaskStatus, TaskState } from '@cc-task-manager/types';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -56,8 +56,8 @@ import {
 } from '../ui/dropdown-menu';
 
 interface TaskTableProps {
-  tasks: TaskStatus[];
-  onTaskSelect?: (task: TaskStatus) => void;
+  tasks: WorkerTaskStatus[];
+  onTaskSelect?: (task: WorkerTaskStatus) => void;
   onRefresh?: () => void;
   isLoading?: boolean;
   className?: string;
@@ -145,7 +145,7 @@ export function TaskTable({
   });
 
   // Define table columns with responsive behavior
-  const columns = useMemo<ColumnDef<TaskStatus>[]>(
+  const columns = useMemo<ColumnDef<WorkerTaskStatus>[]>(
     () => [
       {
         accessorKey: 'taskId',

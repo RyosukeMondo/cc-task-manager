@@ -14,7 +14,7 @@ import type {
   TaskExecutionRequest,
   WorkerConfig,
   ClaudeCodeOptions,
-  TaskStatus
+  WorkerTaskStatus
 } from '@cc-task-manager/types';
 
 /**
@@ -267,5 +267,5 @@ export const useWorkerConfigValidation = (data: Partial<WorkerConfig>) =>
 export const useClaudeCodeOptionsValidation = (data: Partial<ClaudeCodeOptions>) =>
   useRealtimeValidation(validateClaudeCodeOptions, data);
 
-export const useTaskStatusValidation = (data: Partial<TaskStatus>) =>
+export const useWorkerTaskStatusValidation = (data: Partial<WorkerTaskStatus>) =>
   useRealtimeValidation(validateTaskStatus, data);

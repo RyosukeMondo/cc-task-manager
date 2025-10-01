@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { TaskStatus } from '@cc-task-manager/types';
+import { WorkerTaskStatus } from '@cc-task-manager/types';
 import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -27,10 +27,10 @@ export interface SearchOptions {
 export type SearchField = 'taskId' | 'progress' | 'error' | 'all';
 
 interface TaskSearchProps {
-  tasks: TaskStatus[];
+  tasks: WorkerTaskStatus[];
   searchTerm: string;
   onSearchChange: (term: string) => void;
-  onSearchResults?: (results: TaskStatus[]) => void;
+  onSearchResults?: (results: WorkerTaskStatus[]) => void;
   className?: string;
   placeholder?: string;
   showAdvancedOptions?: boolean;

@@ -64,7 +64,7 @@ const baseTask = {
   id: '1',
   title: 'Implement user authentication',
   description: 'Add JWT-based authentication to the API',
-  status: TaskStatus.PENDING,
+  status: TaskStatus.TODO,
   priority: TaskPriority.HIGH,
   createdAt: new Date('2025-09-15T10:00:00Z').toISOString(),
   updatedAt: new Date('2025-09-20T14:30:00Z').toISOString(),
@@ -86,7 +86,7 @@ export const Pending: Story = {
   args: {
     task: {
       ...baseTask,
-      status: TaskStatus.PENDING,
+      status: TaskStatus.TODO,
       priority: TaskPriority.MEDIUM,
     },
   },
@@ -102,7 +102,7 @@ export const Active: Story = {
       id: '2',
       title: 'Build task dashboard',
       description: 'Create a responsive dashboard for managing tasks',
-      status: TaskStatus.ACTIVE,
+      status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.HIGH,
     },
   },
@@ -118,7 +118,7 @@ export const Completed: Story = {
       id: '3',
       title: 'Setup CI/CD pipeline',
       description: 'Configure GitHub Actions for automated testing and deployment',
-      status: TaskStatus.COMPLETED,
+      status: TaskStatus.DONE,
       priority: TaskPriority.MEDIUM,
     },
   },
@@ -134,7 +134,7 @@ export const Failed: Story = {
       id: '4',
       title: 'Deploy to production',
       description: 'Deploy the application to production environment',
-      status: TaskStatus.FAILED,
+      status: TaskStatus.CANCELLED,
       priority: TaskPriority.URGENT,
     },
   },
@@ -150,7 +150,7 @@ export const LowPriority: Story = {
       id: '5',
       title: 'Update documentation',
       description: 'Refresh API documentation with latest changes',
-      status: TaskStatus.PENDING,
+      status: TaskStatus.TODO,
       priority: TaskPriority.LOW,
     },
   },
@@ -166,7 +166,7 @@ export const HighPriority: Story = {
       id: '6',
       title: 'Fix critical security bug',
       description: 'Patch SQL injection vulnerability in user login',
-      status: TaskStatus.ACTIVE,
+      status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.HIGH,
     },
   },
@@ -182,7 +182,7 @@ export const UrgentPriority: Story = {
       id: '7',
       title: 'Server outage response',
       description: 'Investigate and resolve production server downtime',
-      status: TaskStatus.ACTIVE,
+      status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.URGENT,
     },
   },
@@ -198,7 +198,7 @@ export const NoDescription: Story = {
       id: '8',
       title: 'Quick task without details',
       description: '',
-      status: TaskStatus.PENDING,
+      status: TaskStatus.TODO,
       priority: TaskPriority.LOW,
     },
   },
@@ -214,7 +214,7 @@ export const LongContent: Story = {
       id: '9',
       title: 'Implement comprehensive end-to-end testing framework with full coverage across all application modules',
       description: 'Set up a complete end-to-end testing framework using Playwright that covers all critical user journeys including authentication, task management, real-time updates, and error handling scenarios. This should include integration with CI/CD pipeline and automated reporting.',
-      status: TaskStatus.ACTIVE,
+      status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.MEDIUM,
     },
   },
@@ -263,7 +263,7 @@ export const AllStates: Story = {
         task={{
           ...baseTask,
           id: '1',
-          status: TaskStatus.PENDING,
+          status: TaskStatus.TODO,
           title: 'Pending Task',
         }}
         onStatusChange={fn()}
@@ -274,7 +274,7 @@ export const AllStates: Story = {
         task={{
           ...baseTask,
           id: '2',
-          status: TaskStatus.ACTIVE,
+          status: TaskStatus.IN_PROGRESS,
           title: 'Active Task',
         }}
         onStatusChange={fn()}
@@ -285,7 +285,7 @@ export const AllStates: Story = {
         task={{
           ...baseTask,
           id: '3',
-          status: TaskStatus.COMPLETED,
+          status: TaskStatus.DONE,
           title: 'Completed Task',
         }}
         onStatusChange={fn()}
@@ -296,7 +296,7 @@ export const AllStates: Story = {
         task={{
           ...baseTask,
           id: '4',
-          status: TaskStatus.FAILED,
+          status: TaskStatus.CANCELLED,
           title: 'Failed Task',
         }}
         onStatusChange={fn()}

@@ -7,6 +7,12 @@ import { DashboardLayout, DashboardGrid, MetricCard } from './DashboardLayout';
 import { TaskStatusChart, TaskTrendChart, PerformanceChart } from './charts';
 import { UserMenu } from './UserMenu';
 
+// Simple task interface for ClaudeTask workflow monitoring (not ApiTask REST API)
+interface TaskStatus {
+  state: TaskState;
+  lastActivity?: Date;
+}
+
 interface DashboardProps {
   tasks?: TaskStatus[];
   realTimeUpdates?: boolean;
