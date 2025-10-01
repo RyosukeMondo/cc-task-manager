@@ -40,7 +40,7 @@
 
 ### Phase 2: Route & Components (4 tasks)
 
-- [ ] 4. Create monitoring dashboard route
+- [x] 4. Create monitoring dashboard route
   - File: apps/frontend/src/app/monitoring/page.tsx, apps/frontend/src/app/monitoring/loading.tsx, apps/frontend/src/app/monitoring/error.tsx
   - page.tsx: Use useSystemMetrics hook with 5s polling, render SystemMetrics/APIPerformanceMetrics/MetricsChart/WebSocketStatus
   - loading.tsx: Skeleton with shimmer
