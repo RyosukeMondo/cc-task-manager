@@ -24,11 +24,20 @@ export async function generateMetadata({
 }: TaskDetailPageProps): Promise<Metadata> {
   const { id } = await params;
 
-  // TODO: Fetch task data to get actual task title
-  // For now, return a basic title
-  return {
-    title: `Task ${id} - Task Manager`,
-  };
+  try {
+    // Dynamically import apiClient to avoid issues with client-side code
+    const { apiClient } = await import('@/lib/api/contract-client');
+    const task = await apiClient.getTaskById(id);
+
+    return {
+      title: `${task.title} - Task Manager`,
+    };
+  } catch (error) {
+    // Fallback if task fetch fails
+    return {
+      title: 'Task Detail - Task Manager',
+    };
+  }
 }
 
 /**
