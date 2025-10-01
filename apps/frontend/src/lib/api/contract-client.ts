@@ -267,6 +267,80 @@ export class ContractApiClient {
     return this.request<UserBase>('GET', '/api/auth/me')
   }
 
+  // ========== Spec: backend-tasks-api ==========
+
+  /**
+   * Get all tasks for the authenticated user with optional filtering
+   * @param filter Optional filter parameters (status, priority, limit, offset)
+   * @returns Paginated task list
+   */
+  async getTasks(filter?: import('@cc-task-manager/schemas').ApiTaskFilterDto): Promise<import('@cc-task-manager/schemas').PaginatedTasksDto> {
+    const queryParams = filter
+      ? `?${new URLSearchParams({
+          ...(filter.status && { status: filter.status }),
+          ...(filter.priority && { priority: filter.priority }),
+          ...(filter.limit !== undefined && { limit: filter.limit.toString() }),
+          ...(filter.offset !== undefined && { offset: filter.offset.toString() })
+        }).toString()}`
+      : ''
+
+    return this.request<import('@cc-task-manager/schemas').PaginatedTasksDto>(
+      'GET',
+      `/api/tasks${queryParams}`
+    )
+  }
+
+  /**
+   * Create a new task for the authenticated user
+   * @param data Task creation data (title, description, priority)
+   * @returns Created task object
+   */
+  async createTask(data: import('@cc-task-manager/schemas').CreateApiTaskDto): Promise<import('@cc-task-manager/schemas').ApiTaskDto> {
+    const { createTaskSchema } = await import('@cc-task-manager/schemas')
+    return this.request<import('@cc-task-manager/schemas').ApiTaskDto>(
+      'POST',
+      '/api/tasks',
+      data,
+      (d) => createTaskSchema.parse(d)
+    )
+  }
+
+  /**
+   * Get a single task by ID
+   * @param id Task ID
+   * @returns Task object
+   */
+  async getTaskById(id: string): Promise<import('@cc-task-manager/schemas').ApiTaskDto> {
+    return this.request<import('@cc-task-manager/schemas').ApiTaskDto>(
+      'GET',
+      `/api/tasks/${id}`
+    )
+  }
+
+  /**
+   * Update an existing task
+   * @param id Task ID
+   * @param data Task update data (status, priority, errorMessage)
+   * @returns Updated task object
+   */
+  async updateTask(id: string, data: import('@cc-task-manager/schemas').UpdateApiTaskDto): Promise<import('@cc-task-manager/schemas').ApiTaskDto> {
+    const { updateTaskSchema } = await import('@cc-task-manager/schemas')
+    return this.request<import('@cc-task-manager/schemas').ApiTaskDto>(
+      'PATCH',
+      `/api/tasks/${id}`,
+      data,
+      (d) => updateTaskSchema.parse(d)
+    )
+  }
+
+  /**
+   * Delete a task (soft delete)
+   * @param id Task ID
+   */
+  async deleteTask(id: string): Promise<void> {
+    return this.request<void>('DELETE', `/api/tasks/${id}`)
+  }
+
   // Analytics API
   async getPerformanceMetrics(filter?: AnalyticsFilter): Promise<PerformanceMetrics> {
     const queryParams = filter

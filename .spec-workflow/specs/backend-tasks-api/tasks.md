@@ -12,7 +12,7 @@
   - _Requirements: 1.1, 1.2_
   - _Prompt: Role: Database Engineer with expertise in Prisma ORM and PostgreSQL | Task: Create comprehensive Task model schema following requirements 1.1 and 1.2, with proper indexes and relations to existing User model | Restrictions: Must maintain referential integrity, do not modify existing models, follow Prisma naming conventions | Success: Schema validates with npx prisma format, all fields properly typed, indexes optimize common queries_
 
-- [ ] 2. Generate and apply Prisma migration
+- [x] 2. Generate and apply Prisma migration
   - File: prisma/migrations/
   - Run: npx prisma migrate dev --name create_tasks_table
   - Purpose: Apply database schema changes
@@ -20,7 +20,7 @@
   - _Requirements: 1.1_
   - _Prompt: Role: DevOps Engineer with expertise in database migrations | Task: Generate and apply Prisma migration for Task model safely | Restrictions: Must ensure migration is reversible, do not drop existing tables, maintain data integrity | Success: Migration file created, database updated, can query tasks table via Prisma Studio_
 
-- [ ] 3. Create TasksModule with dependency injection
+- [x] 3. Create TasksModule with dependency injection
   - File: apps/backend/src/tasks/tasks.module.ts
   - Import AuthModule (provides JwtAuthGuard), PrismaModule
   - Provide: TasksService, TasksRepository, TasksGateway
@@ -30,7 +30,7 @@
   - _Requirements: Non-functional (Modularity)_
   - _Prompt: Role: NestJS Developer with expertise in module architecture and dependency injection | Task: Create TasksModule with proper DI configuration following NestJS best practices | Restrictions: Must not create circular dependencies, follow existing module patterns, ensure proper provider registration | Success: Module compiles without errors, all dependencies inject correctly, no circular dependency warnings_
 
-- [ ] 4. Define Zod schemas and DTOs
+- [x] 4. Define Zod schemas and DTOs
   - File: packages/schemas/src/task.schema.ts
   - Create createTaskSchema: title (required, max 200), description (optional, max 2000), priority (enum, default MEDIUM)
   - Create updateTaskSchema: status, priority, errorMessage (all optional)
@@ -41,7 +41,7 @@
   - _Requirements: 1.1, 1.2, 1.3, Non-functional (Contract-Driven, SSOT)_
   - _Prompt: Role: TypeScript Developer specializing in type systems and Zod validation | Task: Define comprehensive Zod schemas for task operations following requirements 1.1-1.3 as SSOT for types and validation | Restrictions: Must generate TypeScript types from schemas, maintain validation consistency between frontend and backend, follow existing schema patterns | Success: Schemas validate correctly, TypeScript types generated, frontend and backend share identical validation_
 
-- [ ] 5. Implement TasksRepository (data access layer)
+- [x] 5. Implement TasksRepository (data access layer)
   - File: apps/backend/src/tasks/tasks.repository.ts
   - Implement: create(data), findUnique(where), findAndCount(params), update(id, data)
   - All methods use Prisma client with proper error handling
@@ -50,7 +50,7 @@
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
   - _Prompt: Role: Backend Developer with expertise in repository pattern and Prisma ORM | Task: Implement TasksRepository data access layer following requirements 2.1-2.5 using Prisma best practices | Restrictions: Must not contain business logic, use parameterized queries only, maintain transaction safety, follow repository pattern | Success: All CRUD methods work correctly, proper error handling, queries are efficient with correct indexes_
 
-- [ ] 6. Implement TasksService (business logic)
+- [x] 6. Implement TasksService (business logic)
   - File: apps/backend/src/tasks/tasks.service.ts
   - Implement: create(dto, userId), findAll(filter, userId), findOne(id, userId), update(id, dto, userId), remove(id, userId)
   - Add ownership verification, emit WebSocket events, handle soft deletes
@@ -59,7 +59,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
   - _Prompt: Role: Backend Developer with expertise in service layer architecture and NestJS | Task: Implement TasksService business logic following requirements 1.1-1.5 with proper ownership verification and event emission | Restrictions: Must enforce user ownership, emit WebSocket events for all mutations, use soft deletes only, maintain separation from data layer | Success: All CRUD operations work with ownership enforced, WebSocket events emit correctly, business rules properly encapsulated_
 
-- [ ] 7. Implement TasksController (REST endpoints)
+- [x] 7. Implement TasksController (REST endpoints)
   - File: apps/backend/src/tasks/tasks.controller.ts
   - Implement: POST /api/tasks, GET /api/tasks, GET /api/tasks/:id, PATCH /api/tasks/:id, DELETE /api/tasks/:id
   - All routes protected with @UseGuards(JwtAuthGuard), extract userId from @User()
@@ -68,7 +68,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
   - _Prompt: Role: API Developer with expertise in RESTful design and NestJS controllers | Task: Implement TasksController REST endpoints following requirements 1.1-1.5 with proper authentication and status codes | Restrictions: Must return correct HTTP status codes (200, 201, 204, 400, 404), require authentication on all routes, follow REST conventions | Success: All endpoints work with correct status codes, authentication enforced, API contract matches design_
 
-- [ ] 8. Implement TasksGateway (WebSocket events)
+- [x] 8. Implement TasksGateway (WebSocket events)
   - File: apps/backend/src/tasks/tasks.gateway.ts
   - Create @WebSocketGateway({ namespace: 'tasks' })
   - Implement: emitTaskCreated(task), emitTaskUpdated(task), emitTaskDeleted(taskId)
@@ -77,7 +77,7 @@
   - _Requirements: 1.6_
   - _Prompt: Role: Real-time Developer with expertise in WebSocket and Socket.IO | Task: Implement TasksGateway for real-time events following requirement 1.6 | Restrictions: Must broadcast to all authenticated clients, use proper event names (task:created, task:updated, task:deleted), handle connection lifecycle | Success: Events broadcast to all connected clients, WebSocket authentication works, events contain correct data_
 
-- [ ] 9. Add tasks methods to contract-client.ts
+- [x] 9. Add tasks methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: // ========== Spec: backend-tasks-api ==========
   - Add methods: getTasks(filter), createTask(data), getTaskById(id), updateTask(id, data), deleteTask(id)
@@ -86,7 +86,7 @@
   - _Requirements: Non-functional (Contract-Driven)_
   - _Prompt: Role: Full-stack Developer with expertise in API client design and TypeScript | Task: Add type-safe task API methods to contract-client following contract-driven principles | Restrictions: Must use shared Zod schemas for types, maintain section comments for parallel development, follow existing client patterns | Success: All API methods are type-safe, frontend can call without type errors, follows contract-client conventions_
 
-- [ ] 10. Create E2E tests for all endpoints
+- [x] 10. Create E2E tests for all endpoints
   - File: apps/frontend/e2e/tasks-api.spec.ts
   - Test: POST /api/tasks creates task (201), GET /api/tasks returns list (200), GET /api/tasks/:id returns task (200/404), PATCH updates (200), DELETE soft-deletes (204), all require auth (401 without JWT)
   - Purpose: Validate API contract compliance
