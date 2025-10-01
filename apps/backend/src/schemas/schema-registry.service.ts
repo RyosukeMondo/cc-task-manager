@@ -45,7 +45,7 @@ import {
   UserProfileSchema as SettingsUserProfileSchema,
   AppPreferencesSchema,
   NotificationSettingsSchema,
-} from '@schemas/settings';
+} from '@schemas/settings/settings.schemas';
 
 /**
  * Schema Registry Service

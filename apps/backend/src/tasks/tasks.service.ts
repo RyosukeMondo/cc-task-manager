@@ -1,6 +1,7 @@
 import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { ApiTask } from '@prisma/client';
 import {
   TaskExceptionFactory,
   TaskNotFoundException,
@@ -16,10 +17,12 @@ import { QueueService } from '../queue/queue.service';
 import { TaskEventsService } from '../websocket/events/task-events.service';
 import { WebSocketEventType } from '../websocket/websocket-events.schemas';
 import {
-  TaskBase,
-  CreateTask,
-  UpdateTask,
-  TaskQueryFilters,
+  CreateApiTaskDto,
+  UpdateApiTaskDto,
+  ApiTaskFilterDto,
+  PaginatedTasksDto,
+} from '@schemas/tasks';
+import {
   TaskStatus,
   TaskPriority,
   TaskCategory,
@@ -67,12 +70,12 @@ export class TasksService {
 
   /**
    * Create a new task with validation and business rules
-   * 
+   *
    * @param createTaskData Task creation data
    * @param createdById ID of the user creating the task
    * @returns Created task
    */
-  async createTask(createTaskData: CreateTask, createdById: string): Promise<TaskBase> {
+  async createTask(createTaskData: CreateApiTaskDto, createdById: string): Promise<ApiTask> {
     // Validate input using existing contract validation infrastructure
     const validation = this.schemaRegistry?.validateAgainstSchema('CreateTask', createTaskData);
     if (validation && !validation.success) {
@@ -88,7 +91,7 @@ export class TasksService {
     await this.validateTaskCreation(createTaskData, createdById);
 
     // Create task through repository
-    const createdTask = await this.tasksRepository.create(validation.data, createdById);
+    const createdTask = await this.tasksRepository.create(createTaskData, createdById);
 
     this.logger.log(`Created task: ${createdTask.id} - "${createdTask.title}" by user ${createdById}`);
 
@@ -103,33 +106,35 @@ export class TasksService {
     }
 
     // Queue task notification job for assignee if assigned
-    if (createdTask.assigneeId && this.queueService) {
-      try {
-        await this.queueService.addJob({
-          type: 'TASK_NOTIFICATION',
-          taskId: createdTask.id,
-          notificationType: 'TASK_ASSIGNED',
-          recipientIds: [createdTask.assigneeId],
-          taskTitle: createdTask.title,
-          taskDescription: createdTask.description,
-          metadata: {
-            userId: createdById,
-            timestamp: new Date(),
-            retryCount: 0,
-          },
-        });
-        this.logger.debug(`Queued task assignment notification for user ${createdTask.assigneeId}`);
-      } catch (error) {
-        // Don't fail task creation if notification queueing fails
-        this.logger.error(`Failed to queue task notification: ${error.message}`);
-      }
-    }
+    // NOTE: ApiTask model doesn't have assigneeId field - disabled for now
+    // if (createdTask.assigneeId && this.queueService) {
+    //   try {
+    //     await this.queueService.addJob({
+    //       type: 'TASK_NOTIFICATION',
+    //       taskId: createdTask.id,
+    //       notificationType: 'TASK_ASSIGNED',
+    //       recipientIds: [createdTask.assigneeId],
+    //       taskTitle: createdTask.title,
+    //       taskDescription: createdTask.description,
+    //       metadata: {
+    //         userId: createdById,
+    //         timestamp: new Date(),
+    //         retryCount: 0,
+    //       },
+    //     });
+    //     this.logger.debug(`Queued task assignment notification for user ${createdTask.assigneeId}`);
+    //   } catch (error) {
+    //     // Don't fail task creation if notification queueing fails
+    //     this.logger.error(`Failed to queue task notification: ${error.message}`);
+    //   }
+    // }
 
     // Invalidate analytics cache for the creator and assignee
     await this.invalidateAnalyticsCache(createdById);
-    if (createdTask.assigneeId && createdTask.assigneeId !== createdById) {
-      await this.invalidateAnalyticsCache(createdTask.assigneeId);
-    }
+    // NOTE: ApiTask model doesn't have assigneeId field - disabled for now
+    // if (createdTask.assigneeId && createdTask.assigneeId !== createdById) {
+    //   await this.invalidateAnalyticsCache(createdTask.assigneeId);
+    // }
 
     return createdTask;
   }
@@ -141,7 +146,7 @@ export class TasksService {
    * @returns Task if found
    * @throws NotFoundException if task not found
    */
-  async findOne(taskId: string, user: JWTPayload): Promise<TaskBase> {
+  async findOne(taskId: string, user: JWTPayload): Promise<ApiTask> {
     return this.getTaskById(taskId);
   }
 
@@ -152,7 +157,7 @@ export class TasksService {
    * @returns Task if found
    * @throws NotFoundException if task not found
    */
-  async getTaskById(taskId: string): Promise<TaskBase> {
+  async getTaskById(taskId: string): Promise<ApiTask> {
     const task = await this.tasksRepository.findById(taskId);
     if (!task) {
       this.logger.warn(`Task not found: ${taskId}`);
@@ -164,11 +169,11 @@ export class TasksService {
 
   /**
    * Get all tasks with filtering, sorting, and pagination
-   * 
+   *
    * @param filters Query filters
    * @returns Paginated task results
    */
-  async getAllTasks(filters: TaskQueryFilters): Promise<{ tasks: TaskBase[]; total: number; page: number; limit: number }> {
+  async getAllTasks(filters: ApiTaskFilterDto): Promise<PaginatedTasksDto> {
     // Validate query filters using existing contract validation
     const validation = this.schemaRegistry?.validateAgainstSchema('TaskQueryFilters', filters);
     if (validation && !validation.success) {
@@ -180,10 +185,10 @@ export class TasksService {
       );
     }
 
-    const result = await this.tasksRepository.findAll(validation.data);
-    
-    this.logger.debug(`Retrieved ${result.tasks.length} tasks (page ${result.page}/${Math.ceil(result.total / result.limit)})`);
-    
+    const result = await this.tasksRepository.findAll(filters);
+
+    this.logger.debug(`Retrieved ${result.data.length} tasks (${result.total} total, offset ${result.offset || 0})`);
+
     return result;
   }
 
@@ -193,17 +198,17 @@ export class TasksService {
    * @param filters Query filters
    * @returns Paginated task response
    */
-  async getTasks(filters: any): Promise<any> {
+  async getTasks(filters: ApiTaskFilterDto): Promise<any> {
     const result = await this.getAllTasks(filters);
     return {
-      data: result.tasks,
+      data: result.data,
       pagination: {
-        page: result.page,
+        offset: result.offset || 0,
         limit: result.limit,
         total: result.total,
         totalPages: Math.ceil(result.total / result.limit),
-        hasNext: result.page < Math.ceil(result.total / result.limit),
-        hasPrev: result.page > 1
+        hasNext: (result.offset || 0) + result.limit < result.total,
+        hasPrev: (result.offset || 0) > 0
       }
     };
   }
@@ -215,20 +220,13 @@ export class TasksService {
    * @param statusUpdate Status update data
    * @returns Updated task
    */
-  async updateTaskStatus(taskId: string, statusUpdate: any): Promise<TaskBase> {
+  async updateTaskStatus(taskId: string, statusUpdate: any): Promise<ApiTask> {
     const task = await this.getTaskById(taskId);
 
-    const updateData: UpdateTask = {
-      status: statusUpdate.status
+    const updateData: UpdateApiTaskDto = {
+      status: statusUpdate.status,
+      errorMessage: statusUpdate.errorMessage
     };
-
-    if (statusUpdate.progress !== undefined) {
-      updateData.progress = statusUpdate.progress;
-    }
-
-    if (statusUpdate.errorMessage !== undefined) {
-      updateData.errorMessage = statusUpdate.errorMessage;
-    }
 
     return this.updateTask(taskId, updateData, 'system');
   }
@@ -257,7 +255,7 @@ export class TasksService {
    * @param updatedById ID of the user updating the task
    * @returns Updated task
    */
-  async updateTask(taskId: string, updateData: UpdateTask, updatedById: string): Promise<TaskBase> {
+  async updateTask(taskId: string, updateData: UpdateApiTaskDto, updatedById: string): Promise<ApiTask> {
     // Validate input using existing contract validation infrastructure
     const validation = this.schemaRegistry?.validateAgainstSchema('UpdateTask', updateData);
     if (validation && !validation.success) {
@@ -272,12 +270,12 @@ export class TasksService {
 
     // Get existing task for business rule validation
     const existingTask = await this.getTaskById(taskId);
-    
+
     // Business rule validation
-    await this.validateTaskUpdate(existingTask, validation.data, updatedById);
+    await this.validateTaskUpdate(existingTask, updateData, updatedById);
 
     // Update task through repository
-    const updatedTask = await this.tasksRepository.update(taskId, validation.data, updatedById);
+    const updatedTask = await this.tasksRepository.update(taskId, updateData, updatedById);
     if (!updatedTask) {
       // This should not happen since we validated existence above
       throw TaskExceptionFactory.notFound(taskId, { operation: 'update' });
@@ -296,9 +294,10 @@ export class TasksService {
         }
 
         // Emit assignment event if assignee changed
-        if (existingTask.assigneeId !== updatedTask.assigneeId) {
-          await this.taskEventsService.emitTaskAssigned(updatedTask, existingTask.assigneeId, updatedById);
-        }
+        // NOTE: ApiTask model doesn't have assigneeId field - disabled for now
+        // if (existingTask.assigneeId !== updatedTask.assigneeId) {
+        //   await this.taskEventsService.emitTaskAssigned(updatedTask, existingTask.assigneeId, updatedById);
+        // }
       } catch (error) {
         // Don't fail task update if event emission fails
         this.logger.error(`Failed to emit task update events: ${error.message}`);
@@ -307,11 +306,12 @@ export class TasksService {
 
     // Invalidate analytics cache for affected users
     const affectedUserIds = new Set<string>([
-      existingTask.createdById,
+      existingTask.userId,
       updatedById,
     ]);
-    if (existingTask.assigneeId) affectedUserIds.add(existingTask.assigneeId);
-    if (updatedTask.assigneeId) affectedUserIds.add(updatedTask.assigneeId);
+    // NOTE: ApiTask model doesn't have assigneeId field - disabled for now
+    // if (existingTask.assigneeId) affectedUserIds.add(existingTask.assigneeId);
+    // if (updatedTask.assigneeId) affectedUserIds.add(updatedTask.assigneeId);
 
     for (const userId of affectedUserIds) {
       await this.invalidateAnalyticsCache(userId);
@@ -354,10 +354,11 @@ export class TasksService {
 
     // Invalidate analytics cache for affected users
     const affectedUserIds = new Set<string>([
-      existingTask.createdById,
+      existingTask.userId,
       deletedById,
     ]);
-    if (existingTask.assigneeId) affectedUserIds.add(existingTask.assigneeId);
+    // NOTE: ApiTask model doesn't have assigneeId field - disabled for now
+    // if (existingTask.assigneeId) affectedUserIds.add(existingTask.assigneeId);
 
     for (const userId of affectedUserIds) {
       await this.invalidateAnalyticsCache(userId);
@@ -368,15 +369,15 @@ export class TasksService {
 
   /**
    * Perform bulk operations on multiple tasks
-   * 
+   *
    * @param operation Bulk operation details
    * @param operatorId ID of the user performing the operation
    * @returns Operation results
    */
-  async bulkOperation(operation: BulkTaskOperation, operatorId: string): Promise<{ 
-    success: boolean; 
-    affectedTasks: number; 
-    results: TaskBase[] 
+  async bulkOperation(operation: BulkTaskOperation, operatorId: string): Promise<{
+    success: boolean;
+    affectedTasks: number;
+    results: ApiTask[]
   }> {
     // Validate operation using existing contract validation
     const validation = this.schemaRegistry?.validateAgainstSchema('BulkTaskOperation', operation);
@@ -392,12 +393,14 @@ export class TasksService {
     const { taskIds, operation: operationType, data } = validation.data;
 
     // Validate permissions for all tasks
+    const tasks: ApiTask[] = [];
     for (const taskId of taskIds) {
       const task = await this.getTaskById(taskId);
       await this.validateTaskModification(task, operatorId);
+      tasks.push(task);
     }
 
-    let results: TaskBase[] = [];
+    let affectedCount = 0;
 
     switch (operationType) {
       case 'updateStatus':
@@ -408,7 +411,7 @@ export class TasksService {
             data
           );
         }
-        results = await this.tasksRepository.bulkUpdate(taskIds, { status: data.status });
+        affectedCount = await this.tasksRepository.bulkUpdate(taskIds, { status: data.status });
         break;
 
       case 'updatePriority':
@@ -419,20 +422,25 @@ export class TasksService {
             data
           );
         }
-        results = await this.tasksRepository.bulkUpdate(taskIds, { priority: data.priority });
+        affectedCount = await this.tasksRepository.bulkUpdate(taskIds, { priority: data.priority });
         break;
         
       case 'updateAssignee':
-        results = await this.tasksRepository.bulkUpdate(taskIds, { assigneeId: data?.assigneeId });
-        break;
-        
+        // NOTE: ApiTask model doesn't have assigneeId field - disabled for now
+        this.logger.warn('updateAssignee operation not supported for ApiTask');
+        throw TaskExceptionFactory.validation(
+          'updateAssignee operation is not supported - ApiTask has no assigneeId field',
+          'operation',
+          data
+        );
+
       case 'delete':
         for (const taskId of taskIds) {
           await this.tasksRepository.delete(taskId);
         }
-        results = []; // No results for delete operation
+        affectedCount = taskIds.length;
         break;
-        
+
       default:
         throw TaskExceptionFactory.validation(
           `Unsupported bulk operation: ${operationType}`,
@@ -441,14 +449,14 @@ export class TasksService {
         );
     }
 
-    this.logger.log(`Bulk operation ${operationType} completed on ${taskIds.length} tasks by user ${operatorId}`);
+    this.logger.log(`Bulk operation ${operationType} completed on ${affectedCount} tasks by user ${operatorId}`);
 
     // Emit bulk task events for real-time updates
     if (this.taskEventsService) {
       try {
         const eventType = this.getBulkOperationEventType(operationType);
-        if (eventType && results.length > 0) {
-          const events = results.map(task => ({
+        if (eventType && tasks.length > 0) {
+          const events = tasks.map(task => ({
             type: eventType,
             task,
             userId: operatorId,
@@ -464,9 +472,10 @@ export class TasksService {
 
     // Invalidate analytics cache for all affected users
     const affectedUserIds = new Set<string>([operatorId]);
-    for (const task of results) {
-      affectedUserIds.add(task.createdById);
-      if (task.assigneeId) affectedUserIds.add(task.assigneeId);
+    for (const task of tasks) {
+      affectedUserIds.add(task.userId);
+      // NOTE: ApiTask model doesn't have assigneeId field - disabled for now
+      // if (task.assigneeId) affectedUserIds.add(task.assigneeId);
     }
 
     for (const userId of affectedUserIds) {
@@ -475,18 +484,18 @@ export class TasksService {
 
     return {
       success: true,
-      affectedTasks: taskIds.length,
-      results,
+      affectedTasks: affectedCount,
+      results: tasks,
     };
   }
 
   /**
    * Get tasks assigned to a specific user
-   * 
+   *
    * @param assigneeId User ID
    * @returns Assigned tasks
    */
-  async getTasksByAssignee(assigneeId: string): Promise<TaskBase[]> {
+  async getTasksByAssignee(assigneeId: string): Promise<ApiTask[]> {
     const tasks = await this.tasksRepository.getTasksByAssignee(assigneeId);
     this.logger.debug(`Found ${tasks.length} tasks assigned to user ${assigneeId}`);
     return tasks;
@@ -494,11 +503,11 @@ export class TasksService {
 
   /**
    * Get tasks for a specific project
-   * 
+   *
    * @param projectId Project ID
    * @returns Project tasks
    */
-  async getTasksByProject(projectId: string): Promise<TaskBase[]> {
+  async getTasksByProject(projectId: string): Promise<ApiTask[]> {
     const tasks = await this.tasksRepository.getTasksByProject(projectId);
     this.logger.debug(`Found ${tasks.length} tasks for project ${projectId}`);
     return tasks;
@@ -506,10 +515,10 @@ export class TasksService {
 
   /**
    * Get overdue tasks across the system
-   * 
+   *
    * @returns Overdue tasks
    */
-  async getOverdueTasks(): Promise<TaskBase[]> {
+  async getOverdueTasks(): Promise<ApiTask[]> {
     const tasks = await this.tasksRepository.getOverdueTasks();
     this.logger.debug(`Found ${tasks.length} overdue tasks`);
     return tasks;
@@ -517,26 +526,24 @@ export class TasksService {
 
   /**
    * Generate task statistics for reporting
-   * 
+   *
    * @returns Task analytics and statistics
    */
   async getTaskStatistics(): Promise<TaskStatistics> {
     // Get all tasks for statistics calculation
-    const allTasksResult = await this.tasksRepository.findAll({ 
-      page: 1, 
+    const allTasksResult = await this.tasksRepository.findAll({
       limit: 10000, // Large limit to get all tasks
-      sortBy: 'createdAt',
-      sortOrder: 'desc'
+      offset: 0
     });
-    
-    const allTasks = allTasksResult.tasks;
+
+    const allTasks = allTasksResult.data;
     const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Calculate statistics
     const totalTasks = allTasks.length;
-    
+
     const tasksByStatus = {
       [TaskStatus.TODO]: allTasks.filter(t => t.status === TaskStatus.TODO).length,
       [TaskStatus.IN_PROGRESS]: allTasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length,
@@ -544,63 +551,52 @@ export class TasksService {
       [TaskStatus.DONE]: allTasks.filter(t => t.status === TaskStatus.DONE).length,
       [TaskStatus.CANCELLED]: allTasks.filter(t => t.status === TaskStatus.CANCELLED).length,
     };
-    
+
     const tasksByPriority = {
       [TaskPriority.LOW]: allTasks.filter(t => t.priority === TaskPriority.LOW).length,
       [TaskPriority.MEDIUM]: allTasks.filter(t => t.priority === TaskPriority.MEDIUM).length,
       [TaskPriority.HIGH]: allTasks.filter(t => t.priority === TaskPriority.HIGH).length,
       [TaskPriority.URGENT]: allTasks.filter(t => t.priority === TaskPriority.URGENT).length,
     };
-    
-    const tasksByCategory = {
-      [TaskCategory.DEVELOPMENT]: allTasks.filter(t => t.category === TaskCategory.DEVELOPMENT).length,
-      [TaskCategory.TESTING]: allTasks.filter(t => t.category === TaskCategory.TESTING).length,
-      [TaskCategory.DOCUMENTATION]: allTasks.filter(t => t.category === TaskCategory.DOCUMENTATION).length,
-      [TaskCategory.RESEARCH]: allTasks.filter(t => t.category === TaskCategory.RESEARCH).length,
-      [TaskCategory.BUG_FIX]: allTasks.filter(t => t.category === TaskCategory.BUG_FIX).length,
-      [TaskCategory.FEATURE]: allTasks.filter(t => t.category === TaskCategory.FEATURE).length,
-      [TaskCategory.MAINTENANCE]: allTasks.filter(t => t.category === TaskCategory.MAINTENANCE).length,
-      [TaskCategory.DEPLOYMENT]: allTasks.filter(t => t.category === TaskCategory.DEPLOYMENT).length,
-      [TaskCategory.OTHER]: allTasks.filter(t => t.category === TaskCategory.OTHER).length,
-    };
 
-    const overdueTasks = allTasks.filter(t => 
-      t.dueDate && 
-      t.dueDate < now && 
-      t.status !== TaskStatus.DONE &&
-      t.status !== TaskStatus.CANCELLED
+    // NOTE: ApiTask doesn't have category field - returning undefined
+    const tasksByCategory = undefined;
+
+    // NOTE: ApiTask doesn't have dueDate field - always 0
+    const overdueTasks = 0;
+
+    const completedThisWeek = allTasks.filter(t =>
+      t.status === TaskStatus.DONE &&
+      t.completedAt &&
+      new Date(t.completedAt) >= oneWeekAgo
     ).length;
 
-    const completedThisWeek = allTasks.filter(t => 
-      t.status === TaskStatus.DONE && 
-      t.completedAt && 
-      t.completedAt >= oneWeekAgo
-    ).length;
-
-    const completedThisMonth = allTasks.filter(t => 
-      t.status === TaskStatus.DONE && 
-      t.completedAt && 
-      t.completedAt >= oneMonthAgo
+    const completedThisMonth = allTasks.filter(t =>
+      t.status === TaskStatus.DONE &&
+      t.completedAt &&
+      new Date(t.completedAt) >= oneMonthAgo
     ).length;
 
     // Calculate average completion time for completed tasks
-    const completedTasks = allTasks.filter(t => 
-      t.status === TaskStatus.DONE && 
-      t.completedAt && 
-      t.startDate
+    const completedTasks = allTasks.filter(t =>
+      t.status === TaskStatus.DONE &&
+      t.completedAt &&
+      t.startedAt
     );
-    
+
     const averageCompletionTime = completedTasks.length > 0
       ? completedTasks.reduce((sum, task) => {
-          const completionTime = task.completedAt!.getTime() - task.startDate!.getTime();
+          const completionTime = new Date(task.completedAt!).getTime() - new Date(task.startedAt!).getTime();
           return sum + (completionTime / (1000 * 60 * 60 * 24)); // Convert to days
         }, 0) / completedTasks.length
       : undefined;
 
-    // Calculate total hours logged
-    const totalHoursLogged = allTasks.reduce((sum, task) => {
-      return sum + (task.actualHours || 0);
-    }, 0);
+    // NOTE: ApiTask doesn't have actualHours field
+    const totalHoursLogged = undefined;
+
+    const completedTasksCount = allTasks.filter(t => t.status === TaskStatus.DONE).length;
+    const failedTasksCount = allTasks.filter(t => t.status === TaskStatus.CANCELLED).length;
+    const successRate = totalTasks > 0 ? completedTasksCount / totalTasks : 0;
 
     const statistics: TaskStatistics = {
       totalTasks,
@@ -611,113 +607,58 @@ export class TasksService {
       completedThisWeek,
       completedThisMonth,
       averageCompletionTime,
-      totalHoursLogged: totalHoursLogged > 0 ? totalHoursLogged : undefined,
+      totalHoursLogged,
+      completedTasks: completedTasksCount,
+      failedTasks: failedTasksCount,
+      successRate,
     };
 
-    this.logger.debug(`Generated task statistics: ${totalTasks} total tasks, ${overdueTasks} overdue`);
-    
+    this.logger.debug(`Generated task statistics: ${totalTasks} total tasks, ${completedTasksCount} completed`);
+
     return statistics;
   }
 
   /**
    * Validate task creation business rules
-   * 
+   *
    * @private
    */
-  private async validateTaskCreation(createData: CreateTask, createdById: string): Promise<void> {
-    // Validate parent task exists if specified
-    if (createData.parentTaskId) {
-      await this.getTaskById(createData.parentTaskId);
-    }
-
-    // Business rule: Estimated hours should be reasonable
-    if (createData.estimatedHours && createData.estimatedHours > 1000) {
-      throw TaskExceptionFactory.validation(
-        'Estimated hours cannot exceed 1000 hours',
-        'estimatedHours',
-        createData.estimatedHours
-      );
-    }
-
-    // Business rule: Due date should be in the future for new tasks
-    if (createData.dueDate && createData.dueDate <= new Date()) {
-      throw TaskExceptionFactory.validation(
-        'Due date must be in the future',
-        'dueDate',
-        createData.dueDate
-      );
-    }
-
-    // Business rule: Start date should not be after due date
-    if (createData.startDate && createData.dueDate && createData.startDate > createData.dueDate) {
-      throw TaskExceptionFactory.validation(
-        'Start date cannot be after due date',
-        'startDate',
-        { startDate: createData.startDate, dueDate: createData.dueDate }
-      );
-    }
+  private async validateTaskCreation(createData: CreateApiTaskDto, createdById: string): Promise<void> {
+    // NOTE: ApiTask doesn't have parentTaskId, estimatedHours, dueDate, startDate fields
+    // Basic validation only - title is required (validated by schema)
+    // Additional business rules can be added here as needed
+    this.logger.debug('Validating task creation', { createdById });
   }
 
   /**
    * Validate task update business rules
-   * 
+   *
    * @private
    */
-  private async validateTaskUpdate(existingTask: TaskBase, updateData: UpdateTask, updatedById: string): Promise<void> {
-    // Permission check: Only creator, assignee, or admin can update
+  private async validateTaskUpdate(existingTask: ApiTask, updateData: UpdateApiTaskDto, updatedById: string): Promise<void> {
+    // Permission check: Only creator or admin can update
     await this.validateTaskModification(existingTask, updatedById);
 
     // Business rule: Cannot change status from completed to non-completed without proper reason
-    if (existingTask.status === TaskStatus.DONE && 
-        updateData.status && 
+    if (existingTask.status === TaskStatus.DONE &&
+        updateData.status &&
         updateData.status !== TaskStatus.DONE) {
       this.logger.warn(`Attempt to change completed task ${existingTask.id} to ${updateData.status} by user ${updatedById}`);
       // Allow this but log it - in a real system you might require special permissions
     }
 
-    // Business rule: Actual hours validation
-    if (updateData.actualHours !== undefined) {
-      if (updateData.actualHours < 0) {
-        throw TaskExceptionFactory.validation(
-          'Actual hours cannot be negative',
-          'actualHours',
-          updateData.actualHours,
-          existingTask.id
-        );
-      }
-      if (updateData.actualHours > 1000) {
-        throw TaskExceptionFactory.validation(
-          'Actual hours cannot exceed 1000 hours',
-          'actualHours',
-          updateData.actualHours,
-          existingTask.id
-        );
-      }
-    }
-
-    // Validate parent task exists if being changed
-    if (updateData.parentTaskId && updateData.parentTaskId !== existingTask.parentTaskId) {
-      await this.getTaskById(updateData.parentTaskId);
-      
-      // Business rule: Cannot set self as parent
-      if (updateData.parentTaskId === existingTask.id) {
-        throw TaskExceptionFactory.dependency(
-          existingTask.id,
-          'Task cannot be its own parent',
-          [updateData.parentTaskId]
-        );
-      }
-    }
+    // NOTE: ApiTask doesn't have actualHours, parentTaskId fields
+    // Basic validation only
   }
 
   /**
    * Validate task deletion business rules
-   * 
+   *
    * @private
    */
-  private async validateTaskDeletion(task: TaskBase, deletedById: string): Promise<void> {
+  private async validateTaskDeletion(task: ApiTask, deletedById: string): Promise<void> {
     // Permission check: Only creator or admin can delete
-    if (task.createdById !== deletedById) {
+    if (task.userId !== deletedById) {
       // In a real system, you would check for admin permissions here
       throw TaskExceptionFactory.accessForbidden(
         task.id,
@@ -736,14 +677,15 @@ export class TasksService {
 
   /**
    * Validate task modification permissions
-   * 
+   *
    * @private
    */
-  private async validateTaskModification(task: TaskBase, userId: string): Promise<void> {
-    // Permission check: Creator, assignee, or admin can modify
-    if (task.createdById !== userId && task.assigneeId !== userId) {
+  private async validateTaskModification(task: ApiTask, userId: string): Promise<void> {
+    // Permission check: Creator or admin can modify
+    // NOTE: ApiTask model doesn't have assigneeId field - checking userId only
+    if (task.userId && task.userId !== userId) {
       // In a real system, you would check for admin permissions here
-      // For now, we'll allow modification by creator and assignee only
+      // For now, we'll allow modification by creator only
       throw TaskExceptionFactory.accessForbidden(
         task.id,
         userId,

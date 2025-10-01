@@ -113,11 +113,13 @@ export class TasksRepository {
       };
 
       if (params.status) {
-        where.status = params.status;
+        // Handle array of statuses or single status
+        where.status = Array.isArray(params.status) ? { in: params.status } : params.status;
       }
 
       if (params.priority) {
-        where.priority = params.priority;
+        // Handle array of priorities or single priority
+        where.priority = Array.isArray(params.priority) ? { in: params.priority } : params.priority;
       }
 
       // Execute queries in parallel
@@ -134,7 +136,7 @@ export class TasksRepository {
       this.logger.debug(`Found ${total} API tasks, returning ${tasks.length} items`);
 
       return {
-        data: tasks as ApiTaskDto[],
+        data: tasks as any[], // ApiTask from Prisma (Date) vs ApiTaskDto (string dates)
         total,
         limit: params.limit,
         offset: params.offset,
@@ -240,6 +242,106 @@ export class TasksRepository {
       });
       throw this.handlePrismaError(error);
     }
+  }
+
+  /**
+   * Find task by ID (alias for findUnique)
+   *
+   * @param id Task ID
+   * @returns Task or null if not found
+   */
+  async findById(id: string): Promise<ApiTask | null> {
+    return this.findUnique({ id });
+  }
+
+  /**
+   * Find all tasks with filters (alias for findAndCount)
+   *
+   * @param params Filter and pagination parameters
+   * @returns Paginated tasks
+   */
+  async findAll(params: ApiTaskFilterDto): Promise<PaginatedTasksDto> {
+    // Extract userId from params if available, otherwise use empty string
+    const userId = (params as any).userId || '';
+    return this.findAndCount(params, userId);
+  }
+
+  /**
+   * Delete task (alias for softDelete)
+   *
+   * @param id Task ID
+   * @returns Deleted task or null
+   */
+  async delete(id: string): Promise<ApiTask | null> {
+    // Find the task first to get userId
+    const task = await this.prisma.apiTask.findUnique({ where: { id } });
+    if (!task) return null;
+
+    await this.softDelete(id, task.userId);
+    return task;
+  }
+
+  /**
+   * Bulk update tasks
+   *
+   * @param ids Array of task IDs
+   * @param data Update data
+   * @returns Number of updated tasks
+   */
+  async bulkUpdate(ids: string[], data: Partial<UpdateApiTaskDto>): Promise<number> {
+    try {
+      this.logger.debug('Bulk updating API tasks', { count: ids.length, data });
+
+      const result = await this.prisma.apiTask.updateMany({
+        where: {
+          id: { in: ids },
+          deletedAt: null,
+        },
+        data: data as any,
+      });
+
+      this.logger.log(`Bulk updated ${result.count} API tasks`);
+      return result.count;
+    } catch (error) {
+      this.logger.error('Failed to bulk update API tasks', {
+        error: error.message,
+        ids,
+        data,
+      });
+      throw this.handlePrismaError(error);
+    }
+  }
+
+  /**
+   * Get tasks by assignee (not implemented - ApiTask has no assigneeId)
+   *
+   * @param assigneeId Assignee user ID
+   * @returns Empty array (not implemented)
+   */
+  async getTasksByAssignee(assigneeId: string): Promise<ApiTask[]> {
+    this.logger.warn('getTasksByAssignee called but ApiTask has no assigneeId field');
+    return [];
+  }
+
+  /**
+   * Get tasks by project (not implemented - returns tasks filtered by userId)
+   *
+   * @param projectId Project ID
+   * @returns Empty array (not implemented)
+   */
+  async getTasksByProject(projectId: string): Promise<ApiTask[]> {
+    this.logger.warn('getTasksByProject called but filtering by projectId not implemented');
+    return [];
+  }
+
+  /**
+   * Get overdue tasks (not implemented - ApiTask has no dueDate)
+   *
+   * @returns Empty array (not implemented)
+   */
+  async getOverdueTasks(): Promise<ApiTask[]> {
+    this.logger.warn('getOverdueTasks called but ApiTask has no dueDate field');
+    return [];
   }
 
   /**
