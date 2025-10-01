@@ -146,3 +146,71 @@ export async function setupAuthenticatedSession(
   await page.reload();
   await page.waitForLoadState('networkidle');
 }
+
+/**
+ * Create a valid JWT token for E2E testing
+ * The token will be valid for 24 hours
+ */
+function createMockJWT(userRole: TestUserRole): string {
+  const user = TEST_USERS[userRole];
+
+  // JWT Header
+  const header = {
+    alg: 'HS256',
+    typ: 'JWT'
+  };
+
+  // JWT Payload with expiration 24 hours from now
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    sub: `mock-${userRole}-id`,
+    email: user.email,
+    role: userRole,
+    permissions: [],
+    iat: now,
+    exp: now + (24 * 60 * 60) // 24 hours from now
+  };
+
+  // Base64 encode header and payload
+  const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, '');
+  const encodedPayload = btoa(JSON.stringify(payload)).replace(/=/g, '');
+
+  // Fake signature (backend won't validate it in E2E tests)
+  const signature = 'mock-signature-for-e2e-testing';
+
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
+
+/**
+ * Setup mock authenticated session without backend
+ * Use this for API contract testing when backend is unavailable
+ */
+export async function setupMockAuth(
+  page: Page,
+  userRole: TestUserRole = 'user'
+): Promise<void> {
+  const user = TEST_USERS[userRole];
+  const mockToken = createMockJWT(userRole);
+
+  // Set mock auth token in storage without calling backend
+  await page.goto('/');
+  await page.evaluate((data) => {
+    // Use correct localStorage keys that match tokenStorage
+    localStorage.setItem('auth_token', data.token);
+    localStorage.setItem('auth_user', JSON.stringify({
+      id: `mock-${data.role}-id`,
+      email: data.email,
+      name: `Test ${data.role.charAt(0).toUpperCase() + data.role.slice(1)}`,
+      role: data.role,
+      permissions: [],
+    }));
+    localStorage.setItem('refresh_token', data.token); // Same mock token for refresh
+
+    // Also set cookies for middleware
+    document.cookie = `auth_token=${data.token};path=/;SameSite=Lax`;
+  }, { email: user.email, role: userRole, token: mockToken });
+
+  // Reload to apply authentication
+  await page.reload();
+  await page.waitForLoadState('networkidle');
+}

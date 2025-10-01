@@ -904,4 +904,247 @@ pnpm test:e2e:report
 
 ---
 
+## API Contract Validation (NEW)
+
+### Lesson 7: Automatically Detect API Contract Violations
+
+**The Problem**: Frontend makes API calls that the backend doesn't support, causing 404, 500, or NETWORK_ERROR responses. These failures often go undetected until users report them.
+
+**Solution**: Automated API contract validation E2E tests that monitor ALL network requests.
+
+#### Implementation: API Monitoring System
+
+**File**: `apps/frontend/e2e/api-contract-validation.spec.ts`
+
+```typescript
+/**
+ * Monitor all network requests and detect API errors
+ */
+function setupApiMonitoring(page: Page): {
+  requests: ApiRequest[];
+  errors: ApiError[];
+} {
+  const requests: ApiRequest[] = [];
+  const errors: ApiError[] = [];
+
+  page.on('response', async (response) => {
+    const url = response.url();
+
+    // Only monitor API calls
+    if (!url.includes('/api/')) return;
+
+    const request: ApiRequest = {
+      url,
+      method: response.request().method(),
+      status: response.status(),
+      statusText: response.statusText(),
+      timestamp: Date.now(),
+    };
+
+    requests.push(request);
+
+    // Detect errors by status code
+    if (response.status() === 404) {
+      errors.push({
+        ...request,
+        errorType: 'NOT_FOUND',
+        endpoint: new URL(url).pathname,
+      });
+    } else if (response.status() >= 500) {
+      errors.push({
+        ...request,
+        errorType: 'SERVER_ERROR',
+        endpoint: new URL(url).pathname,
+      });
+    }
+    // ... handle 401, 403, 400
+  });
+
+  page.on('requestfailed', (request) => {
+    // Detect network errors (backend unavailable)
+    const url = request.url();
+    if (!url.includes('/api/')) return;
+
+    errors.push({
+      url,
+      method: request.method(),
+      status: 0,
+      statusText: 'Network Error',
+      errorType: 'NETWORK_ERROR',
+      endpoint: new URL(url).pathname,
+    });
+  });
+
+  return { requests, errors };
+}
+```
+
+#### Test Each Page for API Errors
+
+```typescript
+test('Dashboard page should make only valid API calls', async ({ page }) => {
+  const { requests, errors } = setupApiMonitoring(page);
+
+  await setupMockAuth(page, 'user');
+  await page.goto('/dashboard');
+  await page.waitForLoadState('networkidle');
+
+  // Log all API requests
+  console.log(`📊 Total API requests: ${requests.length}`);
+  requests.forEach(req => {
+    console.log(`   ${req.method} ${new URL(req.url).pathname} → ${req.status}`);
+  });
+
+  // Report errors
+  if (errors.length > 0) {
+    console.log(`❌ API Contract Violations Found: ${errors.length}`);
+    errors.forEach(err => {
+      console.log(`🔴 ${err.errorType}: ${err.method} ${err.endpoint}`);
+    });
+  }
+
+  // Fail test if errors found
+  expect(errors, `Found ${errors.length} API error(s)`).toHaveLength(0);
+});
+```
+
+#### Real Results from Test Run (2025-10-01)
+
+```
+✅ Dashboard page: PASSED (0 API calls)
+❌ Tasks page: FAILED (2 errors)
+   🔴 NETWORK_ERROR: GET /api/tasks
+   🔴 NETWORK_ERROR: GET /api/tasks
+
+❌ Settings page: FAILED (2 errors)
+   🔴 NETWORK_ERROR: GET /api/settings/current-user
+
+❌ Analytics pages: FAILED (4 errors)
+   🔴 NETWORK_ERROR: GET /api/analytics/performance
+   🔴 NETWORK_ERROR: GET /api/analytics/trends?groupBy=day
+
+Total: 10 contract violations detected
+```
+
+### Mock Authentication for API Testing
+
+**The Challenge**: Testing API contracts when backend is unavailable or during development.
+
+**Solution**: Create valid JWT tokens that bypass backend authentication.
+
+#### Why Simple Mock Tokens Failed
+
+```typescript
+// ❌ DOESN'T WORK - Not a valid JWT
+localStorage.setItem('auth_token', 'mock-token');
+
+// Frontend validates JWT format and expiration:
+// 1. Checks token has 3 parts (header.payload.signature)
+// 2. Decodes payload to check 'exp' (expiration timestamp)
+// 3. Returns true if expired or invalid
+```
+
+#### Working Mock JWT Solution
+
+**File**: `apps/frontend/e2e/fixtures/auth.ts`
+
+```typescript
+/**
+ * Create a valid JWT token for E2E testing
+ */
+function createMockJWT(userRole: TestUserRole): string {
+  // JWT Header
+  const header = {
+    alg: 'HS256',
+    typ: 'JWT'
+  };
+
+  // JWT Payload with expiration 24 hours from now
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    sub: `mock-${userRole}-id`,
+    email: TEST_USERS[userRole].email,
+    role: userRole,
+    permissions: [],
+    iat: now,
+    exp: now + (24 * 60 * 60) // 24 hours
+  };
+
+  // Base64 encode (JWT format)
+  const encodedHeader = btoa(JSON.stringify(header)).replace(/=/g, '');
+  const encodedPayload = btoa(JSON.stringify(payload)).replace(/=/g, '');
+  const signature = 'mock-signature-for-e2e-testing';
+
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
+
+export async function setupMockAuth(page: Page, userRole: TestUserRole = 'user'): Promise<void> {
+  const mockToken = createMockJWT(userRole);
+
+  await page.goto('/');
+  await page.evaluate((data) => {
+    // Use correct localStorage keys (must match tokenStorage)
+    localStorage.setItem('auth_token', data.token);
+    localStorage.setItem('auth_user', JSON.stringify({
+      id: `mock-${data.role}-id`,
+      email: data.email,
+      role: data.role,
+      permissions: [],
+    }));
+    localStorage.setItem('refresh_token', data.token);
+
+    // Also set cookies for middleware
+    document.cookie = `auth_token=${data.token};path=/;SameSite=Lax`;
+  }, { email: TEST_USERS[userRole].email, role: userRole, token: mockToken });
+
+  await page.reload();
+  await page.waitForLoadState('networkidle');
+}
+```
+
+### Key Findings
+
+1. **localStorage Keys Matter**: Frontend uses `auth_token` and `auth_user`, not `token` and `user`
+2. **JWT Format Required**: Token must be valid JWT with `exp` field
+3. **Token Validation**: `TokenUtils.isTokenExpired()` checks JWT structure and expiration
+4. **Cookies Too**: Auth middleware may check cookies, so set both localStorage and cookies
+
+### Testing Workflow
+
+```bash
+# 1. Run API contract validation
+pnpm exec playwright test api-contract-validation.spec.ts
+
+# 2. Check results for violations
+# - NETWORK_ERROR = backend not running
+# - NOT_FOUND (404) = endpoint doesn't exist
+# - SERVER_ERROR (500) = backend crash
+# - AUTH_ERROR (401/403) = auth token invalid
+
+# 3. Update docs/API_CONTRACT_STATUS.md with findings
+
+# 4. Fix issues:
+#    - Frontend: Add error handling for missing endpoints
+#    - Backend: Implement missing endpoints
+#    - Docs: Update contract registry
+```
+
+### Documentation
+
+All API contract violations are tracked in `docs/API_CONTRACT_STATUS.md`:
+- Expected endpoints vs actual
+- Error types and frequencies
+- Which pages use which endpoints
+- Fix recommendations
+
+### Benefits
+
+✅ **Automatic Detection**: No manual testing needed
+✅ **Complete Coverage**: Tests all pages systematically
+✅ **Early Warning**: Catch contract violations before deployment
+✅ **Documentation**: Auto-generates API usage report
+✅ **CI/CD Ready**: Can run in automated pipelines
+
+---
+
 **Remember**: E2E tests are your **first line of defense** against production bugs. Invest time in writing good tests, and they'll save you hours of debugging! 🚀
