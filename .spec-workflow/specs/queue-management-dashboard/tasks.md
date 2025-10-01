@@ -112,7 +112,7 @@
 
 ### Phase 4: Integration & Testing (3 tasks)
 
-- [ ] 9. Add queue methods to contract-client.ts
+- [x] 9. Add queue methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: `// ========== Spec: queue-management-dashboard ==========`
   - getQueueStatus(): Promise<QueueStatusResponse>
