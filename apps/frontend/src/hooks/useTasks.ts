@@ -181,6 +181,7 @@ export function useDeleteTask() {
 
 /**
  * Hook for fetching a single task by ID
+ * Includes 10-second polling for real-time updates
  */
 export function useTask(
   taskId: string,
@@ -189,13 +190,10 @@ export function useTask(
   return useQuery({
     queryKey: taskQueryKeys.detail(taskId),
     queryFn: async () => {
-      // Since the API doesn't have a single task endpoint,
-      // we'll get all tasks and filter
-      const tasks = await apiClient.getTasks()
-      const task = (tasks as unknown as Task[]).find(t => t.id === taskId)
-      if (!task) throw new Error(`Task ${taskId} not found`)
-      return task
+      const task = await apiClient.getTaskById(taskId)
+      return task as unknown as Task
     },
+    refetchInterval: 10000, // 10s fallback polling for real-time updates
     ...options,
   })
 }
