@@ -50,7 +50,7 @@ export class AuthService {
 
     // Find user by email or username
     const user = await this.findUserByIdentifier(validatedData.identifier);
-    if (!user || !('passwordHash' in user)) {
+    if (!user || !('password' in user)) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -62,7 +62,7 @@ export class AuthService {
     // Verify password using bcrypt
     const isPasswordValid = await this.verifyPassword(
       validatedData.password,
-      user.passwordHash
+      user.password
     );
 
     if (!isPasswordValid) {
@@ -129,7 +129,7 @@ export class AuthService {
       username: validatedData.username,
       firstName: validatedData.firstName,
       lastName: validatedData.lastName,
-      passwordHash: hashedPassword,
+      password: hashedPassword,
     });
 
     // Generate tokens and create session

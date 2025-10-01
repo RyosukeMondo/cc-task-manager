@@ -44,7 +44,7 @@ export const DatabaseUserSchema = z.object({
   lastName: z.string().min(1).max(100),
   role: UserRoleSchema.default('USER'),
   status: UserStatusSchema.default('ACTIVE'),
-  passwordHash: z.string(),
+  password: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
   lastLoginAt: z.date().nullable(),

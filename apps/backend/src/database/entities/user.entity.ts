@@ -24,7 +24,7 @@ export const UserEntitySchema = z.object({
   lastName: z.string().min(1, 'Last name is required').max(50, 'Last name must be at most 50 characters'),
   role: UserRoleSchema.default('USER'),
   status: UserStatusSchema.default('ACTIVE'),
-  passwordHash: z.string().min(1, 'Password hash is required'),
+  password: z.string().min(1, 'Password is required'),
   createdAt: z.date(),
   updatedAt: z.date(),
   lastLoginAt: z.date().nullable(),

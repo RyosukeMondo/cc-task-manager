@@ -63,7 +63,7 @@ export const UserEntitySchema = BaseEntitySchema.extend({
   lastName: z.string().min(1, 'Last name is required').max(50, 'Last name must not exceed 50 characters'),
   role: z.nativeEnum(UserRole),
   status: z.nativeEnum(UserStatus),
-  passwordHash: z.string().min(1, 'Password hash is required'),
+  password: z.string().min(1, 'Password is required'),
   lastLoginAt: z.date().nullable(),
 });
 
@@ -115,7 +115,7 @@ export const CreateUserInputSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens'),
   firstName: z.string().min(1, 'First name is required').max(50, 'First name must not exceed 50 characters'),
   lastName: z.string().min(1, 'Last name is required').max(50, 'Last name must not exceed 50 characters'),
-  passwordHash: z.string().min(1, 'Password hash is required'),
+  password: z.string().min(1, 'Password is required'),
   role: z.nativeEnum(UserRole).default(UserRole.USER),
   status: z.nativeEnum(UserStatus).default(UserStatus.ACTIVE),
 });
@@ -123,8 +123,8 @@ export const CreateUserInputSchema = z.object({
 /**
  * Update user input schema for database operations
  */
-export const UpdateUserInputSchema = CreateUserInputSchema.partial().omit({ passwordHash: true }).extend({
-  passwordHash: z.string().min(1, 'Password hash is required').optional(),
+export const UpdateUserInputSchema = CreateUserInputSchema.partial().omit({ password: true }).extend({
+  password: z.string().min(1, 'Password is required').optional(),
 });
 
 /**

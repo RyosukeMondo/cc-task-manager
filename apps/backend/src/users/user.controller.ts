@@ -107,7 +107,7 @@ export class UserController {
   async searchUsers(
     @CurrentUser() user: JWTPayload,
     @Query('q') query: string
-  ): Promise<Omit<User, 'passwordHash'>[]> {
+  ): Promise<Omit<User, 'password'>[]> {
     return this.userService.searchUsers(query, user);
   }
 

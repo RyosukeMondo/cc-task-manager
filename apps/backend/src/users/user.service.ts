@@ -346,7 +346,7 @@ export class UserService {
   async searchUsers(
     query: string,
     currentUser: JWTPayload
-  ): Promise<Omit<User, 'passwordHash'>[]> {
+  ): Promise<Omit<User, 'password'>[]> {
     const ability = this.caslAbilityFactory.createForUser(currentUser);
 
     // Check if user can read users
@@ -369,8 +369,8 @@ export class UserService {
   /**
    * Sanitize user object to remove sensitive data
    */
-  private sanitizeUser(user: User): Omit<User, 'passwordHash'> {
-    const { passwordHash, ...sanitizedUser } = user;
+  private sanitizeUser(user: User): Omit<User, 'password'> {
+    const { password, ...sanitizedUser } = user;
     return sanitizedUser;
   }
 }

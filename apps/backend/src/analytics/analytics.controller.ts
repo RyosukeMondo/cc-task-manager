@@ -98,7 +98,7 @@ export class AnalyticsController {
     @Query() filter: AnalyticsFilterDto,
     @CurrentUser() user: JWTPayload,
   ): Promise<PerformanceMetricsDto> {
-    return this.analyticsService.getPerformanceMetrics(filter, user.userId);
+    return this.analyticsService.getPerformanceMetrics(filter, user.sub);
   }
 
   /**
@@ -164,6 +164,6 @@ export class AnalyticsController {
     @Query() filter: TrendFilterDto,
     @CurrentUser() user: JWTPayload,
   ): Promise<TrendDataResponseDto> {
-    return this.analyticsService.getTrendData(filter, user.userId);
+    return this.analyticsService.getTrendData(filter, user.sub);
   }
 }

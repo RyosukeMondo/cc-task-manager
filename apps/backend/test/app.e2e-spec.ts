@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { DatabaseService } from '../src/database/database.service';
+import { PrismaService } from '../src/database/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 describe('Backend API E2E Tests', () => {
   let app: INestApplication;
-  let databaseService: DatabaseService;
+  let databaseService: PrismaService;
   let jwtService: JwtService;
   let authToken: string;
   let testUserId: string;
@@ -30,7 +30,7 @@ describe('Backend API E2E Tests', () => {
 
     await app.init();
 
-    databaseService = app.get<DatabaseService>(DatabaseService);
+    databaseService = app.get<PrismaService>(PrismaService);
     jwtService = app.get<JwtService>(JwtService);
 
     // Clean database before tests

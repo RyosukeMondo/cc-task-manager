@@ -58,7 +58,7 @@ export interface UserEntity {
   lastName: string;
   role: UserRole;
   status: UserStatus;
-  passwordHash: string;
+  password: string;
   createdAt: Date;
   updatedAt: Date;
   lastLoginAt: Date | null;

@@ -44,7 +44,7 @@ export const UserStatusUpdateSchema = z.object({
 
 /**
  * Sanitized user schema (matches what sanitizeUser returns)
- * Excludes passwordHash and matches Prisma User type
+ * Excludes password and matches Prisma User type
  */
 const SanitizedUserSchema = z.object({
   id: z.string(),
