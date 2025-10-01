@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@ta
 import { useCallback, useEffect, useState } from 'react'
 import { apiClient } from '@/lib/api/contract-client'
 import { useWebSocketEvent } from '@/lib/websocket/hooks'
-import type { Task, TaskFilter, TaskCreate, TaskUpdate, TaskStatus } from '@/types/task'
+import type { Task, TaskFilter, TaskCreate, TaskUpdate } from '@/types/task'
+import { TaskStatus } from '@/types/task'
 
 /**
  * Query key factory for task-related queries
@@ -132,15 +133,62 @@ export function useTasks(
 }
 
 /**
- * Hook for creating a new task
+ * Hook for creating a new task with optimistic updates
+ * Requirements: 3 (optimistic UI updates)
  */
 export function useCreateTask() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (task: TaskCreate) => apiClient.createTask(task as any),
+    onMutate: async (newTask: TaskCreate) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: taskQueryKeys.lists() })
+
+      // Snapshot the previous value
+      const previousTasks = queryClient.getQueryData<Task[]>(taskQueryKeys.list())
+
+      // Create optimistic task with temporary ID
+      const optimisticTask: Task = {
+        id: `temp-${Date.now()}`,
+        title: newTask.title,
+        description: newTask.description || '',
+        priority: newTask.priority || 'MEDIUM',
+        status: 'PENDING' as TaskStatus,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      // Optimistically update all task list queries
+      queryClient.setQueriesData<Task[]>(
+        { queryKey: taskQueryKeys.lists() },
+        (old) => {
+          return old ? [...old, optimisticTask] : [optimisticTask]
+        }
+      )
+
+      // Return context with previous tasks for rollback
+      return { previousTasks }
+    },
+    onError: (_err, _newTask, context) => {
+      // Rollback to previous state on error
+      if (context?.previousTasks) {
+        queryClient.setQueryData(taskQueryKeys.list(), context.previousTasks)
+      }
+    },
     onSuccess: (newTask) => {
-      // Optimistically update all task lists
+      // Replace optimistic task with real task from server
+      queryClient.setQueriesData<Task[]>(
+        { queryKey: taskQueryKeys.lists() },
+        (old) => {
+          if (!old) return [newTask as unknown as Task]
+          // Remove temp task and add real task
+          return old
+            .filter(task => !task.id.startsWith('temp-'))
+            .concat(newTask as unknown as Task)
+        }
+      )
+      // Invalidate to ensure consistency
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.lists() })
     },
   })
@@ -181,6 +229,7 @@ export function useDeleteTask() {
 
 /**
  * Hook for fetching a single task by ID
+ * Includes 10-second polling for real-time updates
  */
 export function useTask(
   taskId: string,
@@ -189,13 +238,10 @@ export function useTask(
   return useQuery({
     queryKey: taskQueryKeys.detail(taskId),
     queryFn: async () => {
-      // Since the API doesn't have a single task endpoint,
-      // we'll get all tasks and filter
-      const tasks = await apiClient.getTasks()
-      const task = (tasks as unknown as Task[]).find(t => t.id === taskId)
-      if (!task) throw new Error(`Task ${taskId} not found`)
-      return task
+      const task = await apiClient.getTaskById(taskId)
+      return task as unknown as Task
     },
+    refetchInterval: 10000, // 10s fallback polling for real-time updates
     ...options,
   })
 }

@@ -1,79 +1,230 @@
+# Parallel Development Configuration - SSOT
+# Single source of truth for parallel spec development setup
+
+# Base configuration
+base:
+  project_root: /home/rmondo/repos/cc-task-manager
+  worktree_dir: worktree
+  base_branch: main
+  python_venv: .venv/bin/python3
+  dashboard_port_base: 3412
+
+# Specifications to develop in parallel
+# Each spec gets: worktree, feature branch, MCP servers, PM2 automation
 specifications:
-  - name: database-schema-completion
-    description: Complete database schema with repositories and testing
+  # Currently active specs (available: true)
+  - name: task-creation-modal
+    description: Task creation dialog UI with form validation
+    available: true
     priority: 1
+    spec_file: task-creation-modal
     mcp_servers:
-      - serena
-      - spec-workflow
-
-  - name: task-crud-api
-    description: Task CRUD API with authentication and real-time events
-    priority: 2
-    mcp_servers:
-      - serena
-      - context7
-      - spec-workflow
-
-  - name: bullmq-integration
-    description: Queue system integration with monitoring and scaling
-    priority: 3
-    mcp_servers:
-      - serena
-      - context7
-      - spec-workflow
-
-  - name: dashboard-frontend
-    description: Next.js dashboard with real-time updates and responsive design
-    priority: 4
-    mcp_servers:
-      - serena
       - context7
       - magicuidesign
-      - spec-workflow
-
-  - name: claude-code-wrapper-integration
-    description: Claude Code wrapper integration with streaming and caching
-    priority: 5
-    mcp_servers:
+      - playwright
       - serena
-      - context7
       - spec-workflow
 
-  - name: realtime-websocket-events
-    description: WebSocket event system with scaling and monitoring
-    priority: 6
+  - name: task-detail-view
+    description: Task detail page with logs and actions
+    available: true
+    priority: 2
+    spec_file: task-detail-view
     mcp_servers:
-      - serena
       - context7
+      - magicuidesign
+      - playwright
+      - serena
       - spec-workflow
 
+  - name: queue-management-dashboard
+    description: BullMQ queue monitoring dashboard
+    available: true
+    priority: 3
+    spec_file: queue-management-dashboard
+    mcp_servers:
+      - context7
+      - magicuidesign
+      - playwright
+      - serena
+      - spec-workflow
+
+  - name: system-monitoring-dashboard
+    description: System health metrics dashboard
+    available: true
+    priority: 4
+    spec_file: system-monitoring-dashboard
+    mcp_servers:
+      - context7
+      - magicuidesign
+      - playwright
+      - serena
+      - spec-workflow
+
+  # Completed specs (available: false)
+  - name: backend-tasks-api
+    description: Task CRUD API endpoints
+    available: false
+    priority: 10
+    spec_file: backend-tasks-api
+    mcp_servers:
+      - context7
+      - serena
+      - spec-workflow
+
+  - name: backend-analytics-api
+    description: Analytics and metrics API
+    available: false
+    priority: 11
+    spec_file: backend-analytics-api
+    mcp_servers:
+      - context7
+      - serena
+      - spec-workflow
+
+  - name: backend-settings-api
+    description: User settings API
+    available: false
+    priority: 12
+    spec_file: backend-settings-api
+    mcp_servers:
+      - context7
+      - serena
+      - spec-workflow
+
+  # Future specs (available: false)
+  - name: analytics-performance-page
+    description: Performance analytics page
+    available: false
+    priority: 20
+    spec_file: analytics-performance-page
+    mcp_servers:
+      - context7
+      - magicuidesign
+      - serena
+      - spec-workflow
+
+  - name: analytics-trends-page
+    description: Trends analytics page
+    available: false
+    priority: 21
+    spec_file: analytics-trends-page
+    mcp_servers:
+      - context7
+      - magicuidesign
+      - serena
+      - spec-workflow
+
+  - name: settings-page
+    description: User settings page
+    available: false
+    priority: 22
+    spec_file: settings-page
+    mcp_servers:
+      - context7
+      - magicuidesign
+      - serena
+      - spec-workflow
+
+  - name: task-list-component
+    description: Reusable task list component
+    available: false
+    priority: 23
+    spec_file: task-list-component
+    mcp_servers:
+      - context7
+      - magicuidesign
+      - serena
+      - spec-workflow
+
+  - name: tasks-active-page
+    description: Active tasks page
+    available: false
+    priority: 24
+    spec_file: tasks-active-page
+    mcp_servers:
+      - context7
+      - magicuidesign
+      - serena
+      - spec-workflow
+
+  - name: tasks-all-page
+    description: All tasks page
+    available: false
+    priority: 25
+    spec_file: tasks-all-page
+    mcp_servers:
+      - context7
+      - magicuidesign
+      - serena
+      - spec-workflow
+
+  - name: tasks-completed-page
+    description: Completed tasks page
+    available: false
+    priority: 26
+    spec_file: tasks-completed-page
+    mcp_servers:
+      - context7
+      - magicuidesign
+      - serena
+      - spec-workflow
+
+# MCP Server Definitions
 mcp_servers:
-  - name: dev3000
-    command: claude mcp add --transport http dev3000 http://localhost:3684/api/mcp/mcp
-    description: Local development MCP server
-    required: false
-
   - name: context7
-    command: claude mcp add context7 npx @upstash/context7-mcp@latest
-    description: Context7 documentation and code examples
+    command: npx @upstash/context7-mcp@latest
+    description: Official library documentation
     required: true
 
   - name: magicuidesign
-    command: claude mcp add magicuidesign npx @magicuidesign/mcp@latest
+    command: npx @magicuidesign/mcp@latest
     description: Magic UI design components
     required: false
 
   - name: playwright
-    command: claude mcp add playwright npx @playwright/mcp@latest
+    command: npx @playwright/mcp@latest
     description: Playwright browser testing
     required: false
 
   - name: serena
-    command: claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena start-mcp-server --context ide-assistant --project $(pwd)
+    command: uvx --from git+https://github.com/oraios/serena serena start-mcp-server --context ide-assistant --project {project_path} --enable-web-dashboard false
     description: Serena semantic code understanding
     required: true
 
   - name: spec-workflow
-    command: claude mcp add spec-workflow npx @pimzino/spec-workflow-mcp@latest $(pwd)
+    command: npx @pimzino/spec-workflow-mcp@latest {project_path}
     description: Specification workflow management
     required: true
+
+# PM2 Automation Settings
+automation:
+  max_cycles: 50
+  max_session_time: 1800  # 30 minutes
+  log_dir: logs
+  session_log_format: logs/spec-workflow-{spec_name}.jsonl
+  error_log_format: logs/pm2-spec-workflow-{spec_name}-error.log
+  out_log_format: logs/pm2-spec-workflow-{spec_name}-out.log
+  dashboard_error_log_format: logs/pm2-dashboard-{spec_name}-error.log
+  dashboard_out_log_format: logs/pm2-dashboard-{spec_name}-out.log
+
+# PM2 Process Defaults
+pm2_defaults:
+  instances: 1
+  watch: false
+  max_memory_restart: 1G
+  env:
+    NODE_ENV: production
+  log_date_format: YYYY-MM-DD HH:mm:ss
+  merge_logs: true
+  time: true
+  autorestart_automation: false  # Automation should stop after completion
+  autorestart_dashboard: true    # Dashboards should auto-restart
+
+# Static Services (non-spec-related)
+static_services:
+  - name: claude-code-viewer
+    script: server.js
+    cwd: /home/rmondo/repos/claude-code-viewer/dist/standalone
+    port: 3400
+    autorestart: true

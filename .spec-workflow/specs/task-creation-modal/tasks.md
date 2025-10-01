@@ -71,7 +71,7 @@
 
 ### Phase 3: Error Handling & UX (2 tasks)
 
-- [ ] 6. Add error handling and toast notifications
+- [x] 6. Add error handling and toast notifications
   - File: apps/frontend/src/components/tasks/TaskCreateForm.tsx
   - On success: toast.success('Task created successfully!'), reset form, call onSuccess()
   - On 400 Bad Request: Map backend errors to form fields using form.setError()
@@ -83,7 +83,7 @@
   - _Requirements: 4_
   - _Prompt: Role: Frontend developer with error handling expertise | Task: Add error handling to TaskCreateForm following requirement 4, mapping backend errors to form fields | Restrictions: Do not close modal on error, preserve user data | Success: All error scenarios handled gracefully_
 
-- [ ] 7. Add accessibility features
+- [x] 7. Add accessibility features
   - File: apps/frontend/src/components/tasks/TaskCreateForm.tsx
   - Add ARIA labels: aria-label, aria-invalid, aria-describedby on all inputs
   - Error announcements: role="alert" on error messages

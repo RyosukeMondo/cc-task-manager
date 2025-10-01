@@ -59,7 +59,7 @@
 
 ### Phase 2: Data Fetching & Real-time Updates (3 tasks)
 
-- [ ] 5. Implement useTask hook (data fetching)
+- [x] 5. Implement useTask hook (data fetching)
   - File: apps/frontend/src/hooks/useTask.ts
   - Use useQuery with queryKey: ['task', taskId]
   - queryFn: apiClient.getTaskById(taskId)
