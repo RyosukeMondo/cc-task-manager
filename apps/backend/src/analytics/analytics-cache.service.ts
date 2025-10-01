@@ -12,9 +12,10 @@ import Redis from 'ioredis';
 export class AnalyticsCacheService implements OnModuleDestroy {
   private readonly logger = new Logger(AnalyticsCacheService.name);
   private redisClient: Redis;
-  private readonly defaultTtl: number = 300; // 5 minutes in seconds
+  private readonly defaultTtl: number;
 
   constructor(private readonly configService: ConfigService) {
+    this.defaultTtl = this.configService.get<number>('ANALYTICS_CACHE_TTL', 300);
     this.initializeRedisClient();
   }
 

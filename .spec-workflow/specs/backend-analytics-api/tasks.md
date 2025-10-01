@@ -94,7 +94,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: QA engineer with E2E testing expertise | Task: Create comprehensive E2E tests for analytics API following requirements 1, 2, and 3, validating all success and error scenarios | Restrictions: Do not skip authentication tests, validate cache behavior | Success: All tests pass with 0 failures and cover all acceptance criteria_
 
-- [ ] 8. Add environment variables and register module
+- [x] 8. Add environment variables and register module
   - File: .env.example, apps/backend/src/main.ts, docker-compose.yml
   - Add to .env.example: ANALYTICS_API_ENABLED=true, ANALYTICS_CACHE_TTL=300, ANALYTICS_QUERY_TIMEOUT=5000, REDIS_HOST=localhost, REDIS_PORT=6379
   - Import AnalyticsModule in backend main.ts
