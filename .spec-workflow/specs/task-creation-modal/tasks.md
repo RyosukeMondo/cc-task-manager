@@ -4,7 +4,7 @@
 
 ### Phase 1: Components (3 tasks)
 
-- [ ] 1. Create TaskCreateDialog component (modal wrapper)
+- [x] 1. Create TaskCreateDialog component (modal wrapper)
   - File: apps/frontend/src/components/tasks/TaskCreateDialog.tsx
   - Use shadcn/ui Dialog component
   - Props: open (boolean), onOpenChange (callback)

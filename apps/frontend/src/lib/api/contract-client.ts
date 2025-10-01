@@ -269,7 +269,6 @@ export class ContractApiClient {
     return this.request<UserBase>('GET', '/api/auth/me')
   }
 
-<<<<<<< HEAD
   // ========== Spec: backend-tasks-api ==========
 
   /**
