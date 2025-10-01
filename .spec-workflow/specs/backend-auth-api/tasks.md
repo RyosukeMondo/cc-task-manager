@@ -25,7 +25,7 @@
   - _Requirements: 1, 2_
   - _Prompt: Role: DevOps engineer with database migration expertise | Task: Generate and apply Prisma migration for User and Session models following requirements 1 and 2 | Restrictions: Do not manually edit migration files, use Prisma CLI | Success: Can query users and sessions tables via Prisma Studio_
 
-- [ ] 3. Install auth dependencies
+- [x] 3. Install auth dependencies
   - File: package.json
   - Run: npm install --save bcryptjs @nestjs/passport passport passport-jwt @nestjs/jwt
   - Run: npm install --save-dev @types/bcryptjs @types/passport-jwt
