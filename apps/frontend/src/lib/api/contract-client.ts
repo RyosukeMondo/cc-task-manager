@@ -131,69 +131,6 @@ export class ContractApiClient {
     return localStorage.getItem('refreshToken')
   }
 
-  // Task Management API - using existing contract types
-  async getTasks(): Promise<TaskStatus[]> {
-    return this.request<TaskStatus[]>('GET', '/api/tasks')
-  }
-
-  async createTask(task: TaskExecutionRequest): Promise<TaskStatus> {
-    return this.request<TaskStatus>(
-      'POST',
-      '/api/tasks',
-      task,
-      validateTaskExecutionRequest,
-      'TaskExecutionRequest',
-      '1.0.0'
-    )
-  }
-
-  async updateTask(taskId: string, updates: Partial<TaskStatus>): Promise<TaskStatus> {
-    return this.request<TaskStatus>(
-      'PATCH',
-      `/api/tasks/${taskId}`,
-      updates,
-      (data) => TaskStatusSchema.partial().parse(data),
-      'TaskStatus',
-      '1.0.0'
-    )
-  }
-
-  async deleteTask(taskId: string): Promise<void> {
-    return this.request<void>('DELETE', `/api/tasks/${taskId}`)
-  }
-
-  // Process Management API - using existing contract types
-  async getProcesses(): Promise<ProcessConfig[]> {
-    return this.request<ProcessConfig[]>('GET', '/api/processes')
-  }
-
-  async createProcess(config: ProcessConfig): Promise<ProcessConfig> {
-    return this.request<ProcessConfig>(
-      'POST',
-      '/api/processes',
-      config,
-      validateProcessConfig,
-      'ProcessConfig',
-      '1.0.0'
-    )
-  }
-
-  // Worker Management API - using existing contract types
-  async getWorkers(): Promise<WorkerConfig[]> {
-    return this.request<WorkerConfig[]>('GET', '/api/workers')
-  }
-
-  async createWorker(config: WorkerConfig): Promise<WorkerConfig> {
-    return this.request<WorkerConfig>(
-      'POST',
-      '/api/workers',
-      config,
-      validateWorkerConfig,
-      'WorkerConfig',
-      '1.0.0'
-    )
-  }
-
   // ========== Spec: backend-auth-api ==========
 
   /**
@@ -269,7 +206,6 @@ export class ContractApiClient {
     return this.request<UserBase>('GET', '/api/auth/me')
   }
 
-<<<<<<< HEAD
   // ========== Spec: backend-tasks-api ==========
 
   /**
