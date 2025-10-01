@@ -10,31 +10,34 @@ describe('DevValidationMiddleware', () => {
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let mockNext: NextFunction;
+  let originalNodeEnv: string | undefined;
 
   beforeEach(async () => {
+    originalNodeEnv = process.env.NODE_ENV;
+    jest.replaceProperty(process.env, 'NODE_ENV', 'development');
+
     contractRegistry = new ContractRegistry();
     middleware = new DevValidationMiddleware(contractRegistry);
-    
+
     mockRequest = {} as Request;
     Object.defineProperty(mockRequest, 'path', { writable: true, value: '/api/test' });
     Object.defineProperty(mockRequest, 'method', { writable: true, value: 'POST' });
     Object.defineProperty(mockRequest, 'body', { writable: true, value: {} });
     Object.defineProperty(mockRequest, 'query', { writable: true, value: {} });
-    
+
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
     };
-    
-    mockNext = jest.fn();
 
-    // Mock environment to be development
-    process.env.NODE_ENV = 'development';
+    mockNext = jest.fn();
   });
 
   afterEach(() => {
-    // Clean up
-    delete process.env.NODE_ENV;
+    jest.restoreAllMocks();
+    if (originalNodeEnv !== undefined) {
+      jest.replaceProperty(process.env, 'NODE_ENV', originalNodeEnv as any);
+    }
   });
 
   describe('constructor', () => {
@@ -51,12 +54,12 @@ describe('DevValidationMiddleware', () => {
 
   describe('use middleware', () => {
     it('should skip validation in production mode', () => {
-      process.env.NODE_ENV = 'production';
-      
+      jest.replaceProperty(process.env, 'NODE_ENV', 'production');
+
       // Create new middleware instance for production
       const prodMiddleware = new DevValidationMiddleware(contractRegistry);
       prodMiddleware.use(mockRequest as Request, mockResponse as Response, mockNext);
-      
+
       expect(mockNext).toHaveBeenCalled();
       expect(mockResponse.status).not.toHaveBeenCalled();
     });
@@ -206,11 +209,11 @@ describe('DevValidationMiddleware', () => {
     });
 
     it('should not initialize file watcher in production mode', () => {
-      process.env.NODE_ENV = 'production';
-      
+      jest.replaceProperty(process.env, 'NODE_ENV', 'production');
+
       const prodMiddleware = new DevValidationMiddleware(contractRegistry);
       const stats = prodMiddleware.getValidationStats();
-      
+
       expect(stats.watcherActive).toBe(false);
     });
   });

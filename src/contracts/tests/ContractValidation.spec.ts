@@ -13,6 +13,7 @@ describe('Contract Validation System', () => {
   let tsGenerator: TypeScriptGenerator;
   let versionManager: VersionManager;
   let devMiddleware: DevValidationMiddleware;
+  let originalNodeEnv: string | undefined;
 
   // Test schemas for validation
   const userSchema = z.object({
@@ -39,9 +40,9 @@ describe('Contract Validation System', () => {
   });
 
   beforeEach(async () => {
-    // Mock NODE_ENV for development features
-    process.env.NODE_ENV = 'development';
-    
+    originalNodeEnv = process.env.NODE_ENV;
+    jest.replaceProperty(process.env, 'NODE_ENV', 'development');
+
     // Direct instantiation instead of NestJS DI
     contractRegistry = new ContractRegistry();
     apiGenerator = new ApiContractGenerator(contractRegistry);
@@ -56,8 +57,10 @@ describe('Contract Validation System', () => {
   });
 
   afterEach(() => {
-    // Clean up environment
-    delete process.env.NODE_ENV;
+    jest.restoreAllMocks();
+    if (originalNodeEnv !== undefined) {
+      jest.replaceProperty(process.env, 'NODE_ENV', originalNodeEnv as any);
+    }
   });
 
   describe('ContractRegistry Integration', () => {
