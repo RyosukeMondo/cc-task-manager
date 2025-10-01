@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -16,6 +16,7 @@ import {
   validateJWTPayload,
 } from '@schemas/auth';
 import { UserRepository } from '../users/user.repository';
+import { PrismaService } from '../database/prisma.service';
 
 /**
  * Authentication Service following Single Responsibility Principle
@@ -23,7 +24,7 @@ import { UserRepository } from '../users/user.repository';
  */
 @Injectable()
 export class AuthService {
-  private readonly saltRounds = 12;
+  private readonly saltRounds = 10;
   private readonly jwtSecret: string;
   private readonly jwtExpiresIn: string;
   private readonly refreshTokenExpiresIn: string;
@@ -32,6 +33,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private userRepository: UserRepository,
+    private prisma: PrismaService,
   ) {
     this.jwtSecret = this.configService.get<string>('JWT_SECRET') || 'fallback-secret';
     this.jwtExpiresIn = this.configService.get<string>('JWT_EXPIRES_IN') || '15m';
@@ -67,8 +69,21 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Generate tokens
+    // Generate tokens and create session
     const tokens = await this.generateTokens(user);
+
+    // Create session in database
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30); // 30 days for refresh token
+
+    await this.prisma.session.create({
+      data: {
+        userId: user.id,
+        refreshToken: tokens.refreshToken,
+        expiresAt,
+        lastActive: new Date(),
+      },
+    });
 
     return {
       ...tokens,
@@ -94,15 +109,15 @@ export class AuthService {
     // Validate input using existing Zod schema
     const validatedData = validateUserRegistration(registrationData);
 
-    // Check if user already exists
+    // Check if user already exists (409 Conflict for duplicate email)
     const existingEmail = await this.userRepository.findByEmail(validatedData.email);
     if (existingEmail) {
-      throw new BadRequestException('User with this email already exists');
+      throw new ConflictException('User with this email already exists');
     }
 
     const existingUsername = await this.userRepository.findByUsername(validatedData.username);
     if (existingUsername) {
-      throw new BadRequestException('Username is already taken');
+      throw new ConflictException('Username is already taken');
     }
 
     // Hash password
@@ -117,8 +132,21 @@ export class AuthService {
       passwordHash: hashedPassword,
     });
 
-    // Generate tokens
+    // Generate tokens and create session
     const tokens = await this.generateTokens(createdUser);
+
+    // Create session in database
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30); // 30 days for refresh token
+
+    await this.prisma.session.create({
+      data: {
+        userId: createdUser.id,
+        refreshToken: tokens.refreshToken,
+        expiresAt,
+        lastActive: new Date(),
+      },
+    });
 
     return {
       ...tokens,
@@ -211,23 +239,60 @@ export class AuthService {
 
   /**
    * Refresh access token using refresh token
-   * Demonstrates secure token refresh with validation
+   * Validates session exists and is not expired, then generates new accessToken
    */
   async refreshToken(refreshToken: string): Promise<AuthResponse> {
     try {
+      // Verify JWT signature and expiration
       const payload = this.jwtService.verify(refreshToken, { secret: this.jwtSecret });
-      
-      // Find user to ensure they still exist and are active
-      const user = await this.findUserByIdentifier(payload.email);
-      if (!user || user.status !== UserStatus.ACTIVE) {
+
+      // Find session by refresh token
+      const session = await this.prisma.session.findUnique({
+        where: { refreshToken },
+        include: { user: true },
+      });
+
+      // Verify session exists, is not soft-deleted, and not expired
+      if (!session || session.deletedAt !== null) {
+        throw new UnauthorizedException('Session not found or invalidated');
+      }
+
+      if (session.expiresAt < new Date()) {
+        throw new UnauthorizedException('Session expired');
+      }
+
+      // Verify user still exists and is active
+      const user = session.user;
+      if (!user || user.status !== UserStatus.ACTIVE || user.deletedAt !== null) {
         throw new UnauthorizedException('User not found or inactive');
       }
 
-      // Generate new tokens
-      const tokens = await this.generateTokens(user);
+      // Generate new access token (keep same refresh token)
+      const accessToken = await this.jwtService.signAsync(
+        {
+          sub: user.id,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          sessionId: session.id,
+        },
+        {
+          secret: this.jwtSecret,
+          expiresIn: this.jwtExpiresIn,
+        }
+      );
+
+      // Update session lastActive timestamp
+      await this.prisma.session.update({
+        where: { id: session.id },
+        data: { lastActive: new Date() },
+      });
 
       return {
-        ...tokens,
+        accessToken,
+        refreshToken, // Return same refresh token
+        expiresIn: this.parseExpirationTime(this.jwtExpiresIn),
+        tokenType: 'Bearer',
         user: {
           id: user.id,
           email: user.email,
@@ -243,6 +308,52 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }
+  }
+
+  /**
+   * Logout user by soft-deleting all active sessions
+   * Implements soft delete to invalidate refresh tokens
+   */
+  async logout(userId: string): Promise<void> {
+    // Soft delete all active sessions for this user
+    await this.prisma.session.updateMany({
+      where: {
+        userId,
+        deletedAt: null, // Only update active sessions
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Find user by ID, excluding password field
+   * Returns user without sensitive password hash
+   */
+  async findUserById(id: string): Promise<UserBase | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+        password: false, // Exclude password hash
+      },
+    });
+
+    if (!user || user.deletedAt !== null) {
+      return null;
+    }
+
+    return user as UserBase;
   }
 
   /**

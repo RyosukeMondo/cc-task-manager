@@ -85,7 +85,7 @@
 
 ### Phase 4: Auth Service & Controller (3 tasks)
 
-- [ ] 8. Implement AuthService (business logic)
+- [x] 8. Implement AuthService (business logic)
   - File: apps/backend/src/auth/auth.service.ts
   - Implement register(dto): Check email uniqueness (409 if exists), hash password with bcrypt (10 rounds), create user, return user without password
   - Implement login(dto): Find user by email, verify password with bcrypt.compare(), generate JWT, create session, return tokens and user
