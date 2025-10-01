@@ -26,7 +26,10 @@ const CONFIG = {
     ,{ available: true, name: 'system-monitoring-dashboard', path: 'worktree/system-monitoring-dashboard', spec: 'system-monitoring-dashboard' }
     ,{ available: false, name: 'warps', path: '../warps', spec: 'battle-e2e-testing' }
     ,{ available: false, name: 'mind-advanced-evaluation-metrics', path: '../mind-training/worktree/advanced-evaluation-metrics', spec: 'advanced-evaluation-metrics' }
-    ,{ available: true, name: 'mind-session-flow', path: '../mind-training/worktree/session-flow-foundation', spec: 'session-flow-foundation' }
+    ,{ available: false, name: 'mind-session-flow', path: '../mind-training/worktree/session-flow-foundation', spec: 'session-flow-foundation' }
+    ,{ available: true, name: 'mind-exercise-ui', path: '../mind-training/worktree/exercise-ui-concrete-abstract', spec: 'exercise-ui-concrete-abstract' }
+    ,{ available: true, name: 'mind-backend-lifecycle', path: '../mind-training/worktree/backend-session-lifecycle', spec: 'backend-session-lifecycle' }
+    ,{ available: true, name: 'mind-ai-evaluation', path: '../mind-training/worktree/ai-evaluation-integration', spec: 'ai-evaluation-integration' }
     ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'fix-all-existing-tests' }
   ],
 

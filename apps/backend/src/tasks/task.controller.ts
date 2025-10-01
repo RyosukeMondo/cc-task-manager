@@ -304,7 +304,7 @@ export class TaskController {
     required: false,
     type: 'array',
     description: 'Filter by task status(es)',
-    example: [TaskStatus.PENDING, TaskStatus.RUNNING],
+    example: [TaskStatus.TODO, TaskStatus.IN_PROGRESS],
   })
   @ApiQuery({
     name: 'priority',
@@ -598,7 +598,7 @@ export class TaskController {
           type: 'string',
           enum: Object.values(TaskStatus),
           description: 'New task status',
-          example: TaskStatus.COMPLETED,
+          example: TaskStatus.DONE,
         },
         progress: {
           type: 'number',

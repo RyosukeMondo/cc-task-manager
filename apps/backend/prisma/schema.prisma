@@ -669,7 +669,7 @@ model ApiTask {
   id          String          @id @default(uuid())
   title       String          @db.VarChar(200)
   description String?         @db.Text
-  status      ApiTaskStatus   @default(PENDING)
+  status      ApiTaskStatus   @default(TODO)
   priority    ApiTaskPriority @default(MEDIUM)
   userId      String          @map("user_id")
 
@@ -695,12 +695,12 @@ model ApiTask {
   @@map("api_tasks")
 }
 
-// API Task status enumeration
+// API Task status enumeration - aligned with Task contract (Option B)
 enum ApiTaskStatus {
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
   CANCELLED
 
   @@map("api_task_status")

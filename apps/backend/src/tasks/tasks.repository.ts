@@ -171,11 +171,11 @@ export class TasksRepository {
         updateData.status = data.status;
 
         // Set completion/failure timestamps based on status
-        if (data.status === 'COMPLETED') {
+        if (data.status === 'DONE') {
           updateData.completedAt = new Date();
-        } else if (data.status === 'FAILED') {
+        } else if (data.status === 'CANCELLED') {
           updateData.failedAt = new Date();
-        } else if (data.status === 'RUNNING') {
+        } else if (data.status === 'IN_PROGRESS') {
           updateData.startedAt = new Date();
         }
       }

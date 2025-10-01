@@ -20,16 +20,17 @@ export const TaskPriority = {
  * Task Status enumeration for schema validation
  * Defines all possible states in the task lifecycle
  * Using z.enum() for Prisma compatibility (contract-driven development)
+ * Aligned with Prisma ApiTaskStatus enum (Option B: Kanban-style workflow)
  */
-export const TaskStatusSchema = z.enum(['PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED']);
+export const TaskStatusSchema = z.enum(['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED']);
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
 
 // Export as const object for runtime usage
 export const TaskStatus = {
-  PENDING: 'PENDING',
-  RUNNING: 'RUNNING',
-  COMPLETED: 'COMPLETED',
-  FAILED: 'FAILED',
+  TODO: 'TODO',
+  IN_PROGRESS: 'IN_PROGRESS',
+  IN_REVIEW: 'IN_REVIEW',
+  DONE: 'DONE',
   CANCELLED: 'CANCELLED'
 } as const;
 
