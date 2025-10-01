@@ -236,3 +236,146 @@ export const AnalyticsResponseSchema = z.object({
 });
 
 export type AnalyticsResponse = z.infer<typeof AnalyticsResponseSchema>;
+
+/**
+ * Group by period enumeration for trend analysis (backend-analytics-api spec)
+ * Defines supported time-series grouping intervals
+ */
+export enum GroupByPeriod {
+  DAY = 'day',
+  WEEK = 'week',
+  MONTH = 'month'
+}
+
+/**
+ * Base analytics filter schema (backend-analytics-api spec)
+ * Base object without refinement for extending
+ */
+const baseAnalyticsFilterSchema = z.object({
+  startDate: z.string().datetime('Invalid datetime format').optional(),
+  endDate: z.string().datetime('Invalid datetime format').optional(),
+}).strict();
+
+/**
+ * Analytics filter schema for date range queries (backend-analytics-api spec)
+ * Validates date range parameters with start <= end constraint
+ */
+export const analyticsFilterSchema = baseAnalyticsFilterSchema.refine(
+  (data) => {
+    // Validate startDate <= endDate if both are provided
+    if (data.startDate && data.endDate) {
+      const start = new Date(data.startDate);
+      const end = new Date(data.endDate);
+      return start <= end;
+    }
+    return true;
+  },
+  {
+    message: 'Start date must be less than or equal to end date',
+    path: ['startDate']
+  }
+);
+
+/**
+ * Trend filter schema for time-series analysis (backend-analytics-api spec)
+ * Extends analytics filter with groupBy parameter
+ */
+export const trendFilterSchema = baseAnalyticsFilterSchema.extend({
+  groupBy: z.nativeEnum(GroupByPeriod).default(GroupByPeriod.DAY)
+}).strict().refine(
+  (data) => {
+    // Validate startDate <= endDate if both are provided
+    if (data.startDate && data.endDate) {
+      const start = new Date(data.startDate);
+      const end = new Date(data.endDate);
+      return start <= end;
+    }
+    return true;
+  },
+  {
+    message: 'Start date must be less than or equal to end date',
+    path: ['startDate']
+  }
+);
+
+/**
+ * Performance metrics schema for aggregate analytics (backend-analytics-api spec)
+ * Contains calculated metrics for task performance over a period
+ */
+export const performanceMetricsSchema = z.object({
+  completionRate: z.number().min(0).max(100),
+  averageExecutionTime: z.number().min(0).nullable(),
+  throughput: z.number().min(0),
+  totalTasks: z.number().int().min(0),
+  completedTasks: z.number().int().min(0),
+  failedTasks: z.number().int().min(0),
+  period: z.object({
+    startDate: z.string().datetime(),
+    endDate: z.string().datetime()
+  }).strict()
+}).strict();
+
+/**
+ * Trend data point schema for time-series data (backend-analytics-api spec)
+ * Represents metrics for a specific time period
+ */
+export const trendDataPointSchema = z.object({
+  period: z.string(),
+  totalTasks: z.number().int().min(0),
+  completedTasks: z.number().int().min(0),
+  failedTasks: z.number().int().min(0),
+  averageExecutionTime: z.number().min(0).nullable()
+}).strict();
+
+/**
+ * Trend data response schema for trend endpoints (backend-analytics-api spec)
+ * Contains array of trend data points
+ */
+export const trendDataSchema = z.array(trendDataPointSchema);
+
+// Type exports for TypeScript usage (backend-analytics-api spec)
+export type AnalyticsFilterDto = z.infer<typeof analyticsFilterSchema>;
+export type TrendFilterDto = z.infer<typeof trendFilterSchema>;
+export type PerformanceMetricsDto = z.infer<typeof performanceMetricsSchema>;
+export type TrendDataPointDto = z.infer<typeof trendDataPointSchema>;
+export type TrendDataResponseDto = z.infer<typeof trendDataSchema>;
+
+/**
+ * Validation helper functions for runtime type checking (backend-analytics-api spec)
+ * Provides fail-fast validation with detailed error messages
+ */
+export const validateAnalyticsFilter = (data: unknown) => {
+  return analyticsFilterSchema.parse(data);
+};
+
+export const validateTrendFilter = (data: unknown) => {
+  return trendFilterSchema.parse(data);
+};
+
+export const validatePerformanceMetrics = (data: unknown) => {
+  return performanceMetricsSchema.parse(data);
+};
+
+export const validateTrendData = (data: unknown) => {
+  return trendDataSchema.parse(data);
+};
+
+/**
+ * Safe parsing functions that return results instead of throwing (backend-analytics-api spec)
+ * Useful for optional validation scenarios
+ */
+export const safeParseAnalyticsFilter = (data: unknown) => {
+  return analyticsFilterSchema.safeParse(data);
+};
+
+export const safeParseTrendFilter = (data: unknown) => {
+  return trendFilterSchema.safeParse(data);
+};
+
+export const safeParsePerformanceMetrics = (data: unknown) => {
+  return performanceMetricsSchema.safeParse(data);
+};
+
+export const safeParseTrendData = (data: unknown) => {
+  return trendDataSchema.safeParse(data);
+};

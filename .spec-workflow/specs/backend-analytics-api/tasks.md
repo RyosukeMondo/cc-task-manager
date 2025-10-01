@@ -4,7 +4,7 @@
 
 ### Phase 1: Module Setup & Schemas (2 tasks)
 
-- [ ] 1. Create AnalyticsModule with Redis cache
+- [x] 1. Create AnalyticsModule with Redis cache
   - File: apps/backend/src/analytics/analytics.module.ts
   - Import CacheModule.register with redisStore
   - Configure Redis: host from env (default: localhost), port (default: 6379), ttl: 300 seconds (5 min)
@@ -15,7 +15,7 @@
   - _Requirements: 1, 3_
   - _Prompt: Role: Backend developer with NestJS and Redis expertise | Task: Create AnalyticsModule with Redis cache configuration following requirements 1 and 3, ensuring proper DI setup for AnalyticsService and AnalyticsRepository | Restrictions: Do not hardcode Redis credentials, use environment variables | Success: Module compiles successfully and Redis connection is established_
 
-- [ ] 2. Define Zod schemas for analytics
+- [x] 2. Define Zod schemas for analytics
   - File: packages/schemas/src/analytics.schema.ts, packages/schemas/src/index.ts, apps/backend/src/analytics/dto/analytics-filter.dto.ts, apps/backend/src/analytics/dto/trend-filter.dto.ts
   - Create analyticsFilterSchema: startDate (date, optional), endDate (date, optional), validate startDate <= endDate
   - Create trendFilterSchema: extends analyticsFilterSchema, add groupBy (enum: day/week/month, default: day)
@@ -29,7 +29,7 @@
 
 ### Phase 2: Data Aggregation Layer (2 tasks)
 
-- [ ] 3. Implement AnalyticsRepository (aggregation queries)
+- [x] 3. Implement AnalyticsRepository (aggregation queries)
   - File: apps/backend/src/analytics/analytics.repository.ts
   - Implement calculatePerformanceMetrics(userId, startDate, endDate): Use Prisma aggregate to count tasks by status, use raw SQL to calculate avg execution time
   - Calculate completion rate: (completedTasks / totalTasks) * 100
@@ -41,7 +41,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: Database specialist with Prisma and PostgreSQL expertise | Task: Implement AnalyticsRepository with optimized aggregation queries following requirements 1, 2, and 3, using database-level calculations to avoid loading full task objects into memory | Restrictions: Do not load all tasks into memory, use Prisma aggregate and raw SQL | Success: Queries return correct aggregated data efficiently with < 500ms p95 response time_
 
-- [ ] 4. Implement AnalyticsService (caching logic)
+- [x] 4. Implement AnalyticsService (caching logic)
   - File: apps/backend/src/analytics/analytics.service.ts
   - Implement getPerformanceMetrics(filter, userId): Generate cache key, check cache first (5 min TTL), query repository on cache miss
   - Default date range: last 30 days if not specified
@@ -55,7 +55,7 @@
 
 ### Phase 3: HTTP API (1 task)
 
-- [ ] 5. Implement AnalyticsController (REST endpoints)
+- [x] 5. Implement AnalyticsController (REST endpoints)
   - File: apps/backend/src/analytics/analytics.controller.ts
   - Implement GET /api/analytics/performance?startDate=&endDate=: Use AnalyticsFilterDto query params, return PerformanceMetricsDto
   - Implement GET /api/analytics/trends?groupBy=day&startDate=&endDate=: Use TrendFilterDto query params, return TrendDataResponseDto
@@ -68,7 +68,7 @@
 
 ### Phase 4: Frontend Integration (1 task)
 
-- [ ] 6. Add analytics methods to contract-client.ts
+- [x] 6. Add analytics methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: `// ========== Spec: backend-analytics-api ==========`
   - Add getPerformanceMetrics(filter?: AnalyticsFilterDto): Promise<PerformanceMetricsDto>
@@ -94,7 +94,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: QA engineer with E2E testing expertise | Task: Create comprehensive E2E tests for analytics API following requirements 1, 2, and 3, validating all success and error scenarios | Restrictions: Do not skip authentication tests, validate cache behavior | Success: All tests pass with 0 failures and cover all acceptance criteria_
 
-- [ ] 8. Add environment variables and register module
+- [x] 8. Add environment variables and register module
   - File: .env.example, apps/backend/src/main.ts, docker-compose.yml
   - Add to .env.example: ANALYTICS_API_ENABLED=true, ANALYTICS_CACHE_TTL=300, ANALYTICS_QUERY_TIMEOUT=5000, REDIS_HOST=localhost, REDIS_PORT=6379
   - Import AnalyticsModule in backend main.ts
@@ -104,7 +104,7 @@
   - _Requirements: 3_
   - _Prompt: Role: DevOps engineer with NestJS configuration expertise | Task: Document environment variables and register AnalyticsModule following requirement 3, ensuring Redis is available | Restrictions: Do not hardcode any configuration values | Success: Backend starts successfully, Redis connects, and /api/analytics/performance responds_
 
-- [ ] 9. Implement cache invalidation in TasksService
+- [x] 9. Implement cache invalidation in TasksService
   - File: apps/backend/src/tasks/tasks.service.ts
   - Inject CacheManager in constructor
   - After create/update/delete task operations, invalidate analytics cache for userId

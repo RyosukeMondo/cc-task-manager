@@ -1,4 +1,6 @@
 import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import {
   TaskExceptionFactory,
   TaskNotFoundException,
@@ -60,6 +62,7 @@ export class TasksService {
     @Optional() private readonly schemaRegistry?: BackendSchemaRegistry,
     @Optional() private readonly queueService?: QueueService,
     @Optional() private readonly taskEventsService?: TaskEventsService,
+    @Optional() @Inject(CACHE_MANAGER) private readonly cacheManager?: Cache,
   ) {}
 
   /**
@@ -120,6 +123,12 @@ export class TasksService {
         // Don't fail task creation if notification queueing fails
         this.logger.error(`Failed to queue task notification: ${error.message}`);
       }
+    }
+
+    // Invalidate analytics cache for the creator and assignee
+    await this.invalidateAnalyticsCache(createdById);
+    if (createdTask.assigneeId && createdTask.assigneeId !== createdById) {
+      await this.invalidateAnalyticsCache(createdTask.assigneeId);
     }
 
     return createdTask;
@@ -296,6 +305,18 @@ export class TasksService {
       }
     }
 
+    // Invalidate analytics cache for affected users
+    const affectedUserIds = new Set<string>([
+      existingTask.createdById,
+      updatedById,
+    ]);
+    if (existingTask.assigneeId) affectedUserIds.add(existingTask.assigneeId);
+    if (updatedTask.assigneeId) affectedUserIds.add(updatedTask.assigneeId);
+
+    for (const userId of affectedUserIds) {
+      await this.invalidateAnalyticsCache(userId);
+    }
+
     return updatedTask;
   }
 
@@ -329,6 +350,17 @@ export class TasksService {
         // Don't fail task deletion if event emission fails
         this.logger.error(`Failed to emit task deleted event: ${error.message}`);
       }
+    }
+
+    // Invalidate analytics cache for affected users
+    const affectedUserIds = new Set<string>([
+      existingTask.createdById,
+      deletedById,
+    ]);
+    if (existingTask.assigneeId) affectedUserIds.add(existingTask.assigneeId);
+
+    for (const userId of affectedUserIds) {
+      await this.invalidateAnalyticsCache(userId);
     }
 
     return { success: true, taskId };
@@ -428,6 +460,17 @@ export class TasksService {
         // Don't fail bulk operation if event emission fails
         this.logger.error(`Failed to emit bulk operation events: ${error.message}`);
       }
+    }
+
+    // Invalidate analytics cache for all affected users
+    const affectedUserIds = new Set<string>([operatorId]);
+    for (const task of results) {
+      affectedUserIds.add(task.createdById);
+      if (task.assigneeId) affectedUserIds.add(task.assigneeId);
+    }
+
+    for (const userId of affectedUserIds) {
+      await this.invalidateAnalyticsCache(userId);
     }
 
     return {
@@ -726,6 +769,63 @@ export class TasksService {
         return WebSocketEventType.TASK_DELETED;
       default:
         return null;
+    }
+  }
+
+  /**
+   * Invalidate analytics cache for a specific user
+   *
+   * This method clears all analytics cache entries for a user to ensure
+   * fresh data is retrieved after task changes.
+   *
+   * @private
+   * @param userId User ID whose analytics cache should be invalidated
+   */
+  private async invalidateAnalyticsCache(userId: string): Promise<void> {
+    if (!this.cacheManager) {
+      return; // Cache manager not available, skip invalidation
+    }
+
+    try {
+      // Get all cache keys (if store supports it)
+      const store = this.cacheManager.store as any;
+
+      if (store.keys) {
+        // Redis store supports keys() method
+        const keys: string[] = await store.keys();
+        const pattern = `analytics:*:${userId}:*`;
+
+        // Find and delete all matching keys
+        const matchingKeys = keys.filter(key => {
+          const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+          return regex.test(key);
+        });
+
+        for (const key of matchingKeys) {
+          await this.cacheManager.del(key);
+        }
+
+        this.logger.debug(`Invalidated ${matchingKeys.length} analytics cache entries for user ${userId}`);
+      } else {
+        // Fallback: Try to delete known cache key patterns
+        const commonPatterns = [
+          `analytics:performance:${userId}:*`,
+          `analytics:trends:${userId}:*`
+        ];
+
+        for (const pattern of commonPatterns) {
+          try {
+            await this.cacheManager.del(pattern);
+          } catch (error) {
+            // Ignore errors for individual deletions
+          }
+        }
+
+        this.logger.debug(`Attempted to invalidate analytics cache for user ${userId}`);
+      }
+    } catch (error) {
+      // Don't fail task operations if cache invalidation fails
+      this.logger.error(`Failed to invalidate analytics cache for user ${userId}: ${error.message}`);
     }
   }
 }

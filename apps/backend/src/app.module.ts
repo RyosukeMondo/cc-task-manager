@@ -12,6 +12,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './users/user.module';
 import { WebSocketModule } from './websocket/websocket.module';
 import { DatabaseModule } from './database/database.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 // import { QueueModule } from './queue/queue.module';
 // import { OpenApiModule } from './docs/openapi.module';
 import { HealthModule } from './health/health.module';
@@ -60,6 +61,9 @@ import { CorrelationIdMiddleware } from './common/middleware';
 
     // WebSocket module for real-time communication
     WebSocketModule,
+
+    // Analytics module with Redis caching
+    AnalyticsModule,
 
     // Queue module for job processing with BullMQ
     // Temporarily disabled due to ApplicationConfigService dependency issues
