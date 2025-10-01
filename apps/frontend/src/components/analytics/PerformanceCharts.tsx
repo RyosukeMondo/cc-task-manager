@@ -4,7 +4,8 @@ import * as React from 'react'
 import { Line, Bar } from 'react-chartjs-2'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { ChartData as AnalyticsChartData, PerformanceMetrics } from '@/types/analytics'
+import type { ChartData as AnalyticsChartData } from '@/types/analytics'
+import type { PerformanceMetricsDto } from '@cc-task-manager/schemas'
 import { ChartData, ChartOptions } from 'chart.js'
 import {
   Chart as ChartJS,
@@ -35,9 +36,9 @@ ChartJS.register(
 
 interface PerformanceChartsProps {
   /**
-   * Performance metrics data
+   * Performance metrics data from backend analytics API
    */
-  metrics?: PerformanceMetrics
+  metrics?: PerformanceMetricsDto
 
   /**
    * Chart data for visualizations

@@ -18,56 +18,55 @@ import { TrendDirection } from '@cc-task-manager/schemas'
  * Route: /analytics/performance
  */
 export default function PerformancePage() {
-  const { data: analyticsData, isLoading, error } = usePerformanceMetrics()
-
-  // Extract metrics from analytics response
-  const metrics = analyticsData?.metrics
+  const { data: metricsData, isLoading, error } = usePerformanceMetrics()
 
   // Transform metrics into KPI data format
   const kpiData: KPIData[] = React.useMemo(() => {
-    if (!metrics) return []
+    if (!metricsData) return []
+
+    // Calculate efficiency from completion rate
+    const efficiency = metricsData.totalTasks > 0
+      ? (metricsData.completedTasks / metricsData.totalTasks) * 100
+      : 0
 
     return [
       {
         label: 'Completion Rate',
-        value: metrics.completionRate,
-        change: metrics.completionRate > 80 ? 5.2 : -2.1,
-        trend: metrics.completionRate > 80 ? TrendDirection.UP : TrendDirection.DOWN,
+        value: metricsData.completionRate,
+        change: metricsData.completionRate > 80 ? 5.2 : -2.1,
+        trend: metricsData.completionRate > 80 ? TrendDirection.UP : TrendDirection.DOWN,
         unit: '%',
         description: 'Percentage of tasks completed successfully'
       },
       {
-        label: 'Avg Completion Time',
-        value: metrics.averageCompletionTime / 3600, // Convert seconds to hours
-        change: metrics.averageCompletionTime < 18000 ? -8.5 : 3.2,
-        trend: metrics.averageCompletionTime < 18000 ? TrendDirection.UP : TrendDirection.DOWN,
+        label: 'Avg Execution Time',
+        value: metricsData.averageExecutionTime ? metricsData.averageExecutionTime / 3600 : 0, // Convert seconds to hours
+        change: metricsData.averageExecutionTime && metricsData.averageExecutionTime < 18000 ? -8.5 : 3.2,
+        trend: metricsData.averageExecutionTime && metricsData.averageExecutionTime < 18000 ? TrendDirection.UP : TrendDirection.DOWN,
         unit: 'h',
-        description: 'Average time to complete tasks'
+        description: 'Average time to execute tasks'
       },
       {
         label: 'Throughput',
-        value: metrics.throughput,
+        value: metricsData.throughput,
         change: 12.3,
         trend: TrendDirection.UP,
         unit: '/h',
         description: 'Tasks completed per hour'
       },
       {
-        label: 'Efficiency',
-        value: metrics.efficiency,
-        change: metrics.efficiency > 85 ? 4.1 : -1.5,
-        trend: metrics.efficiency > 85 ? TrendDirection.UP : TrendDirection.STABLE,
-        unit: '%',
-        description: 'Overall task completion efficiency'
+        label: 'Total Tasks',
+        value: metricsData.totalTasks,
+        change: metricsData.completedTasks - metricsData.failedTasks,
+        trend: metricsData.completedTasks > metricsData.failedTasks ? TrendDirection.UP : TrendDirection.DOWN,
+        unit: '',
+        description: `${metricsData.completedTasks} completed, ${metricsData.failedTasks} failed`
       }
     ]
-  }, [metrics])
+  }, [metricsData])
 
-  // Extract chart data from analytics response
-  const chartData = React.useMemo(() => {
-    if (!analyticsData?.charts) return undefined
-    return analyticsData.charts as Record<string, ChartData>
-  }, [analyticsData])
+  // Chart data would come from a separate endpoint
+  const chartData = undefined
 
   return (
     <AppLayout>
@@ -95,7 +94,7 @@ export default function PerformancePage() {
         <KPISummary kpis={kpiData} isLoading={isLoading} />
 
         <PerformanceCharts
-          metrics={metrics}
+          metrics={metricsData}
           charts={chartData}
           isLoading={isLoading}
         />

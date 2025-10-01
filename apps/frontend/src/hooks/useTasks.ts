@@ -153,11 +153,11 @@ export function useCreateTask() {
         id: `temp-${Date.now()}`,
         title: newTask.title,
         description: newTask.description || '',
-        status: 'PENDING' as TaskStatus,
+        status: 'TODO' as TaskStatus,
         priority: newTask.priority || 'MEDIUM',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      }
+      } as Task;
 
       // Optimistically update all task list queries
       queryClient.setQueriesData<Task[]>(
@@ -267,8 +267,8 @@ export function useTask(
 
         // Show animations on status changes
         if (previousTask && previousTask.status !== updatedTask.status) {
-          // Show confetti animation for COMPLETED status
-          if (updatedTask.status === 'COMPLETED') {
+          // Show confetti animation for DONE status
+          if (updatedTask.status === 'DONE') {
             // Trigger confetti effect if available
             if (typeof window !== 'undefined' && (window as any).confetti) {
               (window as any).confetti({
@@ -279,28 +279,21 @@ export function useTask(
             }
           }
 
-          // Show toast notification for FAILED status
-          if (updatedTask.status === 'FAILED') {
+          // Show toast notification for CANCELLED status (was FAILED)
+          // NOTE: ApiTask doesn't have FAILED status, only CANCELLED
+          if (updatedTask.status === 'CANCELLED') {
             toast({
-              title: 'Task Failed',
-              description: updatedTask.errorMessage || 'The task has failed.',
+              title: 'Task Cancelled',
+              description: (updatedTask as any).errorMessage || 'The task has been cancelled.',
               variant: 'destructive',
             })
           }
 
           // Show toast notification for other status changes
-          if (updatedTask.status === 'RUNNING') {
+          if (updatedTask.status === 'IN_PROGRESS') {
             toast({
               title: 'Task Started',
-              description: 'The task is now running.',
-            })
-          }
-
-          if (updatedTask.status === 'CANCELLED') {
-            toast({
-              title: 'Task Cancelled',
-              description: 'The task has been cancelled.',
-              variant: 'destructive',
+              description: 'The task is now in progress.',
             })
           }
         }

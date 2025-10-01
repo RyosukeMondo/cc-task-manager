@@ -100,7 +100,7 @@ const sampleTasks: Task[] = [
     id: '1',
     title: 'Implement user authentication',
     description: 'Add JWT-based authentication to the API',
-    status: TaskStatus.ACTIVE,
+    status: TaskStatus.IN_PROGRESS,
     priority: TaskPriority.HIGH,
     createdAt: new Date('2025-09-15T10:00:00Z').toISOString(),
     updatedAt: new Date('2025-09-20T14:30:00Z').toISOString(),
@@ -109,7 +109,7 @@ const sampleTasks: Task[] = [
     id: '2',
     title: 'Build task dashboard',
     description: 'Create a responsive dashboard for managing tasks',
-    status: TaskStatus.ACTIVE,
+    status: TaskStatus.IN_PROGRESS,
     priority: TaskPriority.MEDIUM,
     createdAt: new Date('2025-09-16T11:00:00Z').toISOString(),
     updatedAt: new Date('2025-09-21T15:00:00Z').toISOString(),
@@ -118,7 +118,7 @@ const sampleTasks: Task[] = [
     id: '3',
     title: 'Setup CI/CD pipeline',
     description: 'Configure GitHub Actions for automated testing and deployment',
-    status: TaskStatus.COMPLETED,
+    status: TaskStatus.DONE,
     priority: TaskPriority.HIGH,
     createdAt: new Date('2025-09-14T09:00:00Z').toISOString(),
     updatedAt: new Date('2025-09-19T16:00:00Z').toISOString(),
@@ -127,7 +127,7 @@ const sampleTasks: Task[] = [
     id: '4',
     title: 'Update documentation',
     description: 'Refresh API documentation with latest changes',
-    status: TaskStatus.PENDING,
+    status: TaskStatus.TODO,
     priority: TaskPriority.LOW,
     createdAt: new Date('2025-09-17T08:00:00Z').toISOString(),
     updatedAt: new Date('2025-09-17T08:00:00Z').toISOString(),
@@ -136,7 +136,7 @@ const sampleTasks: Task[] = [
     id: '5',
     title: 'Fix critical security bug',
     description: 'Patch SQL injection vulnerability in user login',
-    status: TaskStatus.ACTIVE,
+    status: TaskStatus.IN_PROGRESS,
     priority: TaskPriority.URGENT,
     createdAt: new Date('2025-09-22T07:00:00Z').toISOString(),
     updatedAt: new Date('2025-09-22T12:00:00Z').toISOString(),
@@ -284,7 +284,7 @@ export const EmptyWithFilters: Story = {
         isLoading: false,
         isError: false,
         error: null,
-        filters: { status: [TaskStatus.COMPLETED] },
+        filters: { status: [TaskStatus.DONE] },
         setFilters: fn(),
       });
 
@@ -303,7 +303,7 @@ export const EmptyWithFilters: Story = {
   ],
   args: {
     initialFilters: {
-      status: [TaskStatus.COMPLETED],
+      status: [TaskStatus.DONE],
     },
   },
 };
@@ -316,14 +316,14 @@ export const FilteredByStatus: Story = {
     (Story) => {
       const { useTasks, useUpdateTask, useDeleteTask } = require('@/hooks/useTasks');
 
-      const filteredTasks = sampleTasks.filter(t => t.status === TaskStatus.PENDING);
+      const filteredTasks = sampleTasks.filter(t => t.status === TaskStatus.TODO);
 
       useTasks.mockReturnValue({
         tasks: filteredTasks,
         isLoading: false,
         isError: false,
         error: null,
-        filters: { status: [TaskStatus.PENDING] },
+        filters: { status: [TaskStatus.TODO] },
         setFilters: fn(),
       });
 
@@ -342,7 +342,7 @@ export const FilteredByStatus: Story = {
   ],
   args: {
     initialFilters: {
-      status: [TaskStatus.PENDING],
+      status: [TaskStatus.TODO],
     },
   },
 };
@@ -473,7 +473,7 @@ export const ManyTasks: Story = {
         id: `task-${i + 1}`,
         title: `Task ${i + 1}: ${['Implement', 'Fix', 'Update', 'Review', 'Deploy'][i % 5]} ${['authentication', 'dashboard', 'API', 'tests', 'documentation'][i % 5]}`,
         description: `Description for task ${i + 1}`,
-        status: [TaskStatus.PENDING, TaskStatus.ACTIVE, TaskStatus.COMPLETED, TaskStatus.FAILED][i % 4],
+        status: [TaskStatus.TODO, TaskStatus.IN_PROGRESS, TaskStatus.DONE, TaskStatus.CANCELLED][i % 4],
         priority: [TaskPriority.LOW, TaskPriority.MEDIUM, TaskPriority.HIGH, TaskPriority.URGENT][i % 4],
         createdAt: new Date(Date.now() - i * 86400000).toISOString(),
         updatedAt: new Date(Date.now() - i * 43200000).toISOString(),
@@ -515,25 +515,25 @@ export const AllStatuses: Story = {
         {
           ...sampleTasks[0],
           id: '1',
-          status: TaskStatus.PENDING,
+          status: TaskStatus.TODO,
           title: 'Pending Task',
         },
         {
           ...sampleTasks[0],
           id: '2',
-          status: TaskStatus.ACTIVE,
+          status: TaskStatus.IN_PROGRESS,
           title: 'Active Task',
         },
         {
           ...sampleTasks[0],
           id: '3',
-          status: TaskStatus.COMPLETED,
+          status: TaskStatus.DONE,
           title: 'Completed Task',
         },
         {
           ...sampleTasks[0],
           id: '4',
-          status: TaskStatus.FAILED,
+          status: TaskStatus.CANCELLED,
           title: 'Failed Task',
         },
         {

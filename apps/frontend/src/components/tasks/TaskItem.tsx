@@ -51,13 +51,14 @@ export const TaskItem = React.memo<TaskItemProps>(({
 
   const getStatusVariant = (status: TaskStatus): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (status) {
-      case TaskStatus.COMPLETED:
+      case TaskStatus.DONE:
         return 'default';
-      case TaskStatus.ACTIVE:
+      case TaskStatus.IN_PROGRESS:
+      case TaskStatus.IN_REVIEW:
         return 'secondary';
-      case TaskStatus.FAILED:
+      case TaskStatus.CANCELLED:
         return 'destructive';
-      case TaskStatus.PENDING:
+      case TaskStatus.TODO:
       default:
         return 'outline';
     }
@@ -138,12 +139,12 @@ export const TaskItem = React.memo<TaskItemProps>(({
           </div>
 
           <div className="flex items-center gap-2">
-            {onStatusChange && task.status !== TaskStatus.COMPLETED && (
+            {onStatusChange && task.status !== TaskStatus.DONE && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onStatusChange(task.id, TaskStatus.COMPLETED)}
-                aria-label={`Mark task "${task.title}" as completed`}
+                onClick={() => onStatusChange(task.id, TaskStatus.DONE)}
+                aria-label={`Mark task "${task.title}" as done`}
               >
                 Complete
               </Button>

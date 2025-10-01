@@ -63,7 +63,7 @@ describe('TaskList', () => {
       id: 'task-1',
       title: 'First Task',
       description: 'First task description',
-      status: TaskStatus.PENDING,
+      status: TaskStatus.TODO,
       priority: TaskPriority.HIGH,
       createdAt: new Date('2025-01-01T10:00:00Z'),
       updatedAt: new Date('2025-01-01T10:00:00Z'),
@@ -72,7 +72,7 @@ describe('TaskList', () => {
       id: 'task-2',
       title: 'Second Task',
       description: 'Second task description',
-      status: TaskStatus.RUNNING,
+      status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.MEDIUM,
       createdAt: new Date('2025-01-02T10:00:00Z'),
       updatedAt: new Date('2025-01-02T10:00:00Z'),
@@ -81,7 +81,7 @@ describe('TaskList', () => {
       id: 'task-3',
       title: 'Third Task',
       description: 'Third task description',
-      status: TaskStatus.COMPLETED,
+      status: TaskStatus.DONE,
       priority: TaskPriority.LOW,
       createdAt: new Date('2025-01-03T10:00:00Z'),
       updatedAt: new Date('2025-01-03T10:00:00Z'),
@@ -210,7 +210,7 @@ describe('TaskList', () => {
         isLoading: false,
         isError: false,
         error: null,
-        filters: { status: [TaskStatus.PENDING] },
+        filters: { status: [TaskStatus.TODO] },
         setFilters: jest.fn(),
       })
 
@@ -272,7 +272,7 @@ describe('TaskList', () => {
         isLoading: false,
         isError: false,
         error: null,
-        filters: { status: [TaskStatus.PENDING] },
+        filters: { status: [TaskStatus.TODO] },
         setFilters: mockSetFilters,
       })
 
@@ -320,7 +320,7 @@ describe('TaskList', () => {
         isError: false,
         error: null,
         filters: {
-          status: [TaskStatus.PENDING],
+          status: [TaskStatus.TODO],
           priority: [TaskPriority.HIGH],
           search: 'test',
         },
@@ -401,7 +401,7 @@ describe('TaskList', () => {
       await waitFor(() => {
         expect(mockUpdateTask.mutateAsync).toHaveBeenCalledWith({
           taskId: 'task-1',
-          updates: { status: TaskStatus.COMPLETED },
+          updates: { status: TaskStatus.DONE },
         })
       })
     })
@@ -559,7 +559,7 @@ describe('TaskList', () => {
     })
 
     it('should use initial filters', () => {
-      const initialFilters = { status: [TaskStatus.PENDING] }
+      const initialFilters = { status: [TaskStatus.TODO] }
       renderWithProviders(<TaskList initialFilters={initialFilters} />)
 
       expect(useTasks.useTasks).toHaveBeenCalledWith(

@@ -87,7 +87,7 @@ describe('TaskList Integration Tests', () => {
       id: 'task-1',
       title: 'First Task',
       description: 'First task description',
-      status: TaskStatus.PENDING,
+      status: TaskStatus.TODO,
       priority: TaskPriority.HIGH,
       createdAt: new Date('2025-01-01T10:00:00Z'),
       updatedAt: new Date('2025-01-01T10:00:00Z'),
@@ -96,7 +96,7 @@ describe('TaskList Integration Tests', () => {
       id: 'task-2',
       title: 'Second Task',
       description: 'Second task description',
-      status: TaskStatus.RUNNING,
+      status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.MEDIUM,
       createdAt: new Date('2025-01-02T10:00:00Z'),
       updatedAt: new Date('2025-01-02T10:00:00Z'),
@@ -105,7 +105,7 @@ describe('TaskList Integration Tests', () => {
       id: 'task-3',
       title: 'Third Task',
       description: 'Third task description',
-      status: TaskStatus.COMPLETED,
+      status: TaskStatus.DONE,
       priority: TaskPriority.LOW,
       createdAt: new Date('2025-01-03T10:00:00Z'),
       updatedAt: new Date('2025-01-03T10:00:00Z'),
@@ -185,7 +185,7 @@ describe('TaskList Integration Tests', () => {
   describe('API Integration - Task Updates', () => {
     it('should update task status via API', async () => {
       const user = userEvent.setup()
-      const updatedTask = { ...mockTasks[0], status: TaskStatus.COMPLETED }
+      const updatedTask = { ...mockTasks[0], status: TaskStatus.DONE }
       ;(apiClient.updateTask as jest.Mock).mockResolvedValue(updatedTask)
 
       renderWithProviders(<TaskList />)
@@ -203,7 +203,7 @@ describe('TaskList Integration Tests', () => {
       await waitFor(() => {
         expect(apiClient.updateTask).toHaveBeenCalledWith(
           'task-1',
-          { status: TaskStatus.COMPLETED }
+          { status: TaskStatus.DONE }
         )
       })
     })
@@ -326,7 +326,7 @@ describe('TaskList Integration Tests', () => {
         id: 'task-4',
         title: 'New WebSocket Task',
         description: 'Created via WebSocket',
-        status: TaskStatus.PENDING,
+        status: TaskStatus.TODO,
         priority: TaskPriority.MEDIUM,
         createdAt: new Date('2025-01-04T10:00:00Z'),
         updatedAt: new Date('2025-01-04T10:00:00Z'),
@@ -354,7 +354,7 @@ describe('TaskList Integration Tests', () => {
       // Simulate WebSocket event for updated task
       const updatedTask: Task = {
         ...mockTasks[0],
-        status: TaskStatus.COMPLETED,
+        status: TaskStatus.DONE,
         updatedAt: new Date('2025-01-05T10:00:00Z'),
       }
 
@@ -527,7 +527,7 @@ describe('TaskList Integration Tests', () => {
       const user = userEvent.setup()
       ;(apiClient.updateTask as jest.Mock).mockResolvedValue({
         ...mockTasks[0],
-        status: TaskStatus.COMPLETED,
+        status: TaskStatus.DONE,
       })
 
       renderWithProviders(<TaskList />)
@@ -571,7 +571,7 @@ describe('TaskList Integration Tests', () => {
         id: `task-${i}`,
         title: `Task ${i}`,
         description: `Description ${i}`,
-        status: i % 2 === 0 ? TaskStatus.PENDING : TaskStatus.COMPLETED,
+        status: i % 2 === 0 ? TaskStatus.TODO : TaskStatus.DONE,
         priority: TaskPriority.MEDIUM,
         createdAt: new Date(`2025-01-${(i % 30) + 1}T10:00:00Z`),
         updatedAt: new Date(`2025-01-${(i % 30) + 1}T10:00:00Z`),

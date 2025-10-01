@@ -172,7 +172,7 @@ export class ClaudeTaskTestDataFactory implements ITestDataFactory<any> {
       id: uuidv4(),
       title: `Test Claude Task ${Date.now()}`,
       description: 'Test task description',
-      status: 'PENDING' as const,
+      status: 'TODO' as const, // Changed from PENDING to match ApiTaskStatus
       priority: 'MEDIUM' as const,
       createdById: overrides?.createdById || overrides?.userId || uuidv4(),
       projectId: overrides?.projectId || null,
@@ -208,13 +208,15 @@ export class ClaudeTaskTestDataFactory implements ITestDataFactory<any> {
 
 /**
  * Task Execution Test Data Factory
+ * NOTE: This is for TaskExecution (ClaudeTask workflow), not ApiTask
+ * TaskExecution has different status values (PENDING, STARTING, RUNNING, etc.)
  */
 export class TaskExecutionTestDataFactory implements ITestDataFactory<any> {
   create(overrides?: any): any {
     const baseExecution = {
       id: uuidv4(),
       taskId: overrides?.taskId || overrides?.claudeTaskId || uuidv4(),
-      status: 'RUNNING' as const,
+      status: 'RUNNING' as const, // TaskExecution status, not ApiTaskStatus
       startedAt: new Date(),
       progress: 0,
       createdAt: new Date(),

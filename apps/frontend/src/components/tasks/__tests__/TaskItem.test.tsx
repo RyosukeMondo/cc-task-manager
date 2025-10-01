@@ -14,7 +14,7 @@ describe('TaskItem', () => {
     id: 'task-123',
     title: 'Test Task',
     description: 'This is a test task description',
-    status: TaskStatus.PENDING,
+    status: TaskStatus.TODO,
     priority: TaskPriority.MEDIUM,
     createdAt: new Date('2025-01-01T10:00:00Z'),
     updatedAt: new Date('2025-01-02T15:30:00Z'),
@@ -50,7 +50,7 @@ describe('TaskItem', () => {
 
     it('should render task status badge', () => {
       render(<TaskItem {...defaultProps} />)
-      expect(screen.getByLabelText(`Status: ${TaskStatus.PENDING}`)).toBeInTheDocument()
+      expect(screen.getByLabelText(`Status: ${TaskStatus.TODO}`)).toBeInTheDocument()
     })
 
     it('should render task priority badge when provided', () => {
@@ -81,30 +81,30 @@ describe('TaskItem', () => {
 
   describe('Status Badges', () => {
     it('should render correct badge variant for PENDING status', () => {
-      const task = { ...mockTask, status: TaskStatus.PENDING }
+      const task = { ...mockTask, status: TaskStatus.TODO }
       render(<TaskItem {...defaultProps} task={task} />)
-      const badge = screen.getByLabelText(`Status: ${TaskStatus.PENDING}`)
+      const badge = screen.getByLabelText(`Status: ${TaskStatus.TODO}`)
       expect(badge).toBeInTheDocument()
     })
 
     it('should render correct badge variant for ACTIVE status', () => {
-      const task = { ...mockTask, status: TaskStatus.ACTIVE }
+      const task = { ...mockTask, status: TaskStatus.IN_PROGRESS }
       render(<TaskItem {...defaultProps} task={task} />)
-      const badge = screen.getByLabelText(`Status: ${TaskStatus.ACTIVE}`)
+      const badge = screen.getByLabelText(`Status: ${TaskStatus.IN_PROGRESS}`)
       expect(badge).toBeInTheDocument()
     })
 
     it('should render correct badge variant for COMPLETED status', () => {
-      const task = { ...mockTask, status: TaskStatus.COMPLETED }
+      const task = { ...mockTask, status: TaskStatus.DONE }
       render(<TaskItem {...defaultProps} task={task} />)
-      const badge = screen.getByLabelText(`Status: ${TaskStatus.COMPLETED}`)
+      const badge = screen.getByLabelText(`Status: ${TaskStatus.DONE}`)
       expect(badge).toBeInTheDocument()
     })
 
     it('should render correct badge variant for FAILED status', () => {
-      const task = { ...mockTask, status: TaskStatus.FAILED }
+      const task = { ...mockTask, status: TaskStatus.CANCELLED }
       render(<TaskItem {...defaultProps} task={task} />)
-      const badge = screen.getByLabelText(`Status: ${TaskStatus.FAILED}`)
+      const badge = screen.getByLabelText(`Status: ${TaskStatus.CANCELLED}`)
       expect(badge).toBeInTheDocument()
     })
   })
@@ -139,7 +139,7 @@ describe('TaskItem', () => {
     })
 
     it('should not render Complete button when task is completed', () => {
-      const completedTask = { ...mockTask, status: TaskStatus.COMPLETED }
+      const completedTask = { ...mockTask, status: TaskStatus.DONE }
       render(<TaskItem {...defaultProps} task={completedTask} />)
       expect(screen.queryByRole('button', { name: /complete/i })).not.toBeInTheDocument()
     })
@@ -175,7 +175,7 @@ describe('TaskItem', () => {
       const completeButton = screen.getByRole('button', { name: /complete/i })
       await user.click(completeButton)
 
-      expect(defaultProps.onStatusChange).toHaveBeenCalledWith('task-123', TaskStatus.COMPLETED)
+      expect(defaultProps.onStatusChange).toHaveBeenCalledWith('task-123', TaskStatus.DONE)
       expect(defaultProps.onStatusChange).toHaveBeenCalledTimes(1)
     })
 
@@ -207,7 +207,7 @@ describe('TaskItem', () => {
       render(<TaskItem {...defaultProps} />)
 
       expect(screen.getByRole('article', { name: 'Task: Test Task' })).toBeInTheDocument()
-      expect(screen.getByLabelText(`Status: ${TaskStatus.PENDING}`)).toBeInTheDocument()
+      expect(screen.getByLabelText(`Status: ${TaskStatus.TODO}`)).toBeInTheDocument()
       expect(screen.getByLabelText(`Priority: ${TaskPriority.MEDIUM}`)).toBeInTheDocument()
     })
 
@@ -234,7 +234,7 @@ describe('TaskItem', () => {
       completeButton.focus()
 
       await user.keyboard('{Enter}')
-      expect(defaultProps.onStatusChange).toHaveBeenCalledWith('task-123', TaskStatus.COMPLETED)
+      expect(defaultProps.onStatusChange).toHaveBeenCalledWith('task-123', TaskStatus.DONE)
     })
 
     it('should have semantic HTML structure', () => {
@@ -320,7 +320,7 @@ describe('TaskItem', () => {
       const minimalTask: Task = {
         id: 'minimal-task',
         title: 'Minimal',
-        status: TaskStatus.PENDING,
+        status: TaskStatus.TODO,
         createdAt: new Date(),
       }
 
