@@ -4,7 +4,7 @@
 
 ### Phase 1: Backend API (3 tasks)
 
-- [ ] 1. Create MonitoringModule
+- [x] 1. Create MonitoringModule
   - File: apps/backend/src/monitoring/monitoring.module.ts
   - Import PrismaModule
   - Provide: MonitoringService
