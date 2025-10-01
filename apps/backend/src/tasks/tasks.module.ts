@@ -9,9 +9,9 @@ import { TaskOwnershipGuard } from './guards/task-ownership.guard';
 import { TaskEventsService } from './events/task-events.service';
 import { TaskPerformanceMiddleware } from './middleware/task-performance.middleware';
 import { TaskPerformanceService } from './middleware/task-performance.service';
+import { TasksGateway } from './tasks.gateway';
 // import { QueueModule } from '../queue/queue.module';
 // import { WebSocketModule } from '../websocket/websocket.module';
-// import { TasksGateway } from './tasks.gateway'; // Will be implemented in task #8
 import { CaslAbilityFactory } from '../auth/casl-ability.factory';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from '../auth/auth.module';
@@ -63,7 +63,7 @@ import { DatabaseModule } from '../database/database.module';
       provide: 'ITasksRepository',
       useExisting: TasksRepository,
     },
-    // TasksGateway, // Will be implemented in task #8
+    TasksGateway,
     // TaskEventsService, // Temporarily disabled due to WebSocketModule dependency
     TaskOwnershipGuard,
     TaskPerformanceMiddleware,

@@ -68,7 +68,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
   - _Prompt: Role: API Developer with expertise in RESTful design and NestJS controllers | Task: Implement TasksController REST endpoints following requirements 1.1-1.5 with proper authentication and status codes | Restrictions: Must return correct HTTP status codes (200, 201, 204, 400, 404), require authentication on all routes, follow REST conventions | Success: All endpoints work with correct status codes, authentication enforced, API contract matches design_
 
-- [ ] 8. Implement TasksGateway (WebSocket events)
+- [x] 8. Implement TasksGateway (WebSocket events)
   - File: apps/backend/src/tasks/tasks.gateway.ts
   - Create @WebSocketGateway({ namespace: 'tasks' })
   - Implement: emitTaskCreated(task), emitTaskUpdated(task), emitTaskDeleted(taskId)
