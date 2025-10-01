@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@ta
 import { useCallback, useEffect, useState } from 'react'
 import { apiClient } from '@/lib/api/contract-client'
 import { useWebSocketEvent } from '@/lib/websocket/hooks'
+import { useToast } from '@/hooks/use-toast'
 import type { Task, TaskFilter, TaskCreate, TaskUpdate, TaskStatus } from '@/types/task'
 
 /**
@@ -181,13 +182,16 @@ export function useDeleteTask() {
 
 /**
  * Hook for fetching a single task by ID
- * Includes 10-second polling for real-time updates
+ * Includes 10-second polling for real-time updates and WebSocket subscriptions
  */
 export function useTask(
   taskId: string,
   options?: Omit<UseQueryOptions<Task>, 'queryKey' | 'queryFn'>
 ) {
-  return useQuery({
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  const query = useQuery({
     queryKey: taskQueryKeys.detail(taskId),
     queryFn: async () => {
       const task = await apiClient.getTaskById(taskId)
@@ -196,4 +200,95 @@ export function useTask(
     refetchInterval: 10000, // 10s fallback polling for real-time updates
     ...options,
   })
+
+  // WebSocket: Real-time task updates
+  useWebSocketEvent(
+    'task:updated',
+    useCallback((event: any) => {
+      const updatedTask = event.data
+
+      // Only update if it's the task we're watching
+      if (updatedTask?.id === taskId || updatedTask?.taskId === taskId) {
+        // Get previous task state for comparison
+        const previousTask = queryClient.getQueryData<Task>(taskQueryKeys.detail(taskId))
+
+        // Update query cache with new task data
+        queryClient.setQueryData(taskQueryKeys.detail(taskId), (old: Task | undefined) => {
+          if (!old) return updatedTask
+          return { ...old, ...updatedTask }
+        })
+
+        // Show animations on status changes
+        if (previousTask && previousTask.status !== updatedTask.status) {
+          // Show confetti animation for COMPLETED status
+          if (updatedTask.status === 'COMPLETED') {
+            // Trigger confetti effect if available
+            if (typeof window !== 'undefined' && (window as any).confetti) {
+              (window as any).confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+              })
+            }
+          }
+
+          // Show toast notification for FAILED status
+          if (updatedTask.status === 'FAILED') {
+            toast({
+              title: 'Task Failed',
+              description: updatedTask.errorMessage || 'The task has failed.',
+              variant: 'destructive',
+            })
+          }
+
+          // Show toast notification for other status changes
+          if (updatedTask.status === 'RUNNING') {
+            toast({
+              title: 'Task Started',
+              description: 'The task is now running.',
+            })
+          }
+
+          if (updatedTask.status === 'CANCELLED') {
+            toast({
+              title: 'Task Cancelled',
+              description: 'The task has been cancelled.',
+              variant: 'destructive',
+            })
+          }
+        }
+      }
+    }, [taskId, queryClient, toast])
+  )
+
+  // WebSocket: Real-time log updates
+  useWebSocketEvent(
+    'task:log',
+    useCallback((event: any) => {
+      const { taskId: logTaskId, log } = event.data
+
+      // Only update if it's the task we're watching
+      if (logTaskId === taskId && log) {
+        // Append new log entry to task.logs
+        queryClient.setQueryData(taskQueryKeys.detail(taskId), (old: Task | undefined) => {
+          if (!old) return old
+
+          const logs = old.logs || []
+          // Avoid duplicate logs
+          const logExists = logs.some((l: any) =>
+            l.timestamp === log.timestamp && l.message === log.message
+          )
+
+          if (logExists) return old
+
+          return {
+            ...old,
+            logs: [...logs, log]
+          }
+        })
+      }
+    }, [taskId, queryClient])
+  )
+
+  return query
 }
