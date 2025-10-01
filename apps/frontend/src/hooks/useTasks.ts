@@ -132,15 +132,59 @@ export function useTasks(
 }
 
 /**
- * Hook for creating a new task
+ * Hook for creating a new task with optimistic updates
  */
 export function useCreateTask() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (task: TaskCreate) => apiClient.createTask(task as any),
+    onMutate: async (newTask) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: taskQueryKeys.lists() })
+
+      // Snapshot the previous value
+      const previousTasks = queryClient.getQueryData(taskQueryKeys.lists())
+
+      // Optimistically add task to all task list queries with temp ID and PENDING status
+      const optimisticTask: Task = {
+        id: `temp-${Date.now()}`,
+        title: newTask.title,
+        description: newTask.description || '',
+        status: 'PENDING' as TaskStatus,
+        priority: newTask.priority || 'MEDIUM',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      // Update all task list queries
+      queryClient.setQueriesData(
+        { queryKey: taskQueryKeys.lists() },
+        (old: Task[] | undefined) => {
+          return old ? [...old, optimisticTask] : [optimisticTask]
+        }
+      )
+
+      // Return context with previous data for rollback
+      return { previousTasks }
+    },
+    onError: (err, newTask, context) => {
+      // Rollback to previous state on error
+      if (context?.previousTasks) {
+        queryClient.setQueriesData({ queryKey: taskQueryKeys.lists() }, context.previousTasks)
+      }
+    },
     onSuccess: (newTask) => {
-      // Optimistically update all task lists
+      // Replace optimistic task with real task from server
+      queryClient.setQueriesData(
+        { queryKey: taskQueryKeys.lists() },
+        (old: Task[] | undefined) => {
+          return old?.map(task =>
+            task.id.startsWith('temp-') ? (newTask as unknown as Task) : task
+          ) || []
+        }
+      )
+      // Invalidate queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: taskQueryKeys.lists() })
     },
   })

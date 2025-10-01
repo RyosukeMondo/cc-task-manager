@@ -4,7 +4,7 @@
 
 ### Phase 1: Components (3 tasks)
 
-- [ ] 1. Create TaskCreateDialog component (modal wrapper)
+- [x] 1. Create TaskCreateDialog component (modal wrapper)
   - File: apps/frontend/src/components/tasks/TaskCreateDialog.tsx
   - Use shadcn/ui Dialog component
   - Props: open (boolean), onOpenChange (callback)
@@ -18,7 +18,7 @@
   - _Requirements: 1, 5_
   - _Prompt: Role: Frontend developer with React and shadcn/ui expertise | Task: Create TaskCreateDialog responsive component following requirements 1 and 5, switching between Dialog and Sheet based on screen size | Restrictions: Do not use custom modal implementation, use shadcn/ui components | Success: Dialog opens/closes correctly and is responsive on mobile_
 
-- [ ] 2. Create TaskCreateForm component (form logic)
+- [x] 2. Create TaskCreateForm component (form logic)
   - File: apps/frontend/src/components/tasks/TaskCreateForm.tsx
   - Use react-hook-form with zodResolver(createTaskSchema)
   - Fields: title (Input, required, max 200), description (Textarea, optional, max 2000), priority (Select, default MEDIUM)
@@ -33,7 +33,7 @@
   - _Requirements: 2, 3, 5_
   - _Prompt: Role: Frontend developer with forms expertise | Task: Create TaskCreateForm with real-time validation following requirements 2, 3, and 5, implementing keyboard shortcuts and character counting | Restrictions: Do not skip validation, enforce character limits | Success: Form validates correctly and keyboard shortcuts work_
 
-- [ ] 3. Add Zod validation (use shared schema)
+- [x] 3. Add Zod validation (use shared schema)
   - File: packages/schemas/src/task.schema.ts (verify exists), apps/frontend/src/components/tasks/TaskCreateForm.tsx
   - Use createTaskSchema from shared schemas package: title (min 1, max 200), description (max 2000, optional or empty string), priority (enum, default MEDIUM)
   - Ensure schema is exported from packages/schemas/src/index.ts
@@ -45,7 +45,7 @@
 
 ### Phase 2: API Integration (2 tasks)
 
-- [ ] 4. Enhance useCreateTask hook (add optimistic updates)
+- [x] 4. Enhance useCreateTask hook (add optimistic updates)
   - File: apps/frontend/src/hooks/useCreateTask.ts
   - Use useMutation from @tanstack/react-query
   - mutationFn: calls apiClient.createTask(data)
