@@ -4,7 +4,7 @@
 
 ### Phase 1: Backend API (2 tasks)
 
-- [ ] 1. Create QueueController with status endpoint
+- [x] 1. Create QueueController with status endpoint
   - File: apps/backend/src/queue/queue.controller.ts
   - GET /api/queue/status: Returns { metrics, jobs, throughput }
   - metrics: { activeCount, pendingCount, completedCount, failedCount } via BullMQ Queue.getJobCounts()
