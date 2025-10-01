@@ -14,26 +14,27 @@ datasource db {
 model User {
   id        String     @id @default(uuid())
   email     String     @unique
-  username  String     @unique
-  firstName String     @map("first_name")
-  lastName  String     @map("last_name")
+  password  String // bcrypt hash
+  name      String? // optional name field
+  username  String?    @unique
+  firstName String?    @map("first_name")
+  lastName  String?    @map("last_name")
   role      UserRole   @default(USER)
   status    UserStatus @default(ACTIVE)
-
-  // Password and security
-  passwordHash String @map("password_hash")
 
   // Timestamps
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at") // soft delete support
   lastLoginAt DateTime? @map("last_login_at")
 
   // Relationships
-  createdTasks  Task[]        @relation("TaskCreator")
-  assignedTasks Task[]        @relation("TaskAssignee")
-  claudeTasks   ClaudeTask[]  @relation("ClaudeTaskCreator")
-  sessions      UserSession[]
+  createdTasks  Task[]       @relation("TaskCreator")
+  assignedTasks Task[]       @relation("TaskAssignee")
+  claudeTasks   ClaudeTask[] @relation("ClaudeTaskCreator")
+  sessions      Session[]
 
+  @@index([email])
   @@map("users")
 }
 
@@ -142,27 +143,25 @@ model Project {
   @@map("projects")
 }
 
-// User session model for authentication
-model UserSession {
-  id     String @id @default(uuid())
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+// Session model for JWT refresh token management
+model Session {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String    @unique @map("refresh_token")
+  expiresAt    DateTime  @map("expires_at")
+  lastActive   DateTime  @default(now()) @map("last_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  deletedAt    DateTime? @map("deleted_at") // soft delete for logout
 
-  // Session data
+  // Optional session metadata
   deviceInfo String? @map("device_info")
   ipAddress  String? @map("ip_address")
   userAgent  String? @map("user_agent")
-  isActive   Boolean @default(true) @map("is_active")
-
-  // Timestamps
-  createdAt      DateTime @default(now()) @map("created_at")
-  expiresAt      DateTime @map("expires_at")
-  lastActivityAt DateTime @default(now()) @map("last_activity_at")
 
   @@index([userId])
-  @@index([isActive])
-  @@index([expiresAt])
-  @@map("user_sessions")
+  @@index([refreshToken])
+  @@map("sessions")
 }
 
 // =============================================================================
@@ -625,37 +624,37 @@ enum ResultStatus {
 
 // WebSocket event persistence for replay and offline clients
 model WebSocketEvent {
-  id            String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Event identification
-  eventType     String   @map("event_type")
-  correlationId String?  @map("correlation_id")
+  eventType     String  @map("event_type")
+  correlationId String? @map("correlation_id")
 
   // Event routing
   room         String?
-  roomType     String?  @map("room_type")
-  targetUserId String?  @map("target_user_id")
+  roomType     String? @map("room_type")
+  targetUserId String? @map("target_user_id")
 
   // Event source
-  userId       String   @map("user_id")
+  userId String @map("user_id")
 
   // Event payload
-  eventData    Json     @map("event_data")
+  eventData Json @map("event_data")
 
   // Replay metadata
-  priority     Int      @default(0) // Higher numbers = higher priority for replay
-  persisted    Boolean  @default(true)
-  replayed     Boolean  @default(false)
-  replayCount  Int      @default(0) @map("replay_count")
+  priority    Int     @default(0) // Higher numbers = higher priority for replay
+  persisted   Boolean @default(true)
+  replayed    Boolean @default(false)
+  replayCount Int     @default(0) @map("replay_count")
 
   // Event lifecycle
-  broadcastAt  DateTime @default(now()) @map("broadcast_at")
-  expiresAt    DateTime? @map("expires_at")
-  replayedAt   DateTime? @map("replayed_at")
+  broadcastAt DateTime  @default(now()) @map("broadcast_at")
+  expiresAt   DateTime? @map("expires_at")
+  replayedAt  DateTime? @map("replayed_at")
 
   // Timestamps
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Indexes for efficient querying
   @@index([eventType])
@@ -668,7 +667,6 @@ model WebSocketEvent {
   @@index([broadcastAt])
   @@index([expiresAt])
   @@index([priority])
-
   // Composite indexes for replay queries
   @@index([userId, broadcastAt])
   @@index([room, broadcastAt])
@@ -678,43 +676,41 @@ model WebSocketEvent {
   @@index([replayed, broadcastAt])
   @@index([expiresAt, replayed])
   @@index([priority, broadcastAt])
-
   // Replay optimization indexes
   @@index([userId, persisted, replayed, broadcastAt])
   @@index([room, persisted, replayed, broadcastAt])
   @@index([targetUserId, persisted, replayed, broadcastAt])
   @@index([eventType, persisted, replayed, broadcastAt])
-
   @@map("websocket_events")
 }
 
 // WebSocket client connection tracking for replay
 model WebSocketConnection {
-  id              String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Connection identification
-  socketId        String   @unique @map("socket_id")
-  userId          String   @map("user_id")
+  socketId String @unique @map("socket_id")
+  userId   String @map("user_id")
 
   // Connection metadata
-  userAgent       String?  @map("user_agent")
-  ipAddress       String?  @map("ip_address")
-  rooms           String[] // Rooms this connection joined
+  userAgent String?  @map("user_agent")
+  ipAddress String?  @map("ip_address")
+  rooms     String[] // Rooms this connection joined
 
   // Connection state
-  isActive        Boolean  @default(true) @map("is_active")
-  lastHeartbeat   DateTime @default(now()) @map("last_heartbeat")
-  lastEventAt     DateTime @default(now()) @map("last_event_at") // Last event sent to this connection
+  isActive      Boolean  @default(true) @map("is_active")
+  lastHeartbeat DateTime @default(now()) @map("last_heartbeat")
+  lastEventAt   DateTime @default(now()) @map("last_event_at") // Last event sent to this connection
 
   // Replay tracking
   replayFromTime  DateTime? @map("replay_from_time") // When to start replay from (null = no replay needed)
   replayCompleted Boolean   @default(false) @map("replay_completed")
 
   // Timestamps
-  connectedAt     DateTime @default(now()) @map("connected_at")
-  disconnectedAt  DateTime? @map("disconnected_at")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  connectedAt    DateTime  @default(now()) @map("connected_at")
+  disconnectedAt DateTime? @map("disconnected_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Indexes for connection management
   @@index([socketId])
@@ -726,13 +722,11 @@ model WebSocketConnection {
   @@index([replayCompleted])
   @@index([connectedAt])
   @@index([disconnectedAt])
-
   // Composite indexes for replay and cleanup
   @@index([userId, isActive])
   @@index([isActive, lastHeartbeat])
   @@index([userId, replayFromTime])
   @@index([replayCompleted, replayFromTime])
   @@index([disconnectedAt, isActive])
-
   @@map("websocket_connections")
 }

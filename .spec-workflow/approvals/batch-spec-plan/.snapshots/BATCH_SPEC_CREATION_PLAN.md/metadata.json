@@ -1,0 +1,22 @@
+{
+  "filePath": ".spec-workflow/BATCH_SPEC_CREATION_PLAN.md",
+  "currentVersion": 2,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-10-01T01:45:37.901Z",
+      "trigger": "initial",
+      "approvalId": "approval_1759283137877_bw1xjirv3",
+      "approvalTitle": "Batch Spec Creation Plan - 8 Atomic Specs for Parallel Development"
+    },
+    {
+      "version": 2,
+      "filename": "snapshot-002.json",
+      "timestamp": "2025-10-01T02:03:58.817Z",
+      "trigger": "approved",
+      "approvalId": "approval_1759283137877_bw1xjirv3",
+      "approvalTitle": "Batch Spec Creation Plan - 8 Atomic Specs for Parallel Development"
+    }
+  ]
+}
