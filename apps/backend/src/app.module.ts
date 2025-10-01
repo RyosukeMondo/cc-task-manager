@@ -12,6 +12,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { UserModule } from './users/user.module';
 import { WebSocketModule } from './websocket/websocket.module';
 import { DatabaseModule } from './database/database.module';
+import { SettingsModule } from './settings/settings.module';
 // import { QueueModule } from './queue/queue.module';
 // import { OpenApiModule } from './docs/openapi.module';
 import { HealthModule } from './health/health.module';
@@ -51,12 +52,15 @@ import { CorrelationIdMiddleware } from './common/middleware';
     
     // Authentication and authorization module
     AuthModule,
-    
+
     // Task management module
     TasksModule,
 
     // User management module with CASL authorization
     UserModule,
+
+    // Settings module for user preferences
+    SettingsModule,
 
     // WebSocket module for real-time communication
     WebSocketModule,

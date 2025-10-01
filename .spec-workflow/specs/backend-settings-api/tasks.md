@@ -108,7 +108,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: QA engineer with E2E testing expertise | Task: Create comprehensive E2E tests for settings API following requirements 1, 2, and 3, validating auto-create and persistence | Restrictions: Do not skip validation tests, verify persistence | Success: All tests pass with 0 failures_
 
-- [ ] 10. Add environment variables and register module
+- [x] 10. Add environment variables and register module
   - File: .env.example, apps/backend/src/main.ts
   - Add to .env.example: SETTINGS_API_ENABLED=true, SETTINGS_DEFAULT_THEME=SYSTEM, SETTINGS_DEFAULT_LANGUAGE=en, SETTINGS_DEFAULT_NOTIFICATIONS=true, SETTINGS_DEFAULT_DENSITY=COMFORTABLE
   - Import SettingsModule in backend main.ts
