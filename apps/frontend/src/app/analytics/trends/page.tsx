@@ -64,18 +64,20 @@ function TrendsPageContent() {
         </div>
       )}
 
-      {/* Error state */}
+      {/* Error state with better UX */}
       {isError && (
         <div
-          className="rounded-lg border border-destructive bg-destructive/10 p-6"
+          className="rounded-lg border border-amber-200 bg-amber-50 p-6"
           role="alert"
           aria-live="assertive"
         >
-          <h2 className="text-lg font-semibold text-destructive">
-            Failed to Load Trends
+          <h2 className="text-lg font-semibold text-amber-900">
+            Unable to Load Trends
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {error?.message || 'An error occurred while loading trend data.'}
+          <p className="mt-2 text-sm text-amber-700">
+            {error instanceof Error && (error.message.includes('connect') || error.message.includes('Network') || error.message.includes('Failed to fetch'))
+              ? 'Cannot connect to analytics server. Trend data will be available when connection is restored.'
+              : (error?.message || 'Trend data is temporarily unavailable. Please try again later.')}
           </p>
         </div>
       )}
