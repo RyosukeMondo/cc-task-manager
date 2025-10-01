@@ -70,7 +70,7 @@
   - _Requirements: 2_
   - _Prompt: Role: Frontend developer with charting expertise | Task: Create ThroughputChart component following requirement 2, showing completed and failed job trends | Restrictions: Do not exceed 100 data points, sample if necessary | Success: Chart displays throughput correctly_
 
-- [ ] 6. Create JobList component (table with pagination)
+- [x] 6. Create JobList component (table with pagination)
   - File: apps/frontend/src/components/queue/JobList.tsx
   - Table columns: ID (truncated), Name, Status (badge), Progress (progress bar), Attempts, Timestamp, Actions
   - Status filter: All, Active, Pending, Completed, Failed

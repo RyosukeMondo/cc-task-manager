@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 import { useQueue } from '@/hooks/useQueue';
 import { QueueMetrics } from '@/components/queue/QueueMetrics';
+import { ThroughputChart } from '@/components/queue/ThroughputChart';
+import { JobList } from '@/components/queue/JobList';
 
 /**
  * Queue Management Dashboard Page
@@ -43,17 +45,17 @@ export default function QueuePage() {
         {/* QueueMetrics component - Task 4 */}
         {metrics && <QueueMetrics metrics={metrics} isLoading={isLoading} />}
 
-        {/* Placeholder for ThroughputChart component */}
-        {/* Will be implemented in task 5 */}
-        <div className="text-sm text-muted-foreground">
-          ThroughputChart component will be rendered here
-        </div>
+        {/* ThroughputChart component - Task 5 */}
+        {throughput && <ThroughputChart data={throughput} isLoading={isLoading} />}
 
-        {/* Placeholder for JobList component */}
-        {/* Will be implemented in task 6 */}
-        <div className="text-sm text-muted-foreground">
-          JobList component will be rendered here
-        </div>
+        {/* JobList component - Task 6 */}
+        {jobs && metrics && (
+          <JobList
+            jobs={jobs}
+            failedCount={metrics.failedCount}
+            isLoading={isLoading}
+          />
+        )}
       </div>
     </AppLayout>
   );
