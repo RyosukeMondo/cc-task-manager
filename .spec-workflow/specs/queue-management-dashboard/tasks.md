@@ -17,7 +17,7 @@
   - _Requirements: 1, 2, 3_
   - _Prompt: Role: Backend developer with BullMQ expertise | Task: Create QueueController endpoint following requirements 1, 2, and 3, exposing queue metrics and job lists | Restrictions: Do not expose sensitive job data, protect with authentication | Success: Endpoint returns queue status correctly_
 
-- [ ] 2. Add job management endpoints
+- [x] 2. Add job management endpoints
   - File: apps/backend/src/queue/queue.controller.ts
   - POST /api/queue/jobs/:id/retry: Retry failed job (call job.retry())
   - POST /api/queue/jobs/:id/cancel: Cancel pending/active job (call job.remove())

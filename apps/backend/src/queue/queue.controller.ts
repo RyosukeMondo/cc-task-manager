@@ -533,6 +533,26 @@ export class QueueController {
   }
 
   /**
+   * Helper method to get failed jobs from a specific queue
+   * @private
+   */
+  private async getFailedJobsFromQueue(queueName: string): Promise<Array<{ id: string }>> {
+    try {
+      // Use QueueManagerService to search for failed jobs
+      const result = await this.queueManagerService.searchJobs({
+        queueName,
+        status: 'failed' as any,
+        limit: 1000, // Get up to 1000 failed jobs
+      });
+
+      return result.jobs.map(job => ({ id: job.id }));
+    } catch (error) {
+      this.logger.warn(`Failed to get failed jobs from queue ${queueName}: ${error.message}`);
+      return [];
+    }
+  }
+
+  /**
    * Helper method to generate throughput data for the last N hours
    * @private
    */
@@ -570,9 +590,22 @@ export class QueueController {
 
     for (const queueName of queueNames) {
       try {
-        // This would require accessing the queue and getting failed jobs
-        // Then calling retry on each one
-        // For now, return 0 as placeholder
+        const metrics = await this.queueService.getQueueMetrics(queueName);
+
+        if (metrics.length > 0 && metrics[0].failed > 0) {
+          // Get all failed jobs for this queue
+          const failedJobs = await this.getFailedJobsFromQueue(queueName);
+
+          // Retry each failed job using QueueManagerService
+          for (const job of failedJobs) {
+            try {
+              await this.queueManagerService.retryJob(job.id);
+              count++;
+            } catch (error) {
+              this.logger.warn(`Failed to retry job ${job.id}: ${error.message}`);
+            }
+          }
+        }
       } catch (error) {
         this.logger.warn(`Failed to retry jobs in queue ${queueName}: ${error.message}`);
       }
