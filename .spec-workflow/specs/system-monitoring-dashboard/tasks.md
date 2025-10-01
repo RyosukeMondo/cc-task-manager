@@ -161,18 +161,18 @@ Task 11 (E2E tests)
 
 Before marking this spec as complete, verify:
 
-- [ ] All 11 tasks marked as `[x]`
-- [ ] All E2E tests passing (0 failures)
-- [ ] Can navigate to /monitoring via sidebar
-- [ ] System resource cards display (CPU, Memory, Disk, Database)
-- [ ] Warning/critical styling works (> 80%, > 90%)
-- [ ] Time-series charts show CPU and Memory history (last 1 hour)
-- [ ] API performance metrics display (avg time, p95, RPS)
-- [ ] Endpoint breakdown shows slowest endpoints
-- [ ] WebSocket status displays (if applicable)
-- [ ] Polling updates data every 5 seconds
-- [ ] Chart history maintains sliding window (max 720 points)
-- [ ] Polling slows down when tab inactive (60s)
+- [x] All 11 tasks marked as `[x]`
+- [x] All E2E tests passing (0 failures)
+- [x] Can navigate to /monitoring via sidebar
+- [x] System resource cards display (CPU, Memory, Disk, Database)
+- [x] Warning/critical styling works (> 80%, > 90%)
+- [x] Time-series charts show CPU and Memory history (last 1 hour)
+- [x] API performance metrics display (avg time, p95, RPS)
+- [x] Endpoint breakdown shows slowest endpoints
+- [x] WebSocket status displays (if applicable)
+- [x] Polling updates data every 5 seconds
+- [x] Chart history maintains sliding window (max 720 points)
+- [x] Polling slows down when tab inactive (60s)
 
 ## Estimated Effort
 

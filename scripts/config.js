@@ -20,10 +20,10 @@ const CONFIG = {
     ,{ available: false, name: 'backend-tasks-api', path: 'worktree/backend-tasks-api', spec: 'backend-tasks-api' }
     ,{ available: false, name: 'backend-analytics-api', path: 'worktree/backend-analytics-api', spec: 'backend-analytics-api' }
     ,{ available: false, name: 'backend-settings-api', path: 'worktree/backend-settings-api', spec: 'backend-settings-api' }
-    ,{ available: true, name: 'task-creation-modal', path: 'worktree/task-creation-modal', spec: 'task-creation-modal' }
-    ,{ available: true, name: 'task-detail-view', path: 'worktree/task-detail-view', spec: 'task-detail-view' }
-    ,{ available: true, name: 'queue-management-dashboard', path: 'worktree/queue-management-dashboard', spec: 'queue-management-dashboard' }
-    ,{ available: true, name: 'system-monitoring-dashboard', path: 'worktree/system-monitoring-dashboard', spec: 'system-monitoring-dashboard' }
+    ,{ available: false, name: 'task-creation-modal', path: 'worktree/task-creation-modal', spec: 'task-creation-modal' }
+    ,{ available: false, name: 'task-detail-view', path: 'worktree/task-detail-view', spec: 'task-detail-view' }
+    ,{ available: false, name: 'queue-management-dashboard', path: 'worktree/queue-management-dashboard', spec: 'queue-management-dashboard' }
+    ,{ available: false, name: 'system-monitoring-dashboard', path: 'worktree/system-monitoring-dashboard', spec: 'system-monitoring-dashboard' }
     ,{ available: false, name: 'warps', path: '../warps', spec: 'battle-e2e-testing' }
     ,{ available: false, name: 'mind-advanced-evaluation-metrics', path: '../mind-training/worktree/advanced-evaluation-metrics', spec: 'advanced-evaluation-metrics' }
     ,{ available: false, name: 'mind-session-flow', path: '../mind-training/worktree/session-flow-foundation', spec: 'session-flow-foundation' }
@@ -31,6 +31,8 @@ const CONFIG = {
     ,{ available: true, name: 'mind-backend-lifecycle', path: '../mind-training/worktree/backend-session-lifecycle', spec: 'backend-session-lifecycle' }
     ,{ available: true, name: 'mind-ai-evaluation', path: '../mind-training/worktree/ai-evaluation-integration', spec: 'ai-evaluation-integration' }
     ,{ available: false, name: 'wa-tools', path: '../wa-tools', spec: 'fix-all-existing-tests' }
+    ,{ available: false, name: 'money-level-entity', path: '../money-making-app/worktree/level-entity-logic', spec: 'level-entity-logic' }
+    ,{ available: true, name: 'money-foundation', path: '../money-making-app/worktree/foundation-contracts', spec: 'foundation-contracts' }
   ],
 
   // Dashboard port base (ports will be assigned incrementally from this base)
