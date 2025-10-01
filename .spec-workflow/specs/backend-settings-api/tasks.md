@@ -73,7 +73,7 @@
 
 ### Phase 4: HTTP API (1 task)
 
-- [ ] 7. Implement SettingsController
+- [x] 7. Implement SettingsController
   - File: apps/backend/src/settings/settings.controller.ts
   - GET /api/settings: Protected with @UseGuards(JwtAuthGuard), calls getOrCreateSettings(userId from @User()), returns 200 OK with settings (auto-creates if missing)
   - PATCH /api/settings: Protected with @UseGuards(JwtAuthGuard), body=UpdateSettingsDto, calls updateSettings(userId, dto), returns 200 OK with updated settings
