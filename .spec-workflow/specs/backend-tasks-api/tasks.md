@@ -50,7 +50,7 @@
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
   - _Prompt: Role: Backend Developer with expertise in repository pattern and Prisma ORM | Task: Implement TasksRepository data access layer following requirements 2.1-2.5 using Prisma best practices | Restrictions: Must not contain business logic, use parameterized queries only, maintain transaction safety, follow repository pattern | Success: All CRUD methods work correctly, proper error handling, queries are efficient with correct indexes_
 
-- [ ] 6. Implement TasksService (business logic)
+- [x] 6. Implement TasksService (business logic)
   - File: apps/backend/src/tasks/tasks.service.ts
   - Implement: create(dto, userId), findAll(filter, userId), findOne(id, userId), update(id, dto, userId), remove(id, userId)
   - Add ownership verification, emit WebSocket events, handle soft deletes
