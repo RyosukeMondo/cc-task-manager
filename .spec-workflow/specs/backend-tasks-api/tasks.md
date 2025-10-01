@@ -41,7 +41,7 @@
   - _Requirements: 1.1, 1.2, 1.3, Non-functional (Contract-Driven, SSOT)_
   - _Prompt: Role: TypeScript Developer specializing in type systems and Zod validation | Task: Define comprehensive Zod schemas for task operations following requirements 1.1-1.3 as SSOT for types and validation | Restrictions: Must generate TypeScript types from schemas, maintain validation consistency between frontend and backend, follow existing schema patterns | Success: Schemas validate correctly, TypeScript types generated, frontend and backend share identical validation_
 
-- [ ] 5. Implement TasksRepository (data access layer)
+- [x] 5. Implement TasksRepository (data access layer)
   - File: apps/backend/src/tasks/tasks.repository.ts
   - Implement: create(data), findUnique(where), findAndCount(params), update(id, data)
   - All methods use Prisma client with proper error handling
