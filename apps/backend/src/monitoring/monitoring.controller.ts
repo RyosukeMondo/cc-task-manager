@@ -24,7 +24,7 @@ import { SystemMetricsResponse } from './monitoring.service';
  * TODO: Add rate limiting (20 req/min per user) when @nestjs/throttler is configured
  */
 @ApiTags('Monitoring')
-@Controller('api/monitoring')
+@Controller('monitoring')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('JWT')
 export class MonitoringController {

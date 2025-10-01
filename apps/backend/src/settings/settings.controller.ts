@@ -10,7 +10,7 @@ import { UpdateSettingsDto } from './dto/update-settings.dto';
  * Exposes REST API endpoints for user settings management with auto-create functionality.
  * All endpoints are protected with JWT authentication.
  */
-@Controller('api/settings')
+@Controller('settings')
 @UseGuards(JwtAuthGuard)
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}

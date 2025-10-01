@@ -40,7 +40,7 @@ import {
  * Follows contract-driven design with Zod validation
  */
 @ApiTags('Analytics')
-@Controller('api/analytics')
+@Controller('analytics')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('JWT')
 export class AnalyticsController {

@@ -72,7 +72,7 @@ import {
  * and fail-fast validation using Zod schemas.
  */
 @ApiTags('Task Management')
-@Controller('api/v1/tasks')
+@Controller('v1/tasks')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('JWT')
 export class TaskController {

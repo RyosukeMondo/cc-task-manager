@@ -22,7 +22,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
  * by providing convenient access points for developers and tools.
  */
 @ApiTags('Documentation')
-@Controller('api/docs')
+@Controller('docs')
 export class OpenApiController {
   constructor(private readonly openApiService: OpenApiDocumentationService) {}
 
