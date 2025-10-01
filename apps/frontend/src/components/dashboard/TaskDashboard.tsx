@@ -15,7 +15,7 @@ import {
   Wifi,
   WifiOff
 } from 'lucide-react';
-import { TaskState, TaskStatus } from '@cc-task-manager/types';
+import { TaskState } from '@cc-task-manager/types';
 import {
   useWebSocketConnection,
   useTaskUpdates,

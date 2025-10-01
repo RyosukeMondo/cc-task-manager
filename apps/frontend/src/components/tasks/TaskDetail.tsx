@@ -39,35 +39,35 @@ export interface TaskDetailProps {
 export const TaskDetail = React.memo<TaskDetailProps>(({ task, className }) => {
   const getStatusConfig = (status: TaskStatus) => {
     switch (status) {
-      case TaskStatus.PENDING:
+      case TaskStatus.TODO:
         return {
           variant: 'outline' as const,
           className: 'bg-blue-50 text-blue-700 border-blue-200',
           icon: <Clock className="w-3 h-3" />,
         };
-      case TaskStatus.RUNNING:
+      case TaskStatus.IN_PROGRESS:
         return {
           variant: 'secondary' as const,
           className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
           icon: <Loader2 className="w-3 h-3 animate-spin" />,
         };
-      case TaskStatus.COMPLETED:
+      case TaskStatus.IN_REVIEW:
+        return {
+          variant: 'secondary' as const,
+          className: 'bg-purple-50 text-purple-700 border-purple-200',
+          icon: <AlertCircle className="w-3 h-3" />,
+        };
+      case TaskStatus.DONE:
         return {
           variant: 'default' as const,
           className: 'bg-green-50 text-green-700 border-green-200',
           icon: <CheckCircle2 className="w-3 h-3" />,
         };
-      case TaskStatus.FAILED:
+      case TaskStatus.CANCELLED:
         return {
           variant: 'destructive' as const,
           className: 'bg-red-50 text-red-700 border-red-200',
           icon: <XCircle className="w-3 h-3" />,
-        };
-      case TaskStatus.CANCELLED:
-        return {
-          variant: 'secondary' as const,
-          className: 'bg-gray-50 text-gray-700 border-gray-200',
-          icon: <XOctagon className="w-3 h-3" />,
         };
       default:
         return {
@@ -158,7 +158,7 @@ export const TaskDetail = React.memo<TaskDetailProps>(({ task, className }) => {
 
       <CardContent className="space-y-4">
         {/* Error Message Alert */}
-        {task.status === TaskStatus.FAILED && task.errorMessage && (
+        {task.status === TaskStatus.CANCELLED && task.errorMessage && (
           <Alert variant="destructive" className="border-red-200">
             <AlertCircle className="h-4 w-4" />
             <div className="ml-2">

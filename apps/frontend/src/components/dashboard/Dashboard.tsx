@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Activity, CheckCircle, Clock, AlertCircle, Cpu, MemoryStick } from 'lucide-react';
-import { TaskState, TaskStatus } from '@cc-task-manager/types';
+import { TaskState } from '@cc-task-manager/types';
 import { DashboardLayout, DashboardGrid, MetricCard } from './DashboardLayout';
 import { TaskStatusChart, TaskTrendChart, PerformanceChart } from './charts';
 import { UserMenu } from './UserMenu';

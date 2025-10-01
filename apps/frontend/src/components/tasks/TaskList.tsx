@@ -247,10 +247,10 @@ export const TaskList = React.memo<TaskListProps>(({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value={TaskStatus.PENDING}>Pending</SelectItem>
-                  <SelectItem value={TaskStatus.RUNNING}>Running</SelectItem>
-                  <SelectItem value={TaskStatus.COMPLETED}>Completed</SelectItem>
-                  <SelectItem value={TaskStatus.FAILED}>Failed</SelectItem>
+                  <SelectItem value={TaskStatus.TODO}>To Do</SelectItem>
+                  <SelectItem value={TaskStatus.IN_PROGRESS}>In Progress</SelectItem>
+                  <SelectItem value={TaskStatus.IN_REVIEW}>In Review</SelectItem>
+                  <SelectItem value={TaskStatus.DONE}>Done</SelectItem>
                   <SelectItem value={TaskStatus.CANCELLED}>Cancelled</SelectItem>
                 </SelectContent>
               </Select>
