@@ -5,7 +5,6 @@ import {
   validateTaskExecutionRequest,
   validateWorkerConfig,
   validateTaskStatus,
-  validateAnalyticsFilter,
   ProcessConfigSchema,
   TaskExecutionRequestSchema,
   WorkerConfigSchema,
@@ -13,19 +12,22 @@ import {
   validateUserRegistration,
   validateLoginRequest,
   validateTokenRefresh,
+  validateTrendFilter,
   type UserRegistration,
   type LoginRequest,
   type AuthResponse,
   type UserBase,
-  type TokenRefresh
+  type TokenRefresh,
+  type AnalyticsFilterDto,
+  type TrendFilterDto,
+  type PerformanceMetricsDto,
+  type TrendDataResponseDto
 } from '@cc-task-manager/schemas'
 import type {
   ProcessConfig,
   TaskExecutionRequest,
   WorkerConfig,
-  TaskStatus,
-  PerformanceMetrics,
-  AnalyticsFilter
+  TaskStatus
 } from '@cc-task-manager/types'
 
 /**
@@ -267,27 +269,41 @@ export class ContractApiClient {
     return this.request<UserBase>('GET', '/api/auth/me')
   }
 
-  // Analytics API
-  async getPerformanceMetrics(filter?: AnalyticsFilter): Promise<PerformanceMetrics> {
-    const queryParams = filter
-      ? `?${new URLSearchParams({
-          startDate: filter.dateRange.startDate,
-          endDate: filter.dateRange.endDate,
-          groupBy: filter.groupBy,
-          ...(filter.metrics && { metrics: filter.metrics.join(',') }),
-          ...(filter.projectId && { projectId: filter.projectId }),
-          ...(filter.userId && { userId: filter.userId }),
-          ...(filter.tags && { tags: filter.tags.join(',') })
-        }).toString()}`
-      : ''
+  // ========== Spec: backend-analytics-api ==========
 
-    return this.request<PerformanceMetrics>(
+  /**
+   * Get performance metrics for analytics
+   * @param filter Optional analytics filter (startDate, endDate)
+   * @returns Performance metrics with completion rate, execution time, and throughput
+   */
+  async getPerformanceMetrics(filter?: AnalyticsFilterDto): Promise<PerformanceMetricsDto> {
+    const queryParams = new URLSearchParams()
+    if (filter?.startDate) queryParams.append('startDate', filter.startDate)
+    if (filter?.endDate) queryParams.append('endDate', filter.endDate)
+
+    const queryString = queryParams.toString()
+    const path = queryString ? `/api/analytics/performance?${queryString}` : '/api/analytics/performance'
+
+    return this.request<PerformanceMetricsDto>(
       'GET',
-      `/api/analytics/performance${queryParams}`,
-      undefined,
-      undefined,
-      'PerformanceMetrics',
-      '1.0.0'
+      path
+    )
+  }
+
+  /**
+   * Get trend data for time-series analytics
+   * @param filter Trend filter with groupBy (day/week/month), startDate, endDate
+   * @returns Array of trend data points with metrics per period
+   */
+  async getTrendData(filter: TrendFilterDto): Promise<TrendDataResponseDto> {
+    const queryParams = new URLSearchParams()
+    queryParams.append('groupBy', filter.groupBy)
+    if (filter.startDate) queryParams.append('startDate', filter.startDate)
+    if (filter.endDate) queryParams.append('endDate', filter.endDate)
+
+    return this.request<TrendDataResponseDto>(
+      'GET',
+      `/api/analytics/trends?${queryParams.toString()}`
     )
   }
 

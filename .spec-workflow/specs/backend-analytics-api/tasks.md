@@ -68,7 +68,7 @@
 
 ### Phase 4: Frontend Integration (1 task)
 
-- [ ] 6. Add analytics methods to contract-client.ts
+- [x] 6. Add analytics methods to contract-client.ts
   - File: apps/frontend/src/lib/api/contract-client.ts
   - Add section comment: `// ========== Spec: backend-analytics-api ==========`
   - Add getPerformanceMetrics(filter?: AnalyticsFilterDto): Promise<PerformanceMetricsDto>
