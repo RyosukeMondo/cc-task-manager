@@ -93,7 +93,7 @@
 
 ### Phase 3: Data Fetching (1 task)
 
-- [ ] 8. Implement useSystemMetrics hook (polling + history)
+- [x] 8. Implement useSystemMetrics hook (polling + history)
   - File: apps/frontend/src/hooks/useSystemMetrics.ts
   - Use useQuery with queryKey: ['system', 'metrics']
   - queryFn: apiClient.getSystemMetrics()
