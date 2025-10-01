@@ -1,6 +1,6 @@
 # Tasks - Backend Tasks API
 
-- [ ] 1. Create Prisma Task model with enums
+- [x] 1. Create Prisma Task model with enums
   - File: prisma/schema.prisma
   - Add Task model with fields: id, title, description, status, priority, userId, startedAt, completedAt, failedAt, errorMessage, logs, createdAt, updatedAt, deletedAt
   - Add TaskStatus enum: PENDING, RUNNING, COMPLETED, FAILED, CANCELLED

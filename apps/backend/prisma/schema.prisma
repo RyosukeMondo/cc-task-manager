@@ -32,6 +32,7 @@ model User {
   createdTasks  Task[]       @relation("TaskCreator")
   assignedTasks Task[]       @relation("TaskAssignee")
   claudeTasks   ClaudeTask[] @relation("ClaudeTaskCreator")
+  apiTasks      ApiTask[]    @relation("ApiTaskCreator")
   sessions      Session[]
 
   @@index([email])
@@ -616,6 +617,62 @@ enum ResultStatus {
   TIMEOUT
 
   @@map("result_status")
+}
+
+// =============================================================================
+// BACKEND TASKS API - Simplified task model for REST API operations
+// =============================================================================
+
+// Backend API Task model for simplified task management via REST API
+model ApiTask {
+  id          String          @id @default(uuid())
+  title       String          @db.VarChar(200)
+  description String?         @db.Text
+  status      ApiTaskStatus   @default(PENDING)
+  priority    ApiTaskPriority @default(MEDIUM)
+  userId      String          @map("user_id")
+
+  // Execution metadata
+  startedAt    DateTime? @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  failedAt     DateTime? @map("failed_at")
+  errorMessage String?   @map("error_message") @db.Text
+
+  // Logs (JSONB for flexibility)
+  logs Json[] @default([])
+
+  // Timestamps
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at") // Soft delete
+
+  // Relations
+  user User @relation("ApiTaskCreator", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([createdAt])
+  @@map("api_tasks")
+}
+
+// API Task status enumeration
+enum ApiTaskStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+
+  @@map("api_task_status")
+}
+
+// API Task priority enumeration
+enum ApiTaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+
+  @@map("api_task_priority")
 }
 
 // =============================================================================
