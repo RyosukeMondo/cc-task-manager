@@ -155,7 +155,7 @@
   - _Requirements: 1, 2, 3, 4, 5, 6_
   - _Prompt: Role: QA engineer with E2E testing expertise | Task: Create comprehensive E2E tests for authentication following requirements 1-6, validating all success and error scenarios | Restrictions: Do not skip security tests, validate token expiration | Success: All tests pass with 0 failures_
 
-- [ ] 13. Add environment variables and register module
+- [x] 13. Add environment variables and register module
   - File: .env.example, apps/backend/src/main.ts
   - Add to .env.example: AUTH_API_ENABLED=true, AUTH_JWT_SECRET (min 32 chars), AUTH_JWT_EXPIRES_IN=7d, AUTH_REFRESH_EXPIRES_IN=30d, AUTH_BCRYPT_ROUNDS=10
   - Import AuthModule in backend main.ts

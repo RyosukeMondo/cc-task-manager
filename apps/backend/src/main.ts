@@ -47,7 +47,16 @@ async function bootstrap() {
 
   // Get configuration service for environment-based settings
   const configService = app.get(ConfigService);
-  
+
+  // Validate JWT_SECRET length on startup (min 32 chars for security)
+  const jwtSecret = configService.get<string>('AUTH_JWT_SECRET');
+  if (!jwtSecret || jwtSecret.length < 32) {
+    throw new Error(
+      'AUTH_JWT_SECRET must be at least 32 characters long. ' +
+      'Generate a secure secret with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"'
+    );
+  }
+
   // Apply Interface Segregation Principle - separate validation concerns
   // Use existing contract validation infrastructure
   const contractRegistry = app.get(ContractRegistry);
