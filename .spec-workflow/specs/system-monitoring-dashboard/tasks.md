@@ -65,7 +65,7 @@
   - _Requirements: 1_
   - _Prompt: Role: Frontend developer with data visualization expertise | Task: Create SystemMetrics component following requirement 1, implementing color-coded warning states | Restrictions: Do not use hardcoded thresholds, make configurable | Success: Metrics display with color-coded warnings_
 
-- [ ] 6. Create MetricsChart component (Recharts time-series)
+- [x] 6. Create MetricsChart component (Recharts time-series)
   - File: apps/frontend/src/components/monitoring/MetricsChart.tsx
   - Use Recharts AreaChart
   - Props: title, data (array of { timestamp, value }), dataKey, color
