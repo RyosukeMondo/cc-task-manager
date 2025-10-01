@@ -50,7 +50,7 @@
 
 ### Phase 3: JWT Strategy & Guards (3 tasks)
 
-- [ ] 5. Create AuthModule with Passport integration
+- [x] 5. Create AuthModule with Passport integration
   - File: apps/backend/src/auth/auth.module.ts
   - Import PassportModule
   - Import JwtModule.register with secret from env and signOptions.expiresIn
