@@ -124,7 +124,8 @@ export function useTasks(
 
   return {
     ...query,
-    tasks: query.data,
+    // Return empty array if API fails (graceful degradation)
+    tasks: query.data || [],
     filters: localFilters,
     setFilters,
   }

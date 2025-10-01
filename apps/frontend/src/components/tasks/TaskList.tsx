@@ -391,19 +391,29 @@ export const TaskList = React.memo<TaskListProps>(({
     )
   }
 
-  // Error state
+  // Error state with better UX
   if (isError) {
+    const isNetworkError = error instanceof Error &&
+      (error.message.includes('connect') ||
+       error.message.includes('Network') ||
+       error.message.includes('Failed to fetch'));
+
     return (
       <div className={className}>
         <FilterControls />
         <Alert
-          className="border-destructive"
+          className={isNetworkError ? "border-amber-200 bg-amber-50" : "border-destructive"}
           role="alert"
           aria-live="assertive"
         >
-          <div className="font-semibold">Failed to load tasks</div>
-          <div className="text-sm text-muted-foreground mt-1">
-            {error instanceof Error ? error.message : 'An unexpected error occurred'}
+          <div className={`font-semibold ${isNetworkError ? "text-amber-900" : ""}`}>
+            {isNetworkError ? 'Unable to connect to server' : 'Failed to load tasks'}
+          </div>
+          <div className={`text-sm mt-1 ${isNetworkError ? "text-amber-700" : "text-muted-foreground"}`}>
+            {isNetworkError
+              ? 'The task list is currently unavailable. Please check your connection or try again later.'
+              : (error instanceof Error ? error.message : 'An unexpected error occurred')
+            }
           </div>
         </Alert>
       </div>

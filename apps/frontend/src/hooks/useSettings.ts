@@ -22,6 +22,32 @@ const SETTINGS_STORAGE_KEY = 'user_settings';
 // Debounce delay for auto-save (in milliseconds)
 const AUTO_SAVE_DELAY = 1000;
 
+// Default settings when API is unavailable or settings don't exist yet
+const DEFAULT_SETTINGS: Settings = {
+  profile: {
+    name: '',
+    email: '',
+    avatar: '',
+    bio: '',
+    timezone: 'America/New_York',
+    language: 'en',
+  },
+  preferences: {
+    theme: 'system',
+    language: 'en',
+    dateFormat: 'MM/DD/YYYY',
+    timeFormat: '12h',
+    defaultView: 'dashboard',
+  },
+  notifications: {
+    emailNotifications: true,
+    pushNotifications: false,
+    taskReminders: true,
+    weeklyDigest: false,
+    soundEnabled: true,
+  },
+};
+
 // Query key factory for settings
 export const settingsKeys = {
   all: ['settings'] as const,
@@ -247,8 +273,8 @@ export function useSettings(
   }, []);
 
   return {
-    // Data
-    settings: query.data,
+    // Data - Use default settings if API fails and no cached data
+    settings: query.data || DEFAULT_SETTINGS,
 
     // Loading states
     isLoading: query.isLoading,

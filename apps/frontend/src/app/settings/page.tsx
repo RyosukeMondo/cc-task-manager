@@ -42,14 +42,21 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Global error alert */}
-        {error && !isLoading && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error instanceof Error
-                ? error.message
-                : 'Failed to load settings. Please try again.'}
+        {/* Global error alert with better UX */}
+        {error && !isLoading && !settings && (
+          <Alert className="mb-6 border-amber-200 bg-amber-50">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-900">
+              <p className="font-medium mb-2">
+                {error instanceof Error && error.message.includes('connect')
+                  ? 'Unable to connect to server'
+                  : 'Settings not yet configured'}
+              </p>
+              <p className="text-sm text-amber-700">
+                {error instanceof Error && error.message.includes('connect')
+                  ? 'Using default settings. Changes will sync when connection is restored.'
+                  : 'You can configure your settings below. They will be saved automatically.'}
+              </p>
             </AlertDescription>
           </Alert>
         )}
